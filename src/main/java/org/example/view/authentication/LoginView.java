@@ -1,4 +1,4 @@
-package org.example.view;
+package org.example.view.authentication;
 
 import javafx.application.Application;
 import javafx.stage.Stage;

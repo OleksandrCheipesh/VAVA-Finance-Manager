@@ -1,7 +1,7 @@
 package org.example.model;
 
-import org.example.entity.User;
-import org.example.validation.RegisterValidator;
+import org.example.model.database.entity.User;
+import org.example.model.validation.RegisterValidator;
 
 
 public class RegistrationModel {
@@ -9,7 +9,7 @@ public class RegistrationModel {
 
     public void register(String login, String email, String password) {
 
-       RegisterValidator.validate(login, email, password);
+       // RegisterValidator.validate(login, email, password);
 
         // here will be adding to database
 
