@@ -1,4 +1,4 @@
-package org.example.entity;
+package org.example.model.database.entity;
 
 public class User {
     private String login;
