@@ -1,0 +1,3 @@
+db.url=jdbc:postgresql://localhost:5432/vava
+db.user=vava_user
+db.password=1234
