@@ -96,6 +96,21 @@ public class UserService {
         return Optional.empty();
     }
 
+    // get users by company id
+    public List<User> getUsersByCompanyId(int companyId) throws SQLException {
+        String sql = "SELECT * FROM users WHERE company_id = ? ORDER BY id";
+        List<User> list = new ArrayList<>();
+        try (Connection connection = ConnectionProvider.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, companyId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) list.add(mapRow(resultSet));
+            }
+        }
+        return list;
+    }
+
     // update user
     public boolean updateUser(User user) throws SQLException {
         String sql = "UPDATE users SET name = ?, surname = ?, email = ?, password_hash = ?, " +
