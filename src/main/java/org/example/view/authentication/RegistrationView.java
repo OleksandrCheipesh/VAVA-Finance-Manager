@@ -19,7 +19,7 @@ public class RegistrationView extends BaseView {
 
     // fields
     private VBox root, formBox, buttonBox;
-    private TextField loginField, emailField;
+    private TextField nameField, surnameField, emailField;
     private PasswordField passwordField;
     private Button registerButton;
     private Label titleLabel, messageLabel;
@@ -33,8 +33,11 @@ public class RegistrationView extends BaseView {
 
         titleLabel = new Label("Registration");
 
-        loginField = new TextField();
-        loginField.setPromptText("Login");
+        nameField = new TextField();
+        nameField.setPromptText("Name");
+
+        surnameField = new TextField();
+        surnameField.setPromptText("Surname");
 
         emailField = new TextField();
         emailField.setPromptText("E-mail");
@@ -50,7 +53,8 @@ public class RegistrationView extends BaseView {
 
         formBox.getChildren().addAll(
                 titleLabel,
-                loginField,
+                nameField,
+                surnameField,
                 emailField,
                 passwordField,
                 buttonBox,
@@ -86,9 +90,13 @@ public class RegistrationView extends BaseView {
                         "-fx-font-size: 15px;" +
                         "-fx-padding: 8 15 8 15;";
 
-        loginField.setPrefHeight(45);
-        loginField.setMaxWidth(Double.MAX_VALUE);
-        loginField.setStyle(fieldStyle);
+        nameField.setPrefHeight(45);
+        nameField.setMaxWidth(Double.MAX_VALUE);
+        nameField.setStyle(fieldStyle);
+
+        surnameField.setPrefHeight(45);
+        surnameField.setMaxWidth(Double.MAX_VALUE);
+        surnameField.setStyle(fieldStyle);
 
         emailField.setPrefHeight(45);
         emailField.setMaxWidth(Double.MAX_VALUE);
@@ -125,7 +133,8 @@ public class RegistrationView extends BaseView {
         // register action
         registerButton.setOnAction(e ->
                 viewModel.register(
-                        loginField.getText(),
+                        nameField.getText(),
+                        surnameField.getText(),
                         emailField.getText(),
                         passwordField.getText()
                 )
