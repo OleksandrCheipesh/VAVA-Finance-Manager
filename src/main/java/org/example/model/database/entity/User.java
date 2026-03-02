@@ -4,13 +4,13 @@ import java.time.OffsetDateTime;
 
 public class User extends Person{
     private String passwordHash;
-    private String position;
+    private Position position;
     private Integer companyId;
     private OffsetDateTime createdAt;
 
     public User() {}
 
-    public User(String name, String surname, String email, String passwordHash, String position, Integer companyId) {
+    public User(String name, String surname, String email, String passwordHash, Position position, Integer companyId) {
         this.name = name;
         this.surname = surname;
         this.email = email;
@@ -54,10 +54,10 @@ public class User extends Person{
         this.passwordHash = passwordHash;
     }
 
-    public String getPosition() {
+    public Position getPosition() {
         return position;
     }
-    public void setPosition(String position) {
+    public void setPosition(Position position) {
         this.position = position;
     }
 

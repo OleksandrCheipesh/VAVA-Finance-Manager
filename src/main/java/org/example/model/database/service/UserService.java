@@ -1,6 +1,7 @@
 package org.example.model.database.service;
 
 import org.example.model.database.ConnectionProvider;
+import org.example.model.database.entity.Position;
 import org.example.model.database.entity.User;
 
 import java.sql.*;
@@ -23,7 +24,7 @@ public class UserService {
             statement.setString(2, user.getSurname());
             statement.setString(3, user.getEmail());
             statement.setString(4, user.getPasswordHash());
-            statement.setString(5, user.getPosition());
+            statement.setObject(5, user.getPosition().name(), Types.OTHER);
 
             if (user.getCompanyId() != null) {
                 statement.setInt(6, user.getCompanyId());
@@ -121,7 +122,7 @@ public class UserService {
             preparedStatement.setString(2, user.getSurname());
             preparedStatement.setString(3, user.getEmail());
             preparedStatement.setString(4, user.getPasswordHash());
-            preparedStatement.setString(5, user.getPosition());
+            preparedStatement.setObject(5, user.getPosition().name(), Types.OTHER);
 
             if (user.getCompanyId() != null) {
                 preparedStatement.setInt(6, user.getCompanyId());
@@ -152,7 +153,7 @@ public class UserService {
         user.setSurname(resultSet.getString("surname"));
         user.setEmail(resultSet.getString("email"));
         user.setPasswordHash(resultSet.getString("password_hash"));
-        user.setPosition(resultSet.getString("position"));
+        user.setPosition(Position.valueOf(resultSet.getString("position")));
 
         int companyId = resultSet.getInt("company_id");
         user.setCompanyId(resultSet.wasNull() ? null : companyId);
@@ -160,4 +161,3 @@ public class UserService {
         return user;
     }
 }
-
