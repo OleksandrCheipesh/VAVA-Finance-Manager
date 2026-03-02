@@ -2,11 +2,7 @@ package org.example.model.database.entity;
 
 import java.time.OffsetDateTime;
 
-public class User {
-    private int id;
-    private String name;
-    private String surname;
-    private String email;
+public class User extends Person{
     private String passwordHash;
     private String position;
     private Integer companyId;
