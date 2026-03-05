@@ -11,7 +11,8 @@ public class RegistrationModel {
     private final UserService userService = new UserService();
 
     public void register(String name, String surname, String email, String passwordHash) throws SQLException {
-        // RegisterValidator.validate(name, email, passwordHash);
+        // Run the validator first!
+        RegisterValidator.validate(name, surname, email, passwordHash);
 
         User user = new User(name, surname, email, passwordHash, Position.Director, null);
         userService.addUser(user);

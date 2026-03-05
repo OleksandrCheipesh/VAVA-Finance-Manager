@@ -1,0 +1,30 @@
+package org.example.viewModel;
+
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import org.example.model.LoginM; // Using your existing model
+
+public class LoginViewModel {
+
+    private final LoginM loginModel = new LoginM();
+    private final StringProperty message = new SimpleStringProperty("");
+
+    public void login(String email, String password) {
+        if (email == null || email.isBlank() || password == null || password.isBlank()) {
+            message.set("Email and Password are required.");
+            return;
+        }
+
+        try {
+            // Note: Update your LoginM validateUser method to accept email instead of username if needed
+            loginModel.validateUser(email, password);
+            message.set("Login successful!");
+        } catch (Exception e) {
+            message.set(e.getMessage());
+        }
+    }
+
+    public StringProperty messageProperty() {
+        return message;
+    }
+}

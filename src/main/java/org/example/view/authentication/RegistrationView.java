@@ -1,14 +1,14 @@
 package org.example.view.authentication;
 
-import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.stage.Stage;
 import org.example.view.mainStages.DashBoardView;
 import org.example.view.templates.BaseView;
 import org.example.viewModel.RegistrationViewModel;
@@ -17,21 +17,50 @@ public class RegistrationView extends BaseView {
 
     private final RegistrationViewModel viewModel = new RegistrationViewModel();
 
-    // fields
-    private VBox root, formBox, buttonBox;
+    private HBox root;
+    private StackPane leftPanel;
+    private VBox rightPanel, formBox, buttonBox;
     private TextField nameField, surnameField, emailField;
     private PasswordField passwordField;
     private Button registerButton;
-    private Label titleLabel, messageLabel;
-
+    private Label titleLabel, subtitleLabel, messageLabel;
+    private Hyperlink loginLink;
 
     @Override
     protected void setContent() {
-        root = new VBox(20);
-        formBox = new VBox(20);
-        buttonBox = new VBox();
+        root = new HBox();
+
+        // --- LEFT PANEL (Figma Image + Teal Overlay) ---
+        leftPanel = new StackPane();
+
+        // 1. Bottom Layer: The Image
+        Region bgImage = new Region();
+        // Make sure the filename matches what you put in the resources/images folder!
+        String imageUrl = getClass().getResource("/images/pen-and-notebook.png").toExternalForm();
+        bgImage.setStyle("-fx-background-image: url('" + imageUrl + "'); -fx-background-size: cover; -fx-background-position: center;");
+
+        // 2. Middle Layer: The Semi-transparent Teal Overlay
+        Region colorOverlay = new Region();
+        colorOverlay.setStyle("-fx-background-color: rgba(22, 184, 173, 0.85);"); // 0.85 is the opacity
+
+        // 3. Top Layer: Your Logo and Text
+        VBox leftContent = new VBox(15);
+        leftContent.setAlignment(Pos.CENTER);
+        Circle logoCircle = new Circle(60, Color.web("#0E9B92"));
+        Label brandName = new Label("FinaM");
+        Label brandMotto = new Label("Your finances, your complete clarity");
+        leftContent.getChildren().addAll(logoCircle, brandName, brandMotto);
+
+        // Stack them all together
+        leftPanel.getChildren().addAll(bgImage, colorOverlay, leftContent);
+
+        // --- RIGHT PANEL (Form) ---
+        rightPanel = new VBox();
+        formBox = new VBox(15);
+        buttonBox = new VBox(10);
 
         titleLabel = new Label("Registration");
+        subtitleLabel = new Label("Create account to get started");
 
         nameField = new TextField();
         nameField.setPromptText("Name");
@@ -45,138 +74,87 @@ public class RegistrationView extends BaseView {
         passwordField = new PasswordField();
         passwordField.setPromptText("Password");
 
-        registerButton = new Button("Next");
-        buttonBox.getChildren().add(registerButton);
+        registerButton = new Button("Create Account");
+
+        loginLink = new Hyperlink("Switch to Login");
+
+        buttonBox.getChildren().addAll(registerButton, loginLink);
 
         messageLabel = new Label();
         messageLabel.textProperty().bind(viewModel.messageProperty());
 
         formBox.getChildren().addAll(
-                titleLabel,
-                nameField,
-                surnameField,
-                emailField,
-                passwordField,
-                buttonBox,
-                messageLabel
+                titleLabel, subtitleLabel,
+                nameField, surnameField, emailField, passwordField,
+                buttonBox, messageLabel
         );
 
-        root.getChildren().add(formBox);
-        scene = new Scene(root);
+        rightPanel.getChildren().add(formBox);
+        root.getChildren().addAll(leftPanel, rightPanel);
+        scene = new Scene(root, 800, 500); // Set standard window size
     }
 
     @Override
     protected void setStyle() {
-        // root
-        root.setAlignment(Pos.CENTER);
-        root.setPadding(new Insets(50));
-        root.setStyle("-fx-background-color: white;");
+        // Layout Split
+        HBox.setHgrow(leftPanel, Priority.ALWAYS);
+        HBox.setHgrow(rightPanel, Priority.ALWAYS);
+        leftPanel.setPrefWidth(400);
+        rightPanel.setPrefWidth(400);
 
-        // form box
-        formBox.setMaxWidth(400);
-        formBox.setAlignment(Pos.CENTER);
+        // Left Panel Style
+        VBox leftContent = (VBox) leftPanel.getChildren().get(2);
 
-        // title
-        titleLabel.setFont(Font.font("System", FontWeight.NORMAL, 32));
-        titleLabel.setStyle("-fx-text-fill: #000000;");
+        Label brandName = (Label) leftContent.getChildren().get(1);
+        brandName.setFont(Font.font("System", FontWeight.BOLD, 36));
+        brandName.setTextFill(Color.WHITE);
 
-        // fields
-        String fieldStyle =
-                "-fx-background-color: #F9FAFB;" +
-                        "-fx-border-color: #E5E7EB;" +
-                        "-fx-border-width: 2;" +
-                        "-fx-border-radius: 10;" +
-                        "-fx-background-radius: 10;" +
-                        "-fx-font-size: 15px;" +
-                        "-fx-padding: 8 15 8 15;";
+        Label brandMotto = (Label) leftContent.getChildren().get(2);
+        brandMotto.setFont(Font.font("System", 14));
+        brandMotto.setTextFill(Color.WHITE);
 
-        nameField.setPrefHeight(45);
-        nameField.setMaxWidth(Double.MAX_VALUE);
+        // Right Panel Style
+        rightPanel.setAlignment(Pos.CENTER);
+        rightPanel.setStyle("-fx-background-color: #F4FAFA;");
+        formBox.setMaxWidth(300);
+
+        titleLabel.setFont(Font.font("System", FontWeight.BOLD, 28));
+        subtitleLabel.setStyle("-fx-text-fill: #7f9e9c; -fx-padding: 0 0 10 0;");
+
+        // Input Fields (Figma Style)
+        String fieldStyle = "-fx-background-color: #DDF0EF; -fx-border-color: #B0D6D3; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10;";
         nameField.setStyle(fieldStyle);
-
-        surnameField.setPrefHeight(45);
-        surnameField.setMaxWidth(Double.MAX_VALUE);
         surnameField.setStyle(fieldStyle);
-
-        emailField.setPrefHeight(45);
-        emailField.setMaxWidth(Double.MAX_VALUE);
         emailField.setStyle(fieldStyle);
-
-        passwordField.setPrefHeight(45);
-        passwordField.setMaxWidth(Double.MAX_VALUE);
         passwordField.setStyle(fieldStyle);
 
-        // button
-        registerButton.setPrefWidth(200);
-        registerButton.setPrefHeight(44);
-        registerButton.setStyle(buttonDefaultStyle());
-
-        // button box
+        // Button Style
         buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.setPadding(new Insets(20, 0, 10, 0));
+        registerButton.setPrefWidth(300);
+        registerButton.setStyle("-fx-background-color: #2BD2C6; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10; -fx-cursor: hand;");
 
-        // message label
-        messageLabel.setMaxWidth(300);
-        messageLabel.setStyle(
-                "-fx-font-size: 14px;" +
-                        "-fx-wrap-text: true;" +
-                        "-fx-alignment: center;"
-        );
+        loginLink.setStyle("-fx-text-fill: #16B8AD; -fx-font-weight: bold;");
+
+        // Message Label Style
+        messageLabel.setStyle("-fx-font-size: 13px; -fx-wrap-text: true; -fx-alignment: center;");
     }
 
     @Override
     protected void setLogic() {
-        // hover effect
-        registerButton.setOnMouseEntered(e -> registerButton.setStyle(buttonHoverStyle()));
-        registerButton.setOnMouseExited(e -> registerButton.setStyle(buttonDefaultStyle()));
-
-        // register action
         registerButton.setOnAction(e ->
-                viewModel.register(
-                        nameField.getText(),
-                        surnameField.getText(),
-                        emailField.getText(),
-                        passwordField.getText()
-                )
+                viewModel.register(nameField.getText(), surnameField.getText(), emailField.getText(), passwordField.getText())
         );
 
-        // message listener
+        // Navigation requested by Project Leader
+        loginLink.setOnAction(e -> navigateTo(new LoginView()));
+
         viewModel.messageProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && newVal.contains("successful")) {
-                messageLabel.setStyle(
-                        "-fx-text-fill: #10B981;" +
-                                "-fx-font-size: 14px;" +
-                                "-fx-font-weight: bold;" +
-                                "-fx-alignment: center;"
-                );
-                navigateTo(new DashBoardView());
+                messageLabel.setTextFill(Color.web("#10B981")); // Green
+                navigateTo(new DashBoardView()); // Optional: maybe redirect to login instead?
             } else if (newVal != null && !newVal.isEmpty()) {
-                messageLabel.setStyle(
-                        "-fx-text-fill: #EF4444;" +
-                                "-fx-font-size: 13px;" +
-                                "-fx-wrap-text: true;" +
-                                "-fx-alignment: center;"
-                );
+                messageLabel.setTextFill(Color.web("#E74C3C")); // Red
             }
         });
-    }
-
-    // BUTTON STYLES
-    private String buttonDefaultStyle() {
-        return  "-fx-background-color: #0ABAB5;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 16px;" +
-                "-fx-font-weight: bold;" +
-                "-fx-background-radius: 12px;" +
-                "-fx-cursor: hand;";
-    }
-
-    private String buttonHoverStyle() {
-        return  "-fx-background-color: #4F52E0;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 16px;" +
-                "-fx-font-weight: bold;" +
-                "-fx-background-radius: 12px;" +
-                "-fx-cursor: hand;";
     }
 }
