@@ -18,19 +18,18 @@ public class UserService {
 
         try (Connection connection = ConnectionProvider.getConnection();
              // prepares a statement with the SQL query, allowing to set parameters and execute it
-             PreparedStatement statement = connection.prepareStatement(sql))
-        {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
             statement.setString(1, user.getName());
             statement.setString(2, user.getSurname());
             statement.setString(3, user.getEmail());
             statement.setString(4, user.getPasswordHash());
             statement.setObject(5, user.getPosition().name(), Types.OTHER);
 
-            if (user.getCompanyId() != null) {
+            if (user.getCompanyId() != null)
                 statement.setInt(6, user.getCompanyId());
-            } else {
+            else
                 statement.setNull(6, Types.INTEGER);
-            }
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 // checks if the result set has a row (the insert was successful and returned generated keys)
@@ -106,7 +105,8 @@ public class UserService {
             preparedStatement.setInt(1, companyId);
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) list.add(mapRow(resultSet));
+                while (resultSet.next())
+                    list.add(mapRow(resultSet));
             }
         }
         return list;

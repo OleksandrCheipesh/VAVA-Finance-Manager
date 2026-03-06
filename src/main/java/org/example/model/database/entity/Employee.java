@@ -3,21 +3,24 @@ package org.example.model.database.entity;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
-public class Client extends Person {
+public class Employee extends Person {
+    private int id;
     private int companyId;
-    private String phone;
-    private BigDecimal monthlyIncome;
-    private OffsetDateTime createdAt;
+    private Integer age;
+    private BigDecimal salary;
+    private String position;
+    private OffsetDateTime hiredAt;
 
-    public Client() {}
+    public Employee() {}
 
-    public Client(int companyId, String name, String surname, String email, String phone, BigDecimal monthlyIncome) {
+    public Employee(int companyId, String name, String surname, String email, Integer age, BigDecimal salary, String position) {
         this.companyId = companyId;
         this.name = name;
         this.surname = surname;
         this.email = email;
-        this.phone = phone;
-        this.monthlyIncome = monthlyIncome;
+        this.age = age;
+        this.salary = salary;
+        this.position = position;
     }
 
     public int getId() {
@@ -55,24 +58,32 @@ public class Client extends Person {
         this.email = email;
     }
 
-    public String getPhone() {
-        return phone;
+    public Integer getAge() {
+        return age;
     }
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public BigDecimal getMonthlyIncome() {
-        return monthlyIncome;
-    }
-    public void setMonthlyIncome(BigDecimal monthlyIncome) {
-        this.monthlyIncome = monthlyIncome;
+    public void setAge(Integer age) {
+        this.age = age;
     }
 
-    public OffsetDateTime getCreatedAt() {
-        return createdAt;
+    public BigDecimal getSalary() {
+        return salary;
     }
-    public void setCreatedAt(OffsetDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setSalary(BigDecimal salary) {
+        this.salary = salary;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+    public void setPosition(String position) {
+        this.position = position;
+    }
+
+    public OffsetDateTime getHiredAt() {
+        return hiredAt;
+    }
+    public void setHiredAt(OffsetDateTime hiredAt) {
+        this.hiredAt = hiredAt;
     }
 }
+
