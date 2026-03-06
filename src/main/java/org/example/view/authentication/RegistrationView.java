@@ -151,7 +151,7 @@ public class RegistrationView extends BaseView {
         viewModel.messageProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && newVal.contains("successful")) {
                 messageLabel.setTextFill(Color.web("#10B981")); // Green
-                navigateTo(new DashBoardView()); // Optional: maybe redirect to login instead?
+                navigateTo(new org.example.view.mainStages.CreateCompanyView());
             } else if (newVal != null && !newVal.isEmpty()) {
                 messageLabel.setTextFill(Color.web("#E74C3C")); // Red
             }
