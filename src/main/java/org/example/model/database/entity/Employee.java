@@ -1,0 +1,83 @@
+package org.example.model.database.entity;
+
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+
+public class Employee {
+    private int id;
+    private int companyId;
+    private String name;
+    private String surname;
+    private Integer age;
+    private BigDecimal salary;
+    private String position;
+    private OffsetDateTime hiredAt;
+
+    public Employee() {}
+
+    public Employee(int companyId, String name, String surname, Integer age, BigDecimal salary, String position) {
+        this.companyId = companyId;
+        this.name = name;
+        this.surname = surname;
+        this.age = age;
+        this.salary = salary;
+        this.position = position;
+    }
+
+    public int getId() {
+        return id;
+    }
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getCompanyId() {
+        return companyId;
+    }
+    public void setCompanyId(int companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getSurname() {
+        return surname;
+    }
+    public void setSurname(String surname) {
+        this.surname = surname;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+
+    public BigDecimal getSalary() {
+        return salary;
+    }
+    public void setSalary(BigDecimal salary) {
+        this.salary = salary;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+    public void setPosition(String position) {
+        this.position = position;
+    }
+
+    public OffsetDateTime getHiredAt() {
+        return hiredAt;
+    }
+    public void setHiredAt(OffsetDateTime hiredAt) {
+        this.hiredAt = hiredAt;
+    }
+}
+
