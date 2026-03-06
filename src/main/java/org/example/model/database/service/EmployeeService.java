@@ -11,14 +11,19 @@ import java.util.Optional;
 public class EmployeeService {
 
     public Employee addEmployee(Employee employee) throws SQLException {
-        String sql = "INSERT INTO employees (company_id, name, surname, age, salary, position) " +
-                     "VALUES (?, ?, ?, ?, ?, ?) RETURNING id, hired_at";
+        String sql = "INSERT INTO employees (company_id, name, surname, employee, age, salary, position) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id, hired_at";
 
         try (Connection connection = ConnectionProvider.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, employee.getCompanyId());
             preparedStatement.setString(2, employee.getName());
             preparedStatement.setString(3, employee.getSurname());
+
+            if (employee.getEmail() != null)
+                preparedStatement.setString(4, employee.getEmail());
+             else
+                preparedStatement.setNull(4, Types.VARCHAR);
 
             if (employee.getAge() != null)
                 preparedStatement.setInt(4, employee.getAge());
@@ -55,6 +60,22 @@ public class EmployeeService {
             }
         }
         return Optional.empty();
+    }
+
+    public List<Employee> getEmployeeByEmail(String email) throws SQLException {
+        String sql = "SELECT * FROM employees WHERE email = ? ORDER BY id";
+        List<Employee> list = new ArrayList<>();
+
+        try (Connection connection = ConnectionProvider.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, email);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next())
+                    list.add(mapRow(resultSet));
+            }
+        }
+        return list;
     }
 
     public List<Employee> getEmployeesByCompanyId(int companyId) throws SQLException {
@@ -126,9 +147,10 @@ public class EmployeeService {
         employee.setName(resultSet.getString("name"));
         employee.setSurname(resultSet.getString("surname"));
 
-        int age = resultSet.getInt("age");
-        employee.setAge(resultSet.wasNull() ? null : age);
-        employee.setSalary(resultSet.getBigDecimal("salary"));
+        employee.setEmail(resultSet.wasNull() ? null : resultSet.getString("email"));
+        employee.setAge(resultSet.wasNull() ? null : resultSet.getInt("age"));
+        employee.setSalary(resultSet.wasNull() ? null : resultSet.getBigDecimal("salary"));
+
         employee.setPosition(resultSet.getString("position"));
         employee.setHiredAt(resultSet.getObject("hired_at", java.time.OffsetDateTime.class));
         return employee;

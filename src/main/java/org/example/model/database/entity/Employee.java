@@ -3,11 +3,9 @@ package org.example.model.database.entity;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
-public class Employee {
+public class Employee extends Person {
     private int id;
     private int companyId;
-    private String name;
-    private String surname;
     private Integer age;
     private BigDecimal salary;
     private String position;
@@ -15,10 +13,11 @@ public class Employee {
 
     public Employee() {}
 
-    public Employee(int companyId, String name, String surname, Integer age, BigDecimal salary, String position) {
+    public Employee(int companyId, String name, String surname, String email, Integer age, BigDecimal salary, String position) {
         this.companyId = companyId;
         this.name = name;
         this.surname = surname;
+        this.email = email;
         this.age = age;
         this.salary = salary;
         this.position = position;
@@ -50,6 +49,13 @@ public class Employee {
     }
     public void setSurname(String surname) {
         this.surname = surname;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public Integer getAge() {

@@ -153,7 +153,8 @@ public class ProjectService {
         project.setCompanyId(resultSet.getInt("company_id"));
         project.setName(resultSet.getString("name"));
         project.setDescription(resultSet.getString("description"));
-        project.setBudgetLimit(resultSet.getBigDecimal("budget_limit"));
+
+        project.setBudgetLimit(resultSet.wasNull() ? null : resultSet.getBigDecimal("budget_limit"));
 
         Date startDate = resultSet.getDate("start_date");
         project.setStartDate(startDate != null ? startDate.toLocalDate() : null);

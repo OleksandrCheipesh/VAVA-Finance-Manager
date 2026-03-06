@@ -11,15 +11,16 @@ import java.util.Optional;
 public class ClientService {
 
     public Client addClient(Client client) throws SQLException {
-        String sql = "INSERT INTO clients (company_id, name, email, phone, monthly_income) " +
-                     "VALUES (?, ?, ?, ?, ?) RETURNING id, created_at";
+        String sql = "INSERT INTO clients (company_id, name, surname, email, phone, monthly_income) " +
+                     "VALUES (?, ?, ?, ?, ?, ?) RETURNING id, created_at";
 
         try (Connection connection = ConnectionProvider.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, client.getCompanyId());
             preparedStatement.setString(2, client.getName());
-            preparedStatement.setString(3, client.getEmail());
-            preparedStatement.setString(4, client.getPhone());
+            preparedStatement.setString(3, client.getSurname());
+            preparedStatement.setString(4, client.getEmail());
+            preparedStatement.setString(5, client.getPhone());
 
             if (client.getMonthlyIncome() != null)
                 preparedStatement.setBigDecimal(5, client.getMonthlyIncome());
@@ -58,9 +59,9 @@ public class ClientService {
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, companyId);
 
-            try (ResultSet rs = preparedStatement.executeQuery()) {
-                while (rs.next())
-                    list.add(mapRow(rs));
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next())
+                    list.add(mapRow(resultSet));
             }
         }
         return list;
@@ -80,20 +81,23 @@ public class ClientService {
     }
 
     public boolean updateClient(Client client) throws SQLException {
-        String sql = "UPDATE clients SET company_id = ?, name = ?, email = ?, phone = ?, monthly_income = ? WHERE id = ?";
+        String sql = "UPDATE clients SET company_id = ?, name = ?, surname = ?, email = ?, phone = ?, " +
+                "monthly_income = ? WHERE id = ?";
+
         try (Connection connection = ConnectionProvider.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, client.getCompanyId());
             preparedStatement.setString(2, client.getName());
-            preparedStatement.setString(3, client.getEmail());
-            preparedStatement.setString(4, client.getPhone());
+            preparedStatement.setString(3, client.getSurname());
+            preparedStatement.setString(4, client.getEmail());
+            preparedStatement.setString(5, client.getPhone());
 
             if (client.getMonthlyIncome() != null)
-                preparedStatement.setBigDecimal(5, client.getMonthlyIncome());
+                preparedStatement.setBigDecimal(6, client.getMonthlyIncome());
             else
-                preparedStatement.setNull(5, Types.NUMERIC);
+                preparedStatement.setNull(6, Types.NUMERIC);
 
-            preparedStatement.setInt(6, client.getId());
+            preparedStatement.setInt(7, client.getId());
             return preparedStatement.executeUpdate() > 0;
         }
     }
@@ -113,6 +117,7 @@ public class ClientService {
         client.setId(resultSet.getInt("id"));
         client.setCompanyId(resultSet.getInt("company_id"));
         client.setName(resultSet.getString("name"));
+        client.setSurname(resultSet.getString("surname"));
         client.setEmail(resultSet.getString("email"));
         client.setPhone(resultSet.getString("phone"));
         client.setMonthlyIncome(resultSet.getBigDecimal("monthly_income"));
