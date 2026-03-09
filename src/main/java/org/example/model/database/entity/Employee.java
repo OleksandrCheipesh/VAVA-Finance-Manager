@@ -23,6 +23,17 @@ public class Employee extends Person {
         this.position = position;
     }
 
+    public Employee(int companyId, String name, String surname, String email, Integer age, BigDecimal salary, String position, OffsetDateTime hiredAt) {
+        this.companyId = companyId;
+        this.name = name;
+        this.surname = surname;
+        this.email = email;
+        this.age = age;
+        this.salary = salary;
+        this.position = position;
+        this.hiredAt = hiredAt;
+    }
+
     public int getId() {
         return id;
     }
