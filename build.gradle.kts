@@ -28,6 +28,7 @@ dependencies {
     implementation("org.postgresql:postgresql:42.7.7")
     implementation("org.flywaydb:flyway-core:10.17.0")
     implementation("org.flywaydb:flyway-database-postgresql:10.17.0")
+    implementation("org.apache.poi:poi-ooxml:5.2.3")
 }
 
 tasks.test {
