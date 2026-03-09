@@ -2,9 +2,21 @@ package org.example.model.fileExport;
 
 import org.example.model.database.entity.Employee;
 import org.example.model.database.service.EmployeeService;
-
 import java.util.List;
 
+/**
+ * A utility for importing employee data from Excel into the database
+ * and exporting it back to Excel.
+ *
+ * Before use, it must be initialized with an existing EmployeeService
+ * so it can access the database.
+ *
+ * Return codes for Excel import/export:
+ * -1 → service not initialized
+ * -2 → database error
+ * -3 → no valid records in Excel
+ * >=0 → number of successfully processed employees
+ */
 public class EmplExelToDB {
     private static EmployeeService ser = null;
     public static void init(EmployeeService service){
