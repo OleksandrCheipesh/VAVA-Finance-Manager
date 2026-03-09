@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class EmplExelReader {
@@ -134,9 +135,16 @@ public class EmplExelReader {
                 row.createCell(4).setCellValue(emp.getPosition());
                 row.createCell(5).setCellValue(emp.getSalary().doubleValue());
 
-                row.createCell(6).setCellValue(
-                        emp.getHiredAt().toLocalDateTime()
-                );
+                OffsetDateTime hireDate = emp.getHiredAt();
+                if (hireDate != null) {
+                    Cell cell = row.createCell(6);
+                    cell.setCellValue(Date.from(hireDate.toInstant()));
+
+                    CellStyle dateStyle = workbook.createCellStyle();
+                    CreationHelper createHelper = workbook.getCreationHelper();
+                    dateStyle.setDataFormat(createHelper.createDataFormat().getFormat("yyyy-MM-dd HH:mm"));
+                    cell.setCellStyle(dateStyle);
+                }
             }
             for (int i = 0; i < 7; i++) {
                 sheet.autoSizeColumn(i);
