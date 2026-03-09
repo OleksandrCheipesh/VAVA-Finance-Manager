@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.List;
 
 public class EmplExelReader {
-    public static List<Employee> importFromExcel(String filePath, int compId) {
+    protected static List<Employee> importFromExcel(String filePath, int compId) {
         List<Employee> load = new ArrayList<>();
         try (FileInputStream fis = new FileInputStream(filePath);
              Workbook workbook = new XSSFWorkbook(fis)) {
@@ -106,7 +106,7 @@ public class EmplExelReader {
         return  load;
     }
 
-    public static void exportToExcel(List<Employee> save,String filePath) {
+    protected static void exportToExcel(List<Employee> save,String filePath) {
         try (Workbook workbook = new XSSFWorkbook()) {
 
             Sheet sheet = workbook.createSheet("Employees");
