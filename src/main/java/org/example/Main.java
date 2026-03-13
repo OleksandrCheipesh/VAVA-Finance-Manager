@@ -21,4 +21,10 @@ public class Main extends Application {
         ConnectionProvider.init(config);
         launch();
     }
+
+//    @Override
+//    public void start(Stage stage) {
+//        // Add this line to test your components:
+//        new ComponentTestView().show(stage);
+//    }
 }
