@@ -4,11 +4,12 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.effect.ColorAdjust; // New import for darkening
+import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color; // Added for Color.TRANSPARENT
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -25,34 +26,34 @@ public class AddEmployeeDialog {
         modal.initModality(Modality.APPLICATION_MODAL);
         modal.initStyle(StageStyle.TRANSPARENT);
 
-        // --- NEW: CHAINED DARK BLUR EFFECT ---
+        // --- CHAINED DARK BLUR EFFECT ON BACKGROUND ---
         javafx.scene.Node backgroundRoot = owner.getScene().getRoot();
 
         GaussianBlur blur = new GaussianBlur(30);
         ColorAdjust darken = new ColorAdjust();
-        darken.setBrightness(-0.4); // Lowers brightness by 40% to make it dark
-        darken.setInput(blur); // Chains the blur and the darkness together!
+        darken.setBrightness(-0.4);
+        darken.setInput(blur);
 
-        backgroundRoot.setEffect(darken); // Apply the combined effect to the main window
-
-        // Remove the effect when the modal is closed
+        backgroundRoot.setEffect(darken);
         modal.setOnHidden(e -> backgroundRoot.setEffect(null));
 
         StackPane modalContainer = new StackPane();
         modalContainer.setStyle("-fx-background-color: transparent;");
+
+        // --- THE FIX: ADD PADDING SO THE SHADOW DOES NOT CLIP ---
+        // A shadow with radius 40 and offset 15 needs at least 55 pixels of breathing room!
+        modalContainer.setPadding(new Insets(60));
 
         VBox root = new VBox(20);
         root.setPadding(new Insets(30));
         root.setPrefWidth(450);
         root.setMaxWidth(450);
 
-        // --- NEW: STRONGER SHADOW ---
         root.setStyle(
                 "-fx-background-color: white;" +
                         "-fx-background-radius: 16;" +
                         "-fx-border-radius: 16;" +
                         "-fx-border-width: 0;" +
-                        // Increased shadow opacity (0.25), blur radius (40), and Y-offset (15) for a deeper pop!
                         "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.25), 40, 0, 0, 15);"
         );
 
@@ -109,7 +110,8 @@ public class AddEmployeeDialog {
         root.getChildren().addAll(title, nameField, surnameField, ageField, positionField, salaryField, buttonBox);
 
         Scene scene = new Scene(modalContainer);
-        scene.setFill(null);
+        // THE FIX 2: Safely ensure the Scene itself is rendering completely transparently
+        scene.setFill(Color.TRANSPARENT);
         modal.setScene(scene);
         modal.showAndWait();
     }
