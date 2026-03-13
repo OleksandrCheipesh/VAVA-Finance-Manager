@@ -1,0 +1,51 @@
+/* Container styling */
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #E5E7EB;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 5;
+}
+
+/* Remove default vertical lines and make row backgrounds white */
+.table-row-cell {
+    -fx-background-color: white;
+    -fx-border-width: 0 0 1 0; /* Only bottom border */
+    -fx-border-color: #F1F5F9; /* Very light gray divider */
+    -fx-cell-size: 55px; /* Taller rows to match Figma */
+}
+
+/* Hover effect for rows */
+.table-row-cell:hover {
+    -fx-background-color: #F8FAFC;
+}
+
+/* Header container (remove gray background) */
+.table-view .column-header-background {
+    -fx-background-color: transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #E5E7EB;
+}
+
+/* Individual Header Columns */
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-size: 45px;
+}
+
+/* Header Text (Uppercase, Gray, Bold) */
+.table-view .column-header .label {
+    -fx-text-fill: #9CA3AF;
+    -fx-font-weight: 700;
+    -fx-font-size: 11px;
+    -fx-alignment: center-left;
+}
+
+/* Standard Cell Text */
+.table-view .table-cell {
+    -fx-border-width: 0;
+    -fx-text-fill: #111827;
+    -fx-font-size: 14px;
+    -fx-alignment: center-left;
+    -fx-padding: 0 10;
+}

@@ -1,4 +1,4 @@
-package org.example.view.mainStages;
+package org.example.view.authentication;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -6,7 +6,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import org.example.model.database.entity.Employee;
 import org.example.view.templates.*;
 import org.example.viewModel.EmployeesViewModel;
@@ -19,41 +23,46 @@ public class EmployeesView extends BaseView {
     // 1. Instantiate the ViewModel
     private final EmployeesViewModel viewModel = new EmployeesViewModel();
 
-    // UI Components defined as class fields so they can be accessed across methods
     private BorderPane root;
     private VBox contentArea;
     private AppTable<Employee> table;
-    private StateButton addBtn;
-    private FilterBar filterBar;
 
     @Override
     protected void setContent() {
         root = new BorderPane();
-        buildSidebar(root); // Inherited from BaseView to show the left menu
+        buildSidebar(root); // Inherited from BaseView
 
         contentArea = new VBox(25);
 
-        // --- Header (Title + Button) ---
+        // --- Header ---
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER_LEFT);
         Label title = buildContentTitle("Employees");
 
         Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS); // Pushes the button all the way to the right
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        addBtn = new StateButton("+ Add Employee", StateButton.ButtonType.PRIMARY);
+        StateButton addBtn = new StateButton("+ Add Employee", StateButton.ButtonType.PRIMARY);
+        addBtn.setOnAction(e -> {
+            // Open Modal. When it succeeds, pass the new employee to the ViewModel!
+            AddEmployeeDialog.show(stage, newEmployee -> {
+                viewModel.addEmployee(newEmployee);
+            });
+        });
 
         header.getChildren().addAll(title, spacer, addBtn);
 
         // --- Filter Bar ---
-        filterBar = new FilterBar();
+        FilterBar filterBar = new FilterBar();
 
         // --- Table Setup ---
         table = new AppTable<>("No employees found. Click '+ Add Employee' to start.");
-        table.setItems(viewModel.getEmployees()); // Bind directly to the ViewModel's list
+
+        // 2. Bind the table directly to the ViewModel's list
+        table.setItems(viewModel.getEmployees());
         VBox.setVgrow(table, Priority.ALWAYS);
 
-        // Columns mapped strictly to your Employee entity's getters
+        // Columns mapped to Entity getters
         TableColumn<Employee, String> nameCol = new TableColumn<>("Name");
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
 
@@ -69,7 +78,6 @@ public class EmployeesView extends BaseView {
         TableColumn<Employee, OffsetDateTime> dateCol = new TableColumn<>("Hire Date");
         dateCol.setCellValueFactory(new PropertyValueFactory<>("hiredAt"));
 
-        // Distribute column widths evenly
         nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.2));
         surnameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.2));
         posCol.prefWidthProperty().bind(table.widthProperty().multiply(0.2));
@@ -78,12 +86,10 @@ public class EmployeesView extends BaseView {
 
         table.getColumns().addAll(nameCol, surnameCol, posCol, salaryCol, dateCol);
 
-        // Assemble the center content
         contentArea.getChildren().addAll(header, filterBar, table);
         root.setCenter(contentArea);
 
         scene = new Scene(root);
-        stage.setTitle("App Manager - Employees"); // Kept from your original file!
     }
 
     @Override
@@ -94,16 +100,7 @@ public class EmployeesView extends BaseView {
 
     @Override
     protected void setLogic() {
-        // --- Button Logic ---
-        addBtn.setOnAction(e -> {
-            // Open the Modal. When it succeeds, pass the new employee to the ViewModel
-            AddEmployeeDialog.show(stage, newEmployee -> {
-                viewModel.addEmployee(newEmployee);
-            });
-        });
-
-        // --- Toast Notifications Logic ---
-        // Listen to the ViewModel for messages to show Toasts!
+        // 3. Listen to the ViewModel for messages to show Toasts!
         viewModel.messageProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && newVal.startsWith("Success:")) {
                 ToastManager.showSuccess(stage, newVal.replace("Success: ", ""));
@@ -111,7 +108,5 @@ public class EmployeesView extends BaseView {
                 ToastManager.showError(stage, newVal.replace("Error: ", ""));
             }
         });
-
-        // (Optional: Future filter logic for the filterBar can go here)
     }
 }
