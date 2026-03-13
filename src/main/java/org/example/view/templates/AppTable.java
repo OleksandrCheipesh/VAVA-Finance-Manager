@@ -8,23 +8,13 @@ public class AppTable<T> extends TableView<T> {
     public AppTable(String emptyMessage) {
         super();
 
-        // Empty state built-in
         Label placeholder = new Label(emptyMessage);
-        placeholder.setStyle("-fx-text-fill: #B0B7C3; -fx-font-size: 16px; -fx-font-style: italic;");
+        placeholder.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 14px;");
         this.setPlaceholder(placeholder);
+        this.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        // Standard styling for table, fonts, alternating colors, and headers
-        this.setStyle(
-                "-fx-font-size: 14px;" +
-                        "-fx-selection-bar: #E5F7F6;" + // Light primary color for selection
-                        "-fx-selection-bar-non-focused: #E5F7F6;"
-        );
-
-        // Note: To perfectly style alternating row colors and headers in JavaFX,
-        // it is highly recommended to add a CSS file for the TableView specifically,
-        // as inline styling for internal table nodes is very difficult in JavaFX.
-        // E.g., this.getStylesheets().add(getClass().getResource("/styles/table.css").toExternalForm());
-
-        this.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY); // Columns stretch to fit
+        // Load the Figma CSS stylesheet we just created!
+        String css = getClass().getResource("/styles/table.css").toExternalForm();
+        this.getStylesheets().add(css);
     }
 }

@@ -55,4 +55,10 @@ public class Themes {
     public static final String STATE_FOCUS_RING = "#56D4D0";
     public static final String STATE_ERROR_RING = "#E74C3C";
     public static final String STATE_DISABLED_OPACITY = "0.5";
+
+    public static final String BG_DASHBOARD = "#F4F7F6"; // The light background behind everything
+    public static final String BG_CARD = "#FFFFFF"; // White table/modal background
+    public static final String BORDER_LIGHT = "#E5E7EB"; // Thin borders for tables and inputs
+    public static final String TEXT_MUTED = "#9CA3AF"; // Gray text for placeholders and headers
+    public static final String TEXT_DARK = "#111827"; // Dark text for data
 }

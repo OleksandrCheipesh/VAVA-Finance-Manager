@@ -2,6 +2,7 @@ package org.example.model.database.entity;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.time.LocalDate;
 
 public class Employee extends Person {
     private int id;

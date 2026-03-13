@@ -3,8 +3,6 @@ package org.example.view.templates;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-import org.example.view.templates.Themes;
-
 import java.util.function.UnaryOperator;
 
 public class FormField extends VBox {
@@ -13,70 +11,73 @@ public class FormField extends VBox {
     private final Label errorLabel;
     private final String baseStyle;
 
-    // Factory method for standard Text Input
-    public static FormField createTextField(String placeholder) {
+    // --- FACTORY METHODS ---
+
+    public static FormField createTextField(String labelText, String placeholder) {
         TextField field = new TextField();
         field.setPromptText(placeholder);
-        return new FormField(field, getStandardInputStyle());
+        return new FormField(createTopLabel(labelText), field, getFigmaInputStyle());
     }
 
-    // Factory method for Numeric Input (rejects letters)
-    public static FormField createNumericField(String placeholder) {
+    public static FormField createNumericField(String labelText, String placeholder) {
         TextField field = new TextField();
         field.setPromptText(placeholder);
 
-        // TextFormatter to reject anything that isn't a digit
+        // Rejects letters
         UnaryOperator<TextFormatter.Change> filter = change -> {
-            if (change.getText().matches("[0-9]*")) {
-                return change;
-            }
+            if (change.getText().matches("[0-9]*")) return change;
             return null;
         };
         field.setTextFormatter(new TextFormatter<>(filter));
-        return new FormField(field, getStandardInputStyle());
+        return new FormField(createTopLabel(labelText), field, getFigmaInputStyle());
     }
 
-    // Factory method for Dropdown
-    public static FormField createComboBox(String placeholder) {
+    public static FormField createComboBox(String labelText, String placeholder) {
         ComboBox<String> combo = new ComboBox<>();
         combo.setPromptText(placeholder);
         combo.setMaxWidth(Double.MAX_VALUE);
-        return new FormField(combo, getStandardInputStyle());
+        return new FormField(createTopLabel(labelText), combo, getFigmaInputStyle());
     }
 
-    // Factory method for Date Picker
-    public static FormField createDatePicker(String placeholder) {
+    public static FormField createDatePicker(String labelText, String placeholder) {
         DatePicker picker = new DatePicker();
         picker.setPromptText(placeholder);
         picker.setMaxWidth(Double.MAX_VALUE);
-        return new FormField(picker, getStandardInputStyle());
+        return new FormField(createTopLabel(labelText), picker, getFigmaInputStyle());
     }
 
-    // Private constructor wrapper
-    private FormField(Node inputControl, String baseStyle) {
-        super(5); // 5px spacing between input and error label
+    // --- HELPER & CONSTRUCTOR ---
+
+    private static Label createTopLabel(String text) {
+        Label label = new Label(text);
+        label.setStyle("-fx-font-size: 12px; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-weight: bold;");
+        return label;
+    }
+
+    private FormField(Label topLabel, Node inputControl, String baseStyle) {
+        super(5);
         this.inputControl = inputControl;
         this.baseStyle = baseStyle;
 
         this.inputControl.setStyle(baseStyle);
 
-        // Error Label setup
         this.errorLabel = new Label();
         this.errorLabel.setStyle("-fx-text-fill: " + Themes.TEXT_ERROR + "; -fx-font-size: 12px;");
         this.errorLabel.setVisible(false);
-        this.errorLabel.setManaged(false); // Doesn't take up space when hidden
+        this.errorLabel.setManaged(false);
 
-        // Focus State Listener
         this.inputControl.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
             if (isNowFocused) {
                 this.inputControl.setStyle(baseStyle + "-fx-border-color: " + Themes.STATE_FOCUS_RING + "; -fx-border-width: 2;");
             } else {
-                this.inputControl.setStyle(baseStyle); // Revert to default
+                this.inputControl.setStyle(baseStyle);
             }
         });
 
-        this.getChildren().addAll(inputControl, errorLabel);
+        this.getChildren().addAll(topLabel, inputControl, errorLabel);
     }
+
+    // --- PUBLIC METHODS ---
 
     public void setError(String errorMessage) {
         if (errorMessage != null && !errorMessage.isEmpty()) {
@@ -104,11 +105,10 @@ public class FormField extends VBox {
         return inputControl;
     }
 
-    private static String getStandardInputStyle() {
-        return "-fx-background-color: " + Themes.BG_FIELD_LARGE + ";" +
-                "-fx-border-color: " + Themes.BORDER_LARGE + ";" +
-                "-fx-border-radius: 8; -fx-background-radius: 8;" +
-                "-fx-padding: 10; -fx-font-size: " + Themes.FONT_FIELD + "px;" +
-                "-fx-text-fill: " + Themes.TEXT_PRIMARY + ";";
+    private static String getFigmaInputStyle() {
+        return "-fx-background-color: " + Themes.BG_DASHBOARD + ";" +
+                "-fx-border-color: " + Themes.BORDER_LIGHT + ";" +
+                "-fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10;" +
+                "-fx-font-size: 14px;";
     }
 }

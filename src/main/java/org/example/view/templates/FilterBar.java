@@ -7,7 +7,7 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import org.example.view.templates.Themes;
+import org.example.view.templates.StateButton;
 
 public class FilterBar extends HBox {
 
@@ -17,28 +17,40 @@ public class FilterBar extends HBox {
     private final Button clearButton;
 
     public FilterBar() {
-        super(15); // Consistent spacing
+        super(15);
         this.setAlignment(Pos.CENTER_LEFT);
-        this.setStyle("-fx-padding: 15; -fx-background-color: white; -fx-background-radius: 8;");
 
-        // Search Input
+        // Figma Container (White card, padding, light border)
+        this.setStyle(
+                "-fx-background-color: " + Themes.BG_CARD + ";" +
+                        "-fx-border-color: " + Themes.BORDER_LIGHT + ";" +
+                        "-fx-border-radius: 12; -fx-background-radius: 12;" +
+                        "-fx-padding: 12 20;" // Slightly tighter padding to match Figma
+        );
+
+        // Figma Input Style (Light gray, no harsh borders)
+        String figmaInputStyle =
+                "-fx-background-color: #F8FAFC;" +
+                        "-fx-border-color: #E2E8F0;" +
+                        "-fx-border-radius: 6; -fx-background-radius: 6;" +
+                        "-fx-padding: 8 12; -fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_DARK + ";";
+
         searchInput = new TextField();
-        searchInput.setPromptText("Search...");
-        searchInput.setStyle("-fx-background-color: " + Themes.BG_FIELD + "; -fx-border-color: " + Themes.BORDER_FIELD + "; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 8;");
-        HBox.setHgrow(searchInput, Priority.ALWAYS); // Search bar takes up remaining space
+        searchInput.setPromptText("\uD83D\uDD0D Search by name, email or role...");
+        searchInput.setStyle(figmaInputStyle);
+        HBox.setHgrow(searchInput, Priority.ALWAYS);
 
-        // Dropdown Filter
         filterDropdown = new ComboBox<>();
-        filterDropdown.setPromptText("Filter by...");
-        filterDropdown.setStyle("-fx-background-color: " + Themes.BG_FIELD + "; -fx-border-color: " + Themes.BORDER_FIELD + "; -fx-border-radius: 6; -fx-background-radius: 6;");
+        filterDropdown.setPromptText("Department");
+        filterDropdown.setStyle(figmaInputStyle);
 
-        // Calendar Date Picker
         datePicker = new DatePicker();
-        datePicker.setPromptText("Select Date");
-        datePicker.setStyle("-fx-background-color: " + Themes.BG_FIELD + "; -fx-border-color: " + Themes.BORDER_FIELD + ";");
+        datePicker.setPromptText("Filter Date");
+        datePicker.setStyle(figmaInputStyle);
 
-        // Clear Filters Button
         clearButton = new StateButton("Clear", StateButton.ButtonType.SECONDARY);
+        // Make the clear button text-only like Figma
+        clearButton.setStyle("-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-weight: bold; -fx-cursor: hand;");
         clearButton.setOnAction(e -> clearAll());
 
         this.getChildren().addAll(searchInput, filterDropdown, datePicker, clearButton);
@@ -50,7 +62,6 @@ public class FilterBar extends HBox {
         datePicker.setValue(null);
     }
 
-    // Getters so your Views can attach logic/listeners to these controls
     public TextField getSearchInput() { return searchInput; }
     public ComboBox<String> getFilterDropdown() { return filterDropdown; }
     public DatePicker getDatePicker() { return datePicker; }

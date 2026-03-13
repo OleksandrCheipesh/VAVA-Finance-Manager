@@ -7,7 +7,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import org.example.view.templates.*; // Assuming you put components in a components package. Change to templates if they are all in templates.
+import org.example.view.templates.StateButton; // Assuming you kept StateButton in components package or move to templates
+
+// Note: Ensure your imports for StateButton, FormField, FilterBar, AppTable, and ToastManager are correct based on your package structure!
 
 public class ComponentTestView extends BaseView {
 
@@ -29,49 +31,49 @@ public class ComponentTestView extends BaseView {
         StateButton dangerBtn = new StateButton("Show Error Toast", StateButton.ButtonType.DANGER);
         buttonBox.getChildren().addAll(primaryBtn, secondaryBtn, dangerBtn);
 
-        // Logic for testing buttons and toasts
-        primaryBtn.setOnAction(e -> ToastManager.showSuccess(stage, "Data saved successfully!"));
-        dangerBtn.setOnAction(e -> ToastManager.showError(stage, "Failed to connect to database."));
+        // Trigger the new Figma Toasts
+        primaryBtn.setOnAction(e -> ToastManager.showSuccess(stage, "Success success success success success."));
+        dangerBtn.setOnAction(e -> ToastManager.showError(stage, "Error error error error error error error."));
 
-        // Toggle loading state on the secondary button to test the spinner
+        // Test loading spinner
         secondaryBtn.setOnAction(e -> {
-            boolean isCurrentlyLoading = secondaryBtn.getText().isEmpty(); // It has no text when loading
+            boolean isCurrentlyLoading = secondaryBtn.getText().isEmpty();
             secondaryBtn.setLoading(!isCurrentlyLoading);
         });
 
-        // 3. Form Fields
+        // 3. Form Fields (Updated for Figma labels!)
         VBox formBox = new VBox(15);
         formBox.setMaxWidth(400);
 
-        FormField normalField = FormField.createTextField("Standard Text Input");
+        FormField normalField = FormField.createTextField("Name", "Enter your name");
 
-        FormField numericField = FormField.createNumericField("Numeric Only Input (try typing letters)");
+        FormField numericField = FormField.createNumericField("Salary", "0.00");
 
-        FormField errorField = FormField.createTextField("I have an error");
-        errorField.setError("This is what an error state looks like!");
+        FormField errorField = FormField.createTextField("Email", "email@company.com");
+        errorField.setError("This email format is invalid.");
 
-        FormField disabledField = FormField.createTextField("I am disabled");
+        FormField disabledField = FormField.createComboBox("Department", "Select Department");
         disabledField.setDisabledState(true);
 
         formBox.getChildren().addAll(normalField, numericField, errorField, disabledField);
 
-        // 4. Filter Bar
+        // 4. Filter Bar (Figma style)
         FilterBar filterBar = new FilterBar();
 
-        // 5. Table (Empty State)
+        // 5. Table (Figma empty state)
         AppTable<String> emptyTable = new AppTable<>("No data found. Try adjusting your filters!");
         emptyTable.setPrefHeight(200);
 
-        // Add everything to the screen
-        root.getChildren().addAll(title, new Label("Buttons & Toasts"), buttonBox,
+        // Assemble Screen
+        root.getChildren().addAll(title,
+                new Label("Buttons & Toasts"), buttonBox,
                 new Label("Form Fields"), formBox,
                 new Label("Filter Bar"), filterBar,
                 new Label("Data Table"), emptyTable);
 
-        // Wrap in a ScrollPane in case your screen is small
         scrollPane = new ScrollPane(root);
         scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background-color: #F4FAFA;");
+        scrollPane.setStyle("-fx-background-color: " + Themes.BG_DASHBOARD + ";");
 
         scene = new Scene(scrollPane, 1000, 800);
     }
@@ -79,11 +81,11 @@ public class ComponentTestView extends BaseView {
     @Override
     protected void setStyle() {
         root.setPadding(new Insets(40));
-        root.setStyle("-fx-background-color: #F4FAFA;"); // Use your background theme color
+        root.setStyle("-fx-background-color: " + Themes.BG_DASHBOARD + ";");
     }
 
     @Override
     protected void setLogic() {
-        // Logic was attached directly to the buttons in setContent for this test
+        // Logic handled in button actions above
     }
 }
