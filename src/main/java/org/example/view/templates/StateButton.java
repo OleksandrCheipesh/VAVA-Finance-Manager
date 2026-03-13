@@ -46,9 +46,13 @@ public class StateButton extends Button {
 
     private void applyStyle(String bgColor) {
         this.setStyle(
-                "-fx-background-color: " + bgColor + ";" +
-                        "-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;" +
-                        "-fx-background-radius: 8; -fx-padding: 10 20; -fx-cursor: hand;"
+                "-fx-background-color: " + Themes.PRIMARY + ";" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-size: 15px;" +
+                        "-fx-padding: 12 24;" +
+                        "-fx-background-radius: 8;" +
+                        "-fx-cursor: hand;"
         );
     }
 

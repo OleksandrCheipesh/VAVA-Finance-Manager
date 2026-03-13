@@ -52,7 +52,7 @@ public class Sidebar {
         menuItems = new VBox(5);
         menuItems.setAlignment(Pos.TOP_LEFT);
 
-        String[] menuLabels = {"Dashboard", "Settings", "Manage Company", "Employees", "Budget", "Reports"};
+        String[] menuLabels = {"Dashboard", "Settings", "Manage Company", "Employees", "Budget", "Reports", "Transactions"};
 
         for (String label : menuLabels) {
             Label menuItem = createMenuItem(label);
@@ -100,6 +100,7 @@ public class Sidebar {
             case "Employees"      -> new EmployeesView();
             case "Budget"         -> new BudgetView();
             case "Reports"        -> new ReportsView();
+            case "Transactions"   -> new TransactionsView();
             default               -> null;
         };
 
