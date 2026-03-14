@@ -4,48 +4,70 @@
     -fx-border-color: #E5E7EB;
     -fx-border-radius: 12;
     -fx-background-radius: 12;
-    -fx-padding: 5;
+    -fx-padding: 0;
 }
 
-/* Remove default vertical lines and make row backgrounds white */
+/* Rows */
 .table-row-cell {
     -fx-background-color: white;
-    -fx-border-width: 0 0 1 0; /* Only bottom border */
-    -fx-border-color: #F1F5F9; /* Very light gray divider */
-    -fx-cell-size: 55px; /* Taller rows to match Figma */
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #F1F5F9;
+    -fx-cell-size: 65px;
 }
 
-/* Hover effect for rows */
 .table-row-cell:hover {
     -fx-background-color: #F8FAFC;
 }
 
-/* Header container (remove gray background) */
+/* Header background */
 .table-view .column-header-background {
-    -fx-background-color: transparent;
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 12 12 0 0;
     -fx-border-width: 0 0 1 0;
     -fx-border-color: #E5E7EB;
+    -fx-padding: 5 0;
 }
 
-/* Individual Header Columns */
+/* Individual cells in header */
 .table-view .column-header {
     -fx-background-color: transparent;
-    -fx-size: 45px;
-}
-
-/* Header Text (Uppercase, Gray, Bold) */
-.table-view .column-header .label {
-    -fx-text-fill: #9CA3AF;
-    -fx-font-weight: 700;
-    -fx-font-size: 11px;
+    -fx-size: 50px;
+    -fx-border-width: 0;
+    -fx-padding: 0 0 0 20;
     -fx-alignment: center-left;
 }
 
-/* Standard Cell Text */
+/* Text in header */
+.table-view .column-header .label {
+    -fx-text-fill: #6B7280;
+    -fx-font-weight: 800;
+    -fx-font-size: 13px;
+    -fx-padding: 0;
+    -fx-alignment: center-left;
+}
+
+/* Text in tables */
 .table-view .table-cell {
     -fx-border-width: 0;
     -fx-text-fill: #111827;
-    -fx-font-size: 14px;
+    -fx-font-size: 15px;
+    -fx-padding: 0 0 0 20;
     -fx-alignment: center-left;
-    -fx-padding: 0 10;
+}
+
+/* Eliminate empty corner */
+.table-view .filler {
+    -fx-background-color: #F8FAFC;
+}
+
+/* Eliminate blue frame */
+.table-view:focused {
+    -fx-background-color: white, white;
+    -fx-background-insets: 0, 1;
+}
+
+/* Selected row */
+.table-row-cell:selected {
+    -fx-background-color: #F8FAFC;
+    -fx-table-cell-border-color: transparent;
 }
