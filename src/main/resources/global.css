@@ -1,0 +1,51 @@
+/* GLOBAL Calendar Pop Up */
+.date-picker-popup {
+    -fx-background-color: white !important;
+    -fx-border-color: #E5E7EB;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 0;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 15, 0, 0, 8);
+}
+
+.date-picker-popup .month-year-pane {
+    -fx-background-color: white !important;
+    -fx-background-radius: 12 12 0 0;
+    -fx-padding: 15;
+}
+
+.date-picker-popup .month-year-pane .label {
+    -fx-text-fill: #111827;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+}
+
+.date-picker-popup .day-name-cell {
+    -fx-text-fill: #6B7280;
+    -fx-font-weight: 800;
+    -fx-font-size: 11px;
+}
+
+.date-picker-popup .day-cell {
+    -fx-background-color: white;
+    -fx-text-fill: #111827;
+    -fx-padding: 8;
+}
+
+.date-picker-popup .day-cell:hover {
+    -fx-background-color: #F3F4F6;
+}
+
+.date-picker-popup .day-cell:selected {
+    -fx-background-color: #2DD4BF !important;
+    -fx-text-fill: white !important;
+}
+
+.date-picker-popup .day-cell.today {
+    -fx-border-color: #2DD4BF;
+    -fx-border-width: 1;
+}
+
+.date-picker-popup .day-cell.out-of-current-month {
+    -fx-text-fill: #D1D5DB;
+}
