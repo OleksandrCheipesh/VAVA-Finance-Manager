@@ -16,7 +16,6 @@ import org.example.viewModel.TransactionsViewModel;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.text.DecimalFormat;
 
 public class TransactionsView extends BaseView {
 
@@ -138,12 +137,12 @@ public class TransactionsView extends BaseView {
         dateCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(LocalDate item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) { setText(null); }
-                else {
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
                     setText(item.format(DateTimeFormatter.ofPattern("MM/dd/yy")));
-                    setFont(Font.font("System", FontWeight.EXTRA_BOLD, 16));
-                    setTextFill(Color.web("#111827"));
-                    setAlignment(Pos.CENTER_LEFT);
+                    setStyle("-fx-font-weight: 800; -fx-font-size: 16px; -fx-text-fill: #111827; -fx-alignment: center-left;");
                 }
             }
         });
@@ -155,16 +154,22 @@ public class TransactionsView extends BaseView {
         amountCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(BigDecimal item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) { setText(null); }
-                else {
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
                     Transaction t = getTableView().getItems().get(getIndex());
+                    if (t == null) return;
+
                     boolean isSale = "SALE".equalsIgnoreCase(t.getType());
-                    DecimalFormat df = new DecimalFormat("#,##0.00");
+
+                    java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols(java.util.Locale.US);
+                    java.text.DecimalFormat df = new java.text.DecimalFormat("#,##0.00", symbols);
 
                     setText((isSale ? "+$" : "-$") + df.format(item));
-                    setTextFill(Color.web(isSale ? Themes.TEXT_SUCCESS : Themes.TEXT_ERROR));
-                    setFont(Font.font("System", FontWeight.EXTRA_BOLD, 16));
-                    setAlignment(Pos.CENTER_LEFT);
+
+                    String color = isSale ? Themes.TEXT_SUCCESS : Themes.TEXT_ERROR;
+                    setStyle("-fx-text-fill: " + color + "; -fx-font-weight: 800; -fx-font-size: 16px; -fx-alignment: center-left;");
                 }
             }
         });
@@ -224,17 +229,26 @@ public class TransactionsView extends BaseView {
         });
 
         TableColumn<Transaction, Void> actionCol = new TableColumn<>("ACTION");
-        actionCol.setStyle("-fx-alignment: center;");
 
         actionCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty) { setGraphic(null); }
-                else {
+                if (empty) {
+                    setGraphic(null);
+                } else {
                     Label dots = new Label("⋮");
-                    dots.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 24px; -fx-font-weight: bold; -fx-cursor: hand;");
+
+                    dots.setPadding(Insets.EMPTY);
+                    dots.setStyle(
+                            "-fx-text-fill: #9CA3AF; " +
+                                    "-fx-font-size: 24px; " +
+                                    "-fx-font-weight: bold; " +
+                                    "-fx-cursor: hand; " +
+                                    "-fx-background-color: transparent;"
+                    );
+
                     setGraphic(dots);
-                    setAlignment(Pos.CENTER);
+                    setAlignment(Pos.CENTER_LEFT);
                 }
             }
         });
@@ -242,12 +256,12 @@ public class TransactionsView extends BaseView {
         table.getColumns().addAll(dateCol, amountCol, projectCol, descCol, typeCol, actionCol);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        dateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.12));
+        dateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
         amountCol.prefWidthProperty().bind(table.widthProperty().multiply(0.18));
         projectCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
-        descCol.prefWidthProperty().bind(table.widthProperty().multiply(0.35));
-        typeCol.prefWidthProperty().bind(table.widthProperty().multiply(0.12));
-        actionCol.prefWidthProperty().bind(table.widthProperty().multiply(0.08));
+        descCol.prefWidthProperty().bind(table.widthProperty().multiply(0.22));
+        typeCol.prefWidthProperty().bind(table.widthProperty().multiply(0.20));
+        actionCol.prefWidthProperty().bind(table.widthProperty().multiply(0.10));
 
         // Merge layout
         contentArea.getChildren().addAll(filterBar, cardsBox, table);
@@ -258,7 +272,7 @@ public class TransactionsView extends BaseView {
 
         try {
             scene.getStylesheets().add(getClass().getResource("/styles/table.css").toExternalForm());
-            scene.getStylesheets().add(getClass().getResource("/global.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());
         } catch (Exception e) {
             System.err.println("Warning: Could not load CSS files. Ensure they exist in src/main/resources/");
             e.printStackTrace();

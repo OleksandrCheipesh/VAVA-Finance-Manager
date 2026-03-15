@@ -11,7 +11,7 @@ import javafx.scene.text.FontWeight;
 // Factory class for creating consistent UI components across the application
 public class UIFactory {
 
-    // Internal logic to keep prompt visible on focus and hide it only when typing
+    // Keep prompt visible on focus and hide it only when typing
     private static void addSmartPromptListener(TextInputControl control, String placeholder) {
         control.setPromptText(placeholder);
 
@@ -176,5 +176,44 @@ public class UIFactory {
         StackPane panel = new StackPane();
         panel.getChildren().addAll(bgImage, colorOverlay, content);
         return panel;
+    }
+
+    // Reusable style for ComboBox and DatePicker
+    public static final String MODAL_ELEMENT_STYLE =
+            "-fx-background-color: " + Themes.BG_FIELD_LARGE + ";" +
+                    "-fx-border-color: " + Themes.BORDER_LARGE + ";" +
+                    "-fx-border-width: 1; -fx-border-radius: 12; -fx-background-radius: 12;" +
+                    "-fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_PRIMARY + ";";
+
+    public static <T> ComboBox<T> inputComboBox(String placeholder) {
+        ComboBox<T> combo = new ComboBox<>();
+        combo.setPromptText(placeholder);
+        combo.setStyle(MODAL_ELEMENT_STYLE + "-fx-padding: 2;");
+        combo.setMaxWidth(Double.MAX_VALUE);
+        return combo;
+    }
+
+    public static DatePicker inputDatePicker(String placeholder) {
+        DatePicker picker = new DatePicker();
+        picker.setPromptText(placeholder);
+
+        picker.setStyle(
+                "-fx-background-color: " + Themes.BG_FIELD_LARGE + ";" +
+                        "-fx-border-color: " + Themes.BORDER_LARGE + ";" +
+                        "-fx-border-radius: 12; -fx-background-radius: 12;"
+        );
+
+        picker.getEditor().setStyle(
+                "-fx-background-color: transparent;" +
+                        "-fx-text-fill: " + Themes.TEXT_PRIMARY + ";" +
+                        "-fx-prompt-text-fill: " + Themes.TEXT_PRIMARY + ";" +
+                        "-fx-font-size: 14px; -fx-padding: 10;"
+        );
+
+        picker.setMaxWidth(Double.MAX_VALUE);
+
+        addSmartPromptListener(picker.getEditor(), placeholder);
+
+        return picker;
     }
 }
