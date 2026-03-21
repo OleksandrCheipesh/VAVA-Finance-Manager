@@ -1,0 +1,174 @@
+/* Global Calendar Pop Up */
+.date-picker-popup {
+    -fx-background-color: white !important;
+    -fx-border-color: #E5E7EB;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 0;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 15, 0, 0, 8);
+}
+
+.date-picker-popup .month-year-pane {
+    -fx-background-color: white !important;
+    -fx-background-radius: 12 12 0 0;
+    -fx-padding: 15;
+}
+
+.date-picker-popup .month-year-pane .label {
+    -fx-text-fill: #111827;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+}
+
+.date-picker-popup .day-name-cell {
+    -fx-text-fill: #6B7280;
+    -fx-font-weight: 800;
+    -fx-font-size: 11px;
+}
+
+.date-picker-popup .day-cell {
+    -fx-background-color: white;
+    -fx-text-fill: #111827;
+    -fx-padding: 8;
+}
+
+.date-picker-popup .day-cell:hover {
+    -fx-background-color: #F3F4F6;
+}
+
+.date-picker-popup .day-cell:selected {
+    -fx-background-color: #2DD4BF !important;
+    -fx-text-fill: white !important;
+}
+
+.date-picker-popup .day-cell.today {
+    -fx-border-color: #2DD4BF;
+    -fx-border-width: 1;
+}
+
+.date-picker-popup .day-cell.out-of-current-month {
+    -fx-text-fill: #D1D5DB;
+}
+
+/* Combobox Fix */
+.combo-box-popup .list-view {
+    -fx-background-color: #D4EDEC !important;
+    -fx-padding: 0 !important;
+    -fx-background-insets: 0 !important;
+    -fx-border-width: 0 !important;
+}
+
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: transparent !important;
+    -fx-text-fill: #6B8A89 !important;
+    -fx-padding: 10 12 !important;
+    -fx-background-insets: 0 !important;
+    -fx-border-width: 0 !important;
+    -fx-margin: -1 0 0 0 !important;
+}
+
+.combo-box-popup .list-view .list-cell:filled:hover,
+.combo-box-popup .list-view .list-cell:filled:selected {
+    -fx-background-color: #C4E5E3 !important;
+    -fx-text-fill: #6B8A89 !important;
+}
+
+.combo-box-popup .list-view .list-cell:empty {
+    -fx-background-color: #D4EDEC !important;
+}
+
+/* Datepicker PopUp */
+.date-picker-popup {
+    -fx-background-color: white;
+    -fx-border-color: #E5E7EB;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 15, 0, 0, 5);
+}
+
+/* Top bar */
+.date-picker-popup .month-year-pane {
+    -fx-background-color: white;
+    -fx-padding: 10;
+}
+
+/* Texts in the top bar */
+.date-picker-popup .month-year-pane .label {
+    -fx-text-fill: #111827;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+/* Arrow buttons to switch months */
+.date-picker-popup .left-button,
+.date-picker-popup .right-button {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+}
+.date-picker-popup .left-button:hover,
+.date-picker-popup .right-button:hover {
+    -fx-background-color: #F3F4F6;
+    -fx-background-radius: 6;
+}
+
+/* Names of days */
+.date-picker-popup .day-name-cell {
+    -fx-text-fill: #9CA3AF;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-padding: 10 5;
+}
+
+/* Regular cells with days */
+.date-picker-popup .day-cell {
+    -fx-text-fill: #111827;
+    -fx-background-color: transparent;
+    -fx-padding: 8;
+    -fx-cursor: hand;
+    -fx-background-radius: 8;
+}
+
+.date-picker-popup .day-cell:hover {
+    -fx-background-color: #F3F4F6;
+}
+
+.date-picker-popup .day-cell:selected {
+    -fx-background-color: #2DD4BF;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.date-picker-popup .today {
+    -fx-text-fill: #2DD4BF;
+    -fx-font-weight: bold;
+}
+
+.date-picker .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 15 0 0;
+    -fx-cursor: hand;
+}
+
+.date-picker .arrow-button .arrow {
+    -fx-background-color: #6B8A89;
+}
+
+.date-picker .arrow-button:hover .arrow {
+    -fx-background-color: #2DD4BF;
+}
+
+/* Combobox Main Text */
+.combo-box > .list-cell {
+    -fx-text-fill: #6B8A89;
+    -fx-font-size: 14px;
+}
+
+.combo-box .arrow {
+    -fx-background-color: #6B8A89;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 10 0 0;
+    -fx-cursor: hand;
+}

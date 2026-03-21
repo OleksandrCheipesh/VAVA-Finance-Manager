@@ -164,6 +164,12 @@ public class CreateCompanyView extends BaseView {
                         ".text-area .scroll-bar { -fx-shape: \" \"; -fx-padding: 0; -fx-background-color: transparent; -fx-pref-width: 0; -fx-pref-height: 0; }" +
                         ".text-area .scroll-bar:vertical, .text-area .scroll-bar:horizontal { -fx-opacity: 0; -fx-max-width: 0; -fx-max-height: 0; }";
         scene.getStylesheets().add("data:text/css," + css.replace(" ", "%20"));
+
+        try {
+            scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());
+        } catch (Exception e) {
+            System.err.println("Global CSS not found.");
+        }
     }
 
     @Override
@@ -193,9 +199,16 @@ public class CreateCompanyView extends BaseView {
         }
 
         // Fixed width for split (two-column) fields
+        double exactSplitW = 330;
+
         Node[] splitFields = { industryField, currencyCombo, countryCombo, cityField };
+
         for (Node f : splitFields) {
-            if (f instanceof Region r) { r.setMinWidth(splitW); r.setPrefWidth(splitW); r.setMaxWidth(splitW); }
+            if (f instanceof Region r) {
+                r.setMinWidth(exactSplitW);
+                r.setPrefWidth(exactSplitW);
+                r.setMaxWidth(exactSplitW);
+            }
         }
 
         // Full-width fields
@@ -342,15 +355,20 @@ public class CreateCompanyView extends BaseView {
             if (isShowing) {
                 Platform.runLater(() -> {
                     Node popup = comboBox.lookup(".combo-box-popup");
+
                     if (popup != null) {
-                        popup.setStyle("-fx-effect: null; -fx-background-color: transparent; -fx-padding: 0; -fx-background-insets: 0;");
+                        popup.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
+
                         popup.setTranslateX(-1);
                         Node listView = popup.lookup(".list-view");
+
                         if (listView != null) {
                             listView.setStyle(
-                                    "-fx-background-color: " + Themes.BORDER_LARGE + "; -fx-padding: 1;" +
-                                            "-fx-background-insets: 0; -fx-pref-width: " + (width + 2) + "px;" +
-                                            "-fx-max-width: " + (width + 2) + "px; -fx-background-radius: 18; -fx-border-radius: 18;"
+                                    "-fx-background-color: " + Themes.BG_FIELD_LARGE + ";" +
+                                            "-fx-border-color: " + Themes.BORDER_LARGE + ";" +
+                                            "-fx-border-width: 1;" +
+                                            "-fx-pref-width: " + (width + 2) + "px;" +
+                                            "-fx-background-radius: 18; -fx-border-radius: 18;"
                             );
                         }
                     }
@@ -367,13 +385,12 @@ public class CreateCompanyView extends BaseView {
                     setStyle("-fx-background-color: " + Themes.BG_FIELD_LARGE + ";");
                 } else {
                     setText(item);
-                    String cellBase =
-                            "-fx-background-color: " + Themes.BG_FIELD_LARGE + ";" +
-                                    "-fx-text-fill: " + Themes.TEXT_PRIMARY + ";" +
-                                    "-fx-font-size: " + Themes.FONT_FIELD + "px; -fx-padding: 7 12; -fx-background-insets: 0;";
-                    setStyle(cellBase);
-                    setOnMouseEntered(e -> setStyle(cellBase + "-fx-background-color: " + Themes.BG_FIELD_HOVER + "; -fx-cursor: hand;"));
-                    setOnMouseExited(e -> setStyle(cellBase));
+                    String baseStyle = "-fx-background-color: " + Themes.BG_FIELD_LARGE + "; -fx-text-fill: " + Themes.TEXT_PRIMARY + "; -fx-font-size: " + Themes.FONT_FIELD + "px;";
+                    String hoverStyle = "-fx-background-color: " + Themes.BG_FIELD_HOVER + "; -fx-text-fill: " + Themes.TEXT_PRIMARY + "; -fx-font-size: " + Themes.FONT_FIELD + "px; -fx-cursor: hand;";
+
+                    setStyle(baseStyle);
+                    setOnMouseEntered(e -> setStyle(hoverStyle));
+                    setOnMouseExited(e -> setStyle(baseStyle));
                 }
             }
         });

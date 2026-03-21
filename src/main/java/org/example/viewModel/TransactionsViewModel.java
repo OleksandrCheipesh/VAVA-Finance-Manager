@@ -17,6 +17,10 @@ public class TransactionsViewModel {
     private final FilteredList<Transaction> filteredTransactions = new FilteredList<>(transactions, p -> true);
     private final StringProperty message = new SimpleStringProperty("");
 
+    // Active filters
+    private String currentSearchText = "";
+    private String currentTypeFilter = "ALL";
+
     public TransactionsViewModel() {
         loadTransactions();
     }
@@ -39,17 +43,37 @@ public class TransactionsViewModel {
         }
     }
 
+    // Update search filter
     public void filterBySearch(String searchText) {
-        if (searchText == null || searchText.isEmpty()) {
-            filteredTransactions.setPredicate(transaction -> true);
-            return;
-        }
+        this.currentSearchText = searchText == null ? "" : searchText;
+        updateFilter();
+    }
 
-        Pattern pattern = Pattern.compile(".*" + searchText + ".*", Pattern.CASE_INSENSITIVE);
+    // Update tab filter
+    public void filterByType(String type) {
+        this.currentTypeFilter = type;
+        updateFilter();
+    }
 
-        filteredTransactions.setPredicate(transaction ->
-                transaction.getDescription() != null && pattern.matcher(transaction.getDescription()).matches()
-        );
+    // Apply all filters together
+    private void updateFilter() {
+        Pattern pattern = Pattern.compile(".*" + currentSearchText + ".*", Pattern.CASE_INSENSITIVE);
+
+        filteredTransactions.setPredicate(transaction -> {
+            boolean matchesType = true;
+            if ("SALE".equals(currentTypeFilter)) {
+                matchesType = "SALE".equalsIgnoreCase(transaction.getType());
+            } else if ("PURCHASE".equals(currentTypeFilter)) {
+                matchesType = "PURCHASE".equalsIgnoreCase(transaction.getType());
+            }
+
+            boolean matchesSearch = true;
+            if (!currentSearchText.isEmpty()) {
+                matchesSearch = transaction.getDescription() != null && pattern.matcher(transaction.getDescription()).matches();
+            }
+
+            return matchesType && matchesSearch;
+        });
     }
 
     public FilteredList<Transaction> getFilteredTransactions() { return filteredTransactions; }

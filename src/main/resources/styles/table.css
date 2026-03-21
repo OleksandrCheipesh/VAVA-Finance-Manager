@@ -71,3 +71,25 @@
     -fx-background-color: #F8FAFC;
     -fx-table-cell-border-color: transparent;
 }
+
+/* Force prompt text to stay visible inside ANY text input when focused */
+.filter-item .text-input,
+.filter-item .text-input:focused,
+.filter-item .text-field,
+.filter-item .text-field:focused {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-text-fill: #111827;
+    -fx-prompt-text-fill: #9CA3AF !important;
+}
+
+/* Global override just in case JavaFX tries to bypass the class */
+.text-input:focused {
+    -fx-prompt-text-fill: #9CA3AF !important;
+}
+
+/* Remove gray background from calendar/arrow icons */
+.filter-item .arrow-button,
+.filter-item .arrow-button:focused {
+    -fx-background-color: transparent;
+}

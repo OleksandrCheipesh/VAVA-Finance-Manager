@@ -16,7 +16,6 @@ import org.example.viewModel.TransactionsViewModel;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.text.DecimalFormat;
 
 public class TransactionsView extends BaseView {
 
@@ -57,9 +56,37 @@ public class TransactionsView extends BaseView {
         String activeTab = "-fx-font-weight: bold; -fx-text-fill: " + Themes.PRIMARY + "; -fx-border-color: " + Themes.PRIMARY + "; -fx-border-width: 0 0 3 0; -fx-padding: 0 0 20 0; -fx-cursor: hand;";
         String inactiveTab = "-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-padding: 0 0 20 0; -fx-cursor: hand;";
 
-        Label tabAll = new Label("All"); tabAll.setStyle(activeTab);
-        Label tabSales = new Label("Sales"); tabSales.setStyle(inactiveTab);
-        Label tabPurchases = new Label("Purchase"); tabPurchases.setStyle(inactiveTab);
+        Label tabAll = new Label("All");
+        Label tabSales = new Label("Sales");
+        Label tabPurchases = new Label("Purchase");
+
+        // Default state
+        tabAll.setStyle(activeTab);
+        tabSales.setStyle(inactiveTab);
+        tabPurchases.setStyle(inactiveTab);
+
+        // Tab click events linked to ViewModel
+        tabAll.setOnMouseClicked(e -> {
+            tabAll.setStyle(activeTab);
+            tabSales.setStyle(inactiveTab);
+            tabPurchases.setStyle(inactiveTab);
+            viewModel.filterByType("ALL");
+        });
+
+        tabSales.setOnMouseClicked(e -> {
+            tabSales.setStyle(activeTab);
+            tabAll.setStyle(inactiveTab);
+            tabPurchases.setStyle(inactiveTab);
+            viewModel.filterByType("SALE");
+        });
+
+        tabPurchases.setOnMouseClicked(e -> {
+            tabPurchases.setStyle(activeTab);
+            tabAll.setStyle(inactiveTab);
+            tabSales.setStyle(inactiveTab);
+            viewModel.filterByType("PURCHASE");
+        });
+
         tabs.getChildren().addAll(tabAll, tabSales, tabPurchases);
 
         Region spacer = new Region();
@@ -75,10 +102,10 @@ public class TransactionsView extends BaseView {
         contentArea = new VBox(25);
         VBox.setVgrow(contentArea, Priority.ALWAYS);
 
-        // -- Filter Bar --
+        // Filter Bar
         HBox filterBar = createCustomFilterBar();
 
-        // -- Summary Cards --
+        // Summary Cards
         HBox cardsBox = new HBox(20);
         cardsBox.getChildren().addAll(
                 new SummaryCard("INCOME", "15 000", "1 sales", Themes.TEXT_SUCCESS),
@@ -87,7 +114,7 @@ public class TransactionsView extends BaseView {
                 new SummaryCard("LARGEST", "15 000", "", Themes.TEXT_SUCCESS)
         );
 
-        // --- Table and empty state ---
+        // Table and empty state
         table = new AppTable<>("");
         table.setItems(viewModel.getFilteredTransactions());
         VBox.setVgrow(table, Priority.ALWAYS);
@@ -110,55 +137,54 @@ public class TransactionsView extends BaseView {
         dateCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(LocalDate item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) { setText(null); }
-                else {
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
                     setText(item.format(DateTimeFormatter.ofPattern("MM/dd/yy")));
-                    setFont(Font.font("System", FontWeight.EXTRA_BOLD, 16));
-                    setTextFill(Color.web("#111827"));
-                    setAlignment(Pos.CENTER_LEFT);
+                    setStyle("-fx-font-weight: 800; -fx-font-size: 16px; -fx-text-fill: #111827; -fx-alignment: center-left;");
                 }
             }
         });
 
         TableColumn<Transaction, BigDecimal> amountCol = new TableColumn<>("AMOUNT");
-
         amountCol.setCellValueFactory(new PropertyValueFactory<>("amount"));
         amountCol.setStyle(headerStyle);
 
         amountCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(BigDecimal item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) { setText(null); }
-                else {
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
                     Transaction t = getTableView().getItems().get(getIndex());
+                    if (t == null) return;
 
                     boolean isSale = "SALE".equalsIgnoreCase(t.getType());
 
-                    DecimalFormat df = new DecimalFormat("#,##0.00");
+                    java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols(java.util.Locale.US);
+                    java.text.DecimalFormat df = new java.text.DecimalFormat("#,##0.00", symbols);
 
                     setText((isSale ? "+$" : "-$") + df.format(item));
-                    setTextFill(Color.web(isSale ? Themes.TEXT_SUCCESS : Themes.TEXT_ERROR));
 
-                    setFont(Font.font("System", FontWeight.EXTRA_BOLD, 16));
-                    setAlignment(Pos.CENTER_LEFT);
+                    String color = isSale ? Themes.TEXT_SUCCESS : Themes.TEXT_ERROR;
+                    setStyle("-fx-text-fill: " + color + "; -fx-font-weight: 800; -fx-font-size: 16px; -fx-alignment: center-left;");
                 }
             }
         });
 
         TableColumn<Transaction, Integer> projectCol = new TableColumn<>("PROJECT");
-
         projectCol.setCellValueFactory(new PropertyValueFactory<>("projectId"));
         projectCol.setStyle(headerStyle);
 
         projectCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(Integer item, boolean empty) {
                 super.updateItem(item, empty);
-
                 if (empty || item == null) { setText(null); }
                 else {
                     setText("Design");
                     setFont(Font.font("System", FontWeight.NORMAL, 15));
-
                     setTextFill(Color.web(Themes.TEXT_MUTED));
                     setAlignment(Pos.CENTER_LEFT);
                 }
@@ -166,19 +192,16 @@ public class TransactionsView extends BaseView {
         });
 
         TableColumn<Transaction, String> descCol = new TableColumn<>("DESCRIPTION");
-
         descCol.setCellValueFactory(new PropertyValueFactory<>("description"));
         descCol.setStyle(headerStyle);
 
         descCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-
                 if (empty || item == null) { setText(null); }
                 else {
                     setText(item);
                     setFont(Font.font("System", FontWeight.NORMAL, 15));
-
                     setTextFill(Color.web(Themes.TEXT_MUTED));
                     setAlignment(Pos.CENTER_LEFT);
                 }
@@ -186,23 +209,19 @@ public class TransactionsView extends BaseView {
         });
 
         TableColumn<Transaction, String> typeCol = new TableColumn<>("TYPE");
-
         typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
         typeCol.setStyle(headerStyle);
 
         typeCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-
                 if (empty || item == null) { setGraphic(null); }
                 else {
                     boolean isSale = "SALE".equalsIgnoreCase(item);
-
                     Label pill = new Label(isSale ? "Sale" : "Buy");
                     String color = isSale ? Themes.TEXT_SUCCESS : "#F59E0B";
 
                     pill.setStyle("-fx-background-color: " + color + "33; -fx-text-fill: " + color + "; -fx-padding: 5 14; -fx-background-radius: 12; -fx-font-weight: bold; -fx-font-size: 13px;");
-
                     setGraphic(pill);
                     setAlignment(Pos.CENTER_LEFT);
                 }
@@ -211,20 +230,25 @@ public class TransactionsView extends BaseView {
 
         TableColumn<Transaction, Void> actionCol = new TableColumn<>("ACTION");
 
-        actionCol.setStyle("-fx-alignment: center;");
-
         actionCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-
-                if (empty) { setGraphic(null); }
-                else {
+                if (empty) {
+                    setGraphic(null);
+                } else {
                     Label dots = new Label("⋮");
 
-                    dots.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 24px; -fx-font-weight: bold; -fx-cursor: hand;");
+                    dots.setPadding(Insets.EMPTY);
+                    dots.setStyle(
+                            "-fx-text-fill: #9CA3AF; " +
+                                    "-fx-font-size: 24px; " +
+                                    "-fx-font-weight: bold; " +
+                                    "-fx-cursor: hand; " +
+                                    "-fx-background-color: transparent;"
+                    );
 
                     setGraphic(dots);
-                    setAlignment(Pos.CENTER);
+                    setAlignment(Pos.CENTER_LEFT);
                 }
             }
         });
@@ -232,21 +256,28 @@ public class TransactionsView extends BaseView {
         table.getColumns().addAll(dateCol, amountCol, projectCol, descCol, typeCol, actionCol);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        dateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.12));
+        dateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
         amountCol.prefWidthProperty().bind(table.widthProperty().multiply(0.18));
         projectCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
-        descCol.prefWidthProperty().bind(table.widthProperty().multiply(0.35));
-        typeCol.prefWidthProperty().bind(table.widthProperty().multiply(0.12));
-        actionCol.prefWidthProperty().bind(table.widthProperty().multiply(0.08));
+        descCol.prefWidthProperty().bind(table.widthProperty().multiply(0.22));
+        typeCol.prefWidthProperty().bind(table.widthProperty().multiply(0.20));
+        actionCol.prefWidthProperty().bind(table.widthProperty().multiply(0.10));
 
-        // Combining content under a white header
+        // Merge layout
         contentArea.getChildren().addAll(filterBar, cardsBox, table);
-
-        // Composition of the entire central area
         mainContainer.getChildren().addAll(topBar, contentArea);
         root.setCenter(mainContainer);
 
         scene = new Scene(root);
+
+        try {
+            scene.getStylesheets().add(getClass().getResource("/styles/table.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());
+        } catch (Exception e) {
+            System.err.println("Warning: Could not load CSS files. Ensure they exist in src/main/resources/");
+            e.printStackTrace();
+        }
+
         stage.setTitle("Admin - Transactions");
     }
 
@@ -273,56 +304,94 @@ public class TransactionsView extends BaseView {
         });
     }
 
-    // Filter bar
+    // Custom filter bar
     private HBox createCustomFilterBar() {
         HBox bar = new HBox(15);
         bar.setAlignment(Pos.CENTER_LEFT);
         bar.setStyle("-fx-background-color: " + Themes.BG_CARD + "; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12 20;");
 
-        String filterStyle = "-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 14px;";
+        String filterStyle = "-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 14px; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;";
 
         TextField search = new TextField();
-        search.setPromptText("\uD83D\uDD0D Search by name...");
         search.setStyle(filterStyle + " -fx-padding: 8 12;");
         search.setPrefHeight(40);
-        HBox.setHgrow(search, Priority.ALWAYS);
         search.textProperty().addListener((obs, old, val) -> viewModel.filterBySearch(val));
 
+        // Wrap search field
+        StackPane searchPane = createPromptWrapper(search, "\uD83D\uDD0D Search by name...");
+        HBox.setHgrow(searchPane, Priority.ALWAYS);
+
+        // ComboBox handles prompt text correctly on its own
         ComboBox<String> proj = new ComboBox<>();
         proj.setPromptText("Project");
         proj.setStyle(filterStyle);
+        proj.getStyleClass().add("filter-item");
         proj.setPrefHeight(40);
         proj.setPrefWidth(130);
 
         ComboBox<String> type = new ComboBox<>();
         type.setPromptText("Type");
         type.setStyle(filterStyle);
+        type.getStyleClass().add("filter-item");
         type.setPrefHeight(40);
         type.setPrefWidth(130);
 
         DatePicker d1 = new DatePicker();
-        d1.setPromptText("01/01/01");
         d1.setStyle(filterStyle);
+        d1.getStyleClass().add("filter-item");
         d1.setPrefHeight(40);
         d1.setPrefWidth(130);
+        // Wrap DatePicker 1
+        StackPane d1Pane = createPromptWrapper(d1, "01/01/01");
 
         DatePicker d2 = new DatePicker();
-        d2.setPromptText("01/01/01");
         d2.setStyle(filterStyle);
+        d2.getStyleClass().add("filter-item");
         d2.setPrefHeight(40);
         d2.setPrefWidth(130);
+        // Wrap DatePicker 2
+        StackPane d2Pane = createPromptWrapper(d2, "01/01/01");
 
         Button clear = new Button("Clear");
         clear.setStyle("-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-weight: bold; -fx-cursor: hand;");
         clear.setOnAction(e -> {
+            // Clear text and values
             search.clear();
             proj.setValue(null);
             type.setValue(null);
+
             d1.setValue(null);
+            d1.getEditor().clear(); // Clears raw typed text
+
             d2.setValue(null);
+            d2.getEditor().clear(); // Clears raw typed text
         });
 
-        bar.getChildren().addAll(search, proj, type, d1, d2, clear);
+        // Add the wrappers instead of the raw inputs
+        bar.getChildren().addAll(searchPane, proj, type, d1Pane, d2Pane, clear);
         return bar;
+    }
+
+    private StackPane createPromptWrapper(Control control, String promptText) {
+        StackPane stack = new StackPane();
+        stack.setAlignment(Pos.CENTER_LEFT);
+
+        Label prompt = new Label(promptText);
+        prompt.setStyle("-fx-text-fill: #9CA3AF; -fx-padding: 0 0 0 12; -fx-font-size: 14px;");
+        prompt.setMouseTransparent(true); // Clicks pass through to the input
+
+        // Listen to actual text changes to hide the custom label
+        if (control instanceof TextField) {
+            TextField tf = (TextField) control;
+
+            tf.textProperty().addListener((obs, old, val) -> prompt.setVisible(val.isEmpty()));
+        } else if (control instanceof DatePicker) {
+            DatePicker dp = (DatePicker) control;
+
+            dp.getEditor().textProperty().addListener((obs, old, val) -> prompt.setVisible(val.isEmpty()));
+        }
+
+        stack.getChildren().addAll(control, prompt);
+        return stack;
     }
 }
