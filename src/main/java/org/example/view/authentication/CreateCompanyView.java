@@ -166,7 +166,7 @@ public class CreateCompanyView extends BaseView {
         scene.getStylesheets().add("data:text/css," + css.replace(" ", "%20"));
 
         try {
-            scene.getStylesheets().add(getClass().getResource("/global.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());
         } catch (Exception e) {
             System.err.println("Global CSS not found.");
         }
