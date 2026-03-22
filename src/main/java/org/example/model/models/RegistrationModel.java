@@ -1,4 +1,4 @@
-package org.example.model;
+package org.example.model.models;
 
 import org.example.model.database.entity.User;
 import org.example.model.database.entity.Position;

@@ -17,6 +17,7 @@ import org.example.view.templates.UIFactory;
 import org.example.viewModel.CreateCompanyViewModel;
 
 import java.io.File;
+import java.sql.SQLException;
 
 public class CreateCompanyView extends BaseView {
 
@@ -266,14 +267,18 @@ public class CreateCompanyView extends BaseView {
             currencyCombo.setStyle(UIFactory.LARGE_COMBO_STYLE);
             errorLabel.setVisible(false);
 
-            viewModel.registerCompany();
-
             boolean nameMissing     = nameField.getText() == null || nameField.getText().trim().isEmpty();
             boolean countryMissing  = countryCombo.getValue() == null;
             boolean currencyMissing = currencyCombo.getValue() == null;
 
             if (!nameMissing && !countryMissing && !currencyMissing) {
-                navigateTo(new DashBoardView());
+                try {
+                    viewModel.registerCompany();
+                    navigateTo(new DashBoardView());
+                } catch (SQLException ex) {
+                    errorLabel.setText("Failed to save company. Please try again.");
+                    errorLabel.setVisible(true);
+                }
             } else {
                 // Highlight invalid fields with red border
                 String errorBorder = "-fx-border-color: " + Themes.TEXT_ERROR + ";";
@@ -288,6 +293,7 @@ public class CreateCompanyView extends BaseView {
                 errorLabel.setVisible(true);
             }
         });
+
 
         // Open file chooser on logo click
         logoPane.setOnMouseClicked(event -> {
