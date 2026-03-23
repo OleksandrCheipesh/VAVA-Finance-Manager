@@ -149,14 +149,18 @@ public class Sidebar {
     }
 
     private VBox buildProfileCard() {
-        VBox profileCard = new VBox(8);
+        VBox profileCard = new VBox(15);
         profileCard.setStyle("-fx-background-color: " + Themes.SIDEBAR_PROFILE_BG + "; -fx-background-radius: 12; -fx-padding: 16;");
+
+        VBox textContainer = new VBox(2);
 
         Label name = new Label("Alex Johnson");
         name.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: white;");
 
         Label role = new Label("System Admin");
         role.setStyle("-fx-font-size: 13px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+
+        textContainer.getChildren().addAll(name, role);
 
         Button logoutBtn = new Button("Logout");
 
@@ -178,7 +182,7 @@ public class Sidebar {
         });
         // TEST TOAST MESSAGE !!!
 
-        profileCard.getChildren().addAll(name, role, logoutBtn);
+        profileCard.getChildren().addAll(textContainer, logoutBtn);
 
         return profileCard;
     }
