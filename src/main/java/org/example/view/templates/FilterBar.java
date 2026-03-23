@@ -1,13 +1,11 @@
 package org.example.view.templates;
 
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import org.example.view.templates.StateButton;
+import javafx.scene.layout.StackPane;
+import org.example.view.templates.StateButton; // Adjust import if needed
 
 public class FilterBar extends HBox {
 
@@ -20,46 +18,79 @@ public class FilterBar extends HBox {
         super(15);
         this.setAlignment(Pos.CENTER_LEFT);
 
-        // Figma Container (White card, padding, light border)
+        // Explicitly load styles so the arrow-button fix applies
+        try {
+            this.getStylesheets().add(getClass().getResource("/styles/table.css").toExternalForm());
+        } catch (Exception e) {
+            System.err.println("Warning: Could not load styles for FilterBar.");
+        }
+
+        // Card Container
         this.setStyle(
                 "-fx-background-color: " + Themes.BG_CARD + ";" +
                         "-fx-border-color: " + Themes.BORDER_LIGHT + ";" +
                         "-fx-border-radius: 12; -fx-background-radius: 12;" +
-                        "-fx-padding: 12 20;" // Slightly tighter padding to match Figma
+                        "-fx-padding: 12 20;"
         );
 
-        // Figma Input Style (Light gray, no harsh borders)
-        String figmaInputStyle =
-                "-fx-background-color: #F8FAFC;" +
-                        "-fx-border-color: #E2E8F0;" +
-                        "-fx-border-radius: 6; -fx-background-radius: 6;" +
-                        "-fx-padding: 8 12; -fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_DARK + ";";
+        // The exact style from TransactionsView
+        String filterStyle = "-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 14px; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;";
 
+        // Search
         searchInput = new TextField();
-        searchInput.setPromptText("\uD83D\uDD0D Search by name, email or role...");
-        searchInput.setStyle(figmaInputStyle);
-        HBox.setHgrow(searchInput, Priority.ALWAYS);
+        searchInput.setStyle(filterStyle + " -fx-padding: 8 12;");
+        searchInput.setPrefHeight(40);
+        searchInput.getStyleClass().add("filter-item"); // Applies CSS fix
+        StackPane searchPane = createPromptWrapper(searchInput, "\uD83D\uDD0D Search by name, role...");
+        HBox.setHgrow(searchPane, Priority.ALWAYS);
 
+        // Dropdown
         filterDropdown = new ComboBox<>();
         filterDropdown.setPromptText("Department");
-        filterDropdown.setStyle(figmaInputStyle);
+        filterDropdown.setStyle(filterStyle);
+        filterDropdown.getStyleClass().add("filter-item"); // Applies CSS fix
+        filterDropdown.setPrefHeight(40);
+        filterDropdown.setPrefWidth(150);
 
+        // Date Picker
         datePicker = new DatePicker();
-        datePicker.setPromptText("Filter Date");
-        datePicker.setStyle(figmaInputStyle);
+        datePicker.setStyle(filterStyle);
+        datePicker.getStyleClass().add("filter-item"); // Applies CSS fix
+        datePicker.setPrefHeight(40);
+        datePicker.setPrefWidth(150);
+        StackPane datePane = createPromptWrapper(datePicker, "Filter Date");
 
-        clearButton = new StateButton("Clear", StateButton.ButtonType.SECONDARY);
-        // Make the clear button text-only like Figma
+        // Clear Button
+        clearButton = new Button("Clear");
         clearButton.setStyle("-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-weight: bold; -fx-cursor: hand;");
         clearButton.setOnAction(e -> clearAll());
 
-        this.getChildren().addAll(searchInput, filterDropdown, datePicker, clearButton);
+        this.getChildren().addAll(searchPane, filterDropdown, datePane, clearButton);
+    }
+
+    private StackPane createPromptWrapper(Control control, String promptText) {
+        StackPane stack = new StackPane();
+        stack.setAlignment(Pos.CENTER_LEFT);
+
+        Label prompt = new Label(promptText);
+        prompt.setStyle("-fx-text-fill: #9CA3AF; -fx-padding: 0 0 0 12; -fx-font-size: 14px;");
+        prompt.setMouseTransparent(true);
+
+        if (control instanceof TextField tf) {
+            tf.textProperty().addListener((obs, old, val) -> prompt.setVisible(val.isEmpty()));
+        } else if (control instanceof DatePicker dp) {
+            dp.getEditor().textProperty().addListener((obs, old, val) -> prompt.setVisible(val.isEmpty()));
+        }
+
+        stack.getChildren().addAll(control, prompt);
+        return stack;
     }
 
     public void clearAll() {
         searchInput.clear();
         filterDropdown.getSelectionModel().clearSelection();
         datePicker.setValue(null);
+        datePicker.getEditor().clear();
     }
 
     public TextField getSearchInput() { return searchInput; }

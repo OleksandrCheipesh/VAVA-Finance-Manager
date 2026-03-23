@@ -93,3 +93,46 @@
 .filter-item .arrow-button:focused {
     -fx-background-color: transparent;
 }
+
+/* Eliminates blue frame around the table when clicked */
+.table-view:focused {
+    -fx-background-color: white, white;
+    -fx-background-insets: 0, 1;
+}
+
+/* Force prompt text to stay visible inside ANY text input when focused, keeping placeholder text clean */
+.filter-item .text-input:focused,
+.filter-item .text-field:focused {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-text-fill: #111827;
+    -fx-prompt-text-fill: #9CA3AF !important;
+}
+
+/* Removes standard blue border on inputs when focused across the app */
+.text-input:focused {
+    -fx-prompt-text-fill: #9CA3AF !important;
+}
+
+/* --- THE KEY INTERACTION FIXES --- */
+
+/* 1. Removes default gray background from calendar/arrow icons for standard clean look */
+.filter-item .arrow-button,
+.filter-item .arrow-button:focused {
+    -fx-background-color: transparent;
+}
+
+/* 2. Changes the mouse on screen to a hand like transactions view when hovering over the icon area */
+.filter-item .arrow-button:hover {
+    -fx-cursor: hand;
+}
+
+/* 3. Green icon color on hover for DatePicker's calendar icon to match transactions view exactly */
+.filter-item.date-picker .arrow-button:hover .arrow {
+    -fx-background-color: #2DD4BF; /* Themes.PRIMARY or Themes.TEXT_SUCCESS */
+}
+
+/* 4. Green icon color on hover for ComboBox's arrow icon to match transactions view exactly */
+.filter-item.combo-box .arrow-button:hover .arrow {
+    -fx-background-color: #2DD4BF; /* Themes.PRIMARY or Themes.TEXT_SUCCESS */
+}
