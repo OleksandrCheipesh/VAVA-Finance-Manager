@@ -61,4 +61,11 @@ public class Themes {
     public static final String BORDER_LIGHT = "#E5E7EB"; // Thin borders for tables and inputs
     public static final String TEXT_MUTED = "#9CA3AF"; // Gray text for placeholders and headers
     public static final String TEXT_DARK = "#111827"; // Dark text for data
+
+    // Sidebar Colors
+    public static final String SIDEBAR_BG = "#0F292A";
+    public static final String SIDEBAR_HOVER = "#173E3F";
+    public static final String SIDEBAR_PROFILE_BG = "#1A4041";
+    public static final String SIDEBAR_LOGOUT_BG = "#255A5C";
+    public static final String SIDEBAR_LOGOUT_HOVER = "#2E6D6F";
 }

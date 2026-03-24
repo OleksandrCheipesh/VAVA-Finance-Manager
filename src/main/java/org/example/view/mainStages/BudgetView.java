@@ -13,6 +13,8 @@ public class BudgetView extends BaseView {
         scene = new Scene(root);
         buildContentTitle("Budget");
         stage.setTitle("App Manager - Dashboard");
+
+        stage.setTitle("Admin - Budget");
     }
 
     @Override

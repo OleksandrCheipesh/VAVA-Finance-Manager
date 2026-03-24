@@ -2,7 +2,7 @@ package org.example.viewModel;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import org.example.model.RegistrationModel;
+import org.example.model.models.RegistrationModel;
 
 import java.sql.SQLException;
 

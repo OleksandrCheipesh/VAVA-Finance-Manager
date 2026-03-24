@@ -2,11 +2,11 @@ package org.example.viewModel;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import org.example.model.LoginM; // Using your existing model
+import org.example.model.models.LoginModel; // Using your existing model
 
 public class LoginViewModel {
 
-    private final LoginM loginModel = new LoginM();
+    private final LoginModel loginModel = new LoginModel();
     private final StringProperty message = new SimpleStringProperty("");
 
     public void login(String email, String password) {
