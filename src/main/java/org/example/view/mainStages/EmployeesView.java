@@ -31,57 +31,101 @@ public class EmployeesView extends BaseView {
         root = new BorderPane();
         buildSidebar(root);
 
-        contentArea = new VBox(25);
+        VBox mainContainer = new VBox();
 
-        // --- 1. Header (Title + Add Button) ---
-        HBox header = new HBox();
-        header.setAlignment(Pos.CENTER_LEFT);
-        Label title = buildContentTitle("Employees");
+        // --- 1. Top Bar (Matching TransactionsView) ---
+        HBox topBar = new HBox(20);
+        topBar.setAlignment(Pos.BOTTOM_LEFT);
+        topBar.setStyle("-fx-background-color: " + Themes.BG_CARD + "; -fx-padding: 0 40; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-width: 0 0 1 0;");
+        topBar.setMinHeight(85);
+
+        Label title = new Label("Employees");
+        title.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+        HBox.setMargin(title, new Insets(0, 0, 25, 0));
+
+        // Visual divider
+        Region sep = new Region();
+        sep.setPrefSize(2, 30);
+        sep.setMaxSize(2, 30);
+        sep.setStyle("-fx-background-color: " + Themes.BORDER_LIGHT + ";");
+        HBox.setMargin(sep, new Insets(0, 10, 25, 10));
+
+        // Tabs
+        HBox tabs = new HBox(30);
+        tabs.setAlignment(Pos.BOTTOM_LEFT);
+
+        String activeTab = "-fx-font-weight: bold; -fx-text-fill: " + Themes.PRIMARY + "; -fx-border-color: " + Themes.PRIMARY + "; -fx-border-width: 0 0 3 0; -fx-padding: 0 0 20 0; -fx-cursor: hand;";
+        String inactiveTab = "-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-padding: 0 0 20 0; -fx-cursor: hand;";
+
+        Label tabAll = new Label("All Staff");
+        Label tabContractors = new Label("Contractors");
+        Label tabTeams = new Label("Teams");
+
+        tabAll.setStyle(activeTab);
+        tabContractors.setStyle(inactiveTab);
+        tabTeams.setStyle(inactiveTab);
+
+        // Tab click events
+        tabAll.setOnMouseClicked(e -> {
+            tabAll.setStyle(activeTab);
+            tabContractors.setStyle(inactiveTab);
+            tabTeams.setStyle(inactiveTab);
+            // viewModel.filterByType("ALL");
+        });
+        tabContractors.setOnMouseClicked(e -> {
+            tabContractors.setStyle(activeTab);
+            tabAll.setStyle(inactiveTab);
+            tabTeams.setStyle(inactiveTab);
+            // viewModel.filterByType("CONTRACTORS");
+        });
+        tabTeams.setOnMouseClicked(e -> {
+            tabTeams.setStyle(activeTab);
+            tabAll.setStyle(inactiveTab);
+            tabContractors.setStyle(inactiveTab);
+            // viewModel.filterByType("TEAMS");
+        });
+
+        tabs.getChildren().addAll(tabAll, tabContractors, tabTeams);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         addBtn = new StateButton("+ Add Employee", StateButton.ButtonType.PRIMARY);
-        header.getChildren().addAll(title, spacer, addBtn);
+        HBox.setMargin(addBtn, new Insets(0, 0, 20, 0));
 
-        // --- 2. Filter Bar ---
+        topBar.getChildren().addAll(title, sep, tabs, spacer, addBtn);
+
+        // --- 2. Content Area ---
+        contentArea = new VBox(25);
+        VBox.setVgrow(contentArea, Priority.ALWAYS);
+
         filterBar = new FilterBar();
 
-        // --- 3. Summary Widgets (Figma Cards) ---
         HBox summaryContainer = new HBox(20);
         summaryContainer.getChildren().addAll(
-                createSummaryCard("TOTAL EMPLOYEES", "124", "+4 this month", "#10B981"), // Green text
-                createSummaryCard("ACTIVE", "118", "95.2% rate", "#9CA3AF"),            // Gray text
-                createSummaryCard("ONBOARDING", "3", "Action needed", "#F59E0B")        // Orange text
+                createSummaryCard("TOTAL EMPLOYEES", "124", "+4 this month", Themes.TEXT_SUCCESS),
+                createSummaryCard("ACTIVE", "118", "95.2% rate", Themes.TEXT_MUTED),
+                createSummaryCard("ONBOARDING", "3", "Action needed", "#F59E0B")
         );
 
-        // --- 4. Table Setup ---
         table = new AppTable<>("No employees found. Click '+ Add Employee' to start.");
         table.setItems(viewModel.getEmployees());
         VBox.setVgrow(table, Priority.ALWAYS);
 
-        // Name (Combined Name + Surname)
+        // Columns
         TableColumn<Employee, String> nameCol = new TableColumn<>("NAME");
-        nameCol.setCellValueFactory(cellData -> {
-            Employee emp = cellData.getValue();
-            return new SimpleStringProperty(emp.getName() + " " + emp.getSurname());
-        });
+        nameCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getName() + " " + cellData.getValue().getSurname()));
 
-        // Role (Position)
         TableColumn<Employee, String> roleCol = new TableColumn<>("ROLE");
         roleCol.setCellValueFactory(new PropertyValueFactory<>("position"));
 
-        // Email
         TableColumn<Employee, String> emailCol = new TableColumn<>("EMAIL");
         emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
 
-        // Salary
         TableColumn<Employee, BigDecimal> salaryCol = new TableColumn<>("SALARY");
         salaryCol.setCellValueFactory(new PropertyValueFactory<>("salary"));
 
-        // Status (Custom Pill Design)
         TableColumn<Employee, String> statusCol = new TableColumn<>("STATUS");
-        // We simulate a status since your entity doesn't have one natively
         statusCol.setCellValueFactory(cellData -> new SimpleStringProperty("Active"));
         statusCol.setCellFactory(column -> new TableCell<>() {
             @Override
@@ -91,30 +135,21 @@ public class EmployeesView extends BaseView {
                     setGraphic(null);
                 } else {
                     Label statusLabel = new Label(item);
-                    // Green Figma pill styling
-                    statusLabel.setStyle(
-                            "-fx-background-color: #D1FAE5; -fx-text-fill: #10B981;" +
-                                    "-fx-padding: 4 12; -fx-background-radius: 12; -fx-border-radius: 12;" +
-                                    "-fx-font-size: 12px; -fx-font-weight: bold;"
-                    );
+                    statusLabel.setStyle("-fx-background-color: #D1FAE5; -fx-text-fill: " + Themes.TEXT_SUCCESS + ";" +
+                            "-fx-padding: 4 12; -fx-background-radius: 12; -fx-border-radius: 12;" +
+                            "-fx-font-size: 12px; -fx-font-weight: bold;");
                     setGraphic(statusLabel);
                 }
             }
         });
 
-        // Action Button (Custom 3-dots button)
         TableColumn<Employee, Void> actionCol = new TableColumn<>("ACTION");
         actionCol.setCellFactory(column -> new TableCell<>() {
-            private final Button actionBtn = new Button("⋮"); // Unicode for 3 vertical dots
+            private final Button actionBtn = new Button("⋮");
             {
-                actionBtn.setStyle("-fx-background-color: transparent; -fx-font-size: 28px; -fx-text-fill: #9CA3AF; -fx-cursor: hand; -fx-padding: 0;");
-                actionBtn.setOnAction(e -> {
-                    Employee selectedEmp = getTableView().getItems().get(getIndex());
-                    System.out.println("Action clicked for: " + selectedEmp.getName());
-                    // TODO: Open edit/delete dropdown menu here
-                });
+                actionBtn.setStyle("-fx-background-color: transparent; -fx-font-size: 24px; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-cursor: hand; -fx-padding: 0;");
+                actionBtn.setOnAction(e -> System.out.println("Action clicked"));
             }
-
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
@@ -122,7 +157,6 @@ public class EmployeesView extends BaseView {
             }
         });
 
-        // Distribute column widths
         nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.20));
         roleCol.prefWidthProperty().bind(table.widthProperty().multiply(0.20));
         emailCol.prefWidthProperty().bind(table.widthProperty().multiply(0.25));
@@ -132,26 +166,23 @@ public class EmployeesView extends BaseView {
 
         table.getColumns().addAll(nameCol, roleCol, emailCol, salaryCol, statusCol, actionCol);
 
-        contentArea.getChildren().addAll(header, filterBar, summaryContainer, table);
-        root.setCenter(contentArea);
+        contentArea.getChildren().addAll(filterBar, summaryContainer, table);
+        mainContainer.getChildren().addAll(topBar, contentArea);
+        root.setCenter(mainContainer);
 
         scene = new Scene(root);
-        stage.setTitle("App Manager - Employees");
+        stage.setTitle("Admin - Employees");
     }
 
     @Override
     protected void setStyle() {
-        contentArea.setPadding(new Insets(40));
+        contentArea.setPadding(new Insets(30, 40, 40, 40));
         contentArea.setStyle("-fx-background-color: " + Themes.BG_DASHBOARD + ";");
     }
 
     @Override
     protected void setLogic() {
-        addBtn.setOnAction(e -> {
-            AddEmployeeDialog.show(stage, newEmployee -> {
-                viewModel.addEmployee(newEmployee);
-            });
-        });
+        addBtn.setOnAction(e -> AddEmployeeDialog.show(stage, newEmployee -> viewModel.addEmployee(newEmployee)));
 
         viewModel.messageProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && newVal.startsWith("Success:")) {
@@ -162,16 +193,10 @@ public class EmployeesView extends BaseView {
         });
     }
 
-    // --- Helper Method to build the Figma Summary Cards ---
     private VBox createSummaryCard(String title, String mainValue, String subText, String subTextColor) {
         VBox card = new VBox(8);
-        card.setStyle(
-                "-fx-background-color: " + Themes.BG_CARD + ";" +
-                        "-fx-border-color: " + Themes.BORDER_LIGHT + ";" +
-                        "-fx-border-radius: 12; -fx-background-radius: 12;" +
-                        "-fx-padding: 20;"
-        );
-        HBox.setHgrow(card, Priority.ALWAYS); // Ensures the 3 cards stretch to fill the row evenly
+        card.setStyle("-fx-background-color: " + Themes.BG_CARD + "; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 20;");
+        HBox.setHgrow(card, Priority.ALWAYS);
 
         Label lblTitle = new Label(title);
         lblTitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 11px; -fx-font-weight: bold;");
@@ -187,7 +212,6 @@ public class EmployeesView extends BaseView {
 
         valueBox.getChildren().addAll(lblValue, lblSub);
         card.getChildren().addAll(lblTitle, valueBox);
-
         return card;
     }
 }

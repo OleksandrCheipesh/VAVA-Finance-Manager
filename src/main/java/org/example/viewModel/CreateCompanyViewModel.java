@@ -5,6 +5,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import java.io.File;
+import java.sql.SQLException;
+
+import org.example.model.models.CreateCompanyModel;
 
 /**
  *  Create Company window - ViewModel
@@ -67,7 +70,7 @@ public class CreateCompanyViewModel {
     }
 
     // Registration and validation
-    public void registerCompany() {
+    public void registerCompany() throws SQLException {
 
         if (companyName.get().isEmpty() || country.get() == null || currency.get() == null) {
             System.out.println("Validation failed: Please fill all required fields.");
@@ -75,13 +78,15 @@ public class CreateCompanyViewModel {
             return;
         }
 
-        System.out.println("Registering company: " + companyName.get());
-
+        CreateCompanyModel createCompanyModel = new CreateCompanyModel(this.companyName.get(),
+                this.country.get(),
+                this.currency.get());
+        createCompanyModel.createCompany();
         if (logoFile.get() != null) {
             System.out.println("Selected logo path: " + logoFile.get().getAbsolutePath());
         }
 
-        // TODO - Call companyService.createCompany() and navigate to the next screen
+
     }
 
 

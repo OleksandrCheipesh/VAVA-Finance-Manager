@@ -1,5 +1,6 @@
-package org.example.model;
+package org.example.model.models;
 
+import org.example.SessionManager;
 import org.example.model.database.entity.User;
 import org.example.model.database.entity.Position;
 import org.example.model.database.service.UserService;
@@ -16,5 +17,6 @@ public class RegistrationModel {
 
         User user = new User(name, surname, email, passwordHash, Position.Director, null);
         userService.addUser(user);
+        SessionManager.getInstance().login(user);
     }
 }
