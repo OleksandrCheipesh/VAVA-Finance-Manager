@@ -11,10 +11,10 @@ import org.example.view.templates.ComponentTestView;
 
 // точка входу — окремий клас, більше нічого не робить
 public class Main extends Application {
-//    @Override
-//    public void start(Stage stage) {
-//        new RegistrationView().show(stage);
-//    }
+    @Override
+    public void start(Stage stage) {
+        new RegistrationView().show(stage);
+    }
 
     public static void main(String[] args) {
         DatabaseConfig config = DatabaseConfig.fromClasspath("application.properties");
@@ -23,9 +23,9 @@ public class Main extends Application {
         launch();
     }
 
-    @Override
-    public void start(Stage stage) {
-        // Add this line to test your components:
-        new ComponentTestView().show(stage);
-    }
+//    @Override
+//    public void start(Stage stage) {
+//        // Add this line to test your components:
+//        new ComponentTestView().show(stage);
+//    }
 }
