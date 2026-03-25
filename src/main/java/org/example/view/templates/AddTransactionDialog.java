@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.example.model.database.entity.Transaction;
+import org.example.view.templates.StateButton; // Adjust import if needed
 
 import java.math.BigDecimal;
 import java.util.function.Consumer;
@@ -34,7 +35,7 @@ public class AddTransactionDialog {
 
         Scene ownerScene = owner.getScene();
         Paint originalFill = ownerScene.getFill();
-        ownerScene.setFill(Color.web("#111827"));
+        ownerScene.setFill(Color.web(Themes.TEXT_DARK)); // Cleaned
 
         Node backgroundRoot = ownerScene.getRoot();
 
@@ -53,7 +54,7 @@ public class AddTransactionDialog {
         VBox root = new VBox(20);
         root.setPadding(new Insets(30));
         root.setStyle(
-                "-fx-background-color: white;" +
+                "-fx-background-color: " + Themes.BG_CARD + ";" +
                         "-fx-background-radius: 16;" +
                         "-fx-border-radius: 16;" +
                         "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 20, 0, 0, 10);"
@@ -68,31 +69,30 @@ public class AddTransactionDialog {
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER_LEFT);
         Label title = new Label("New Transaction");
-        title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #111827;");
+        title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";"); // Cleaned
 
         Button closeBtn = new Button("X");
         closeBtn.setMinSize(32, 32);
         closeBtn.setMaxSize(32, 32);
         closeBtn.setStyle(
-                "-fx-background-color: #F3F4F6;" +
+                "-fx-background-color: " + Themes.BG_FIELD + ";" + // Cleaned
                         "-fx-background-radius: 8;" +
                         "-fx-cursor: hand;" +
-                        "-fx-text-fill: #6B7280;" +
+                        "-fx-text-fill: " + Themes.TEXT_MUTED + ";" + // Cleaned
                         "-fx-font-weight: bold;" +
                         "-fx-font-size: 14px;" +
                         "-fx-padding: 0;"
         );
 
-        // Close Animation
         closeBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         header.getChildren().addAll(title, spacer, closeBtn);
 
-        // Custom Toggle (Sale / Purchase)
+        // Custom Toggle
         HBox toggleBox = new HBox();
-        toggleBox.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 4;");
+        toggleBox.setStyle("-fx-background-color: " + Themes.BG_FIELD + "; -fx-background-radius: 8; -fx-padding: 4;");
         Button saleBtn = new Button("+ Sale");
         Button purchaseBtn = new Button("- Purchase");
 
@@ -121,7 +121,6 @@ public class AddTransactionDialog {
 
         // Fields
         VBox form = new VBox(15);
-
         TextField amountField = UIFactory.inputField("0.00");
         VBox amountBox = createLabeledField("Amount", amountField);
 
@@ -153,7 +152,7 @@ public class AddTransactionDialog {
 
         saveBtn.setOnAction(e -> {
             if (amountField.getText().isEmpty()) {
-                amountField.setStyle(amountField.getStyle() + "-fx-border-color: #EF4444;");
+                amountField.setStyle(amountField.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";"); // Cleaned
                 return;
             }
 
@@ -165,7 +164,6 @@ public class AddTransactionDialog {
                         BigDecimal amount = new BigDecimal(amountField.getText());
                         String desc = descField.getText();
                         java.time.LocalDate date = datePicker.getValue();
-
                         Integer clientId = 1;
                         Integer projectId = 1;
 
@@ -175,7 +173,7 @@ public class AddTransactionDialog {
                         closeWithAnimation(modal, shadowWrapper);
                     } catch (NumberFormatException ex) {
                         saveBtn.setLoading(false);
-                        amountField.setStyle(amountField.getStyle() + "-fx-border-color: #EF4444;");
+                        amountField.setStyle(amountField.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";"); // Cleaned
                     }
                 });
             }).start();
@@ -185,16 +183,9 @@ public class AddTransactionDialog {
 
         Scene scene = new Scene(shadowWrapper);
         scene.setFill(null);
-
-        try {
-            scene.getStylesheets().add(AddTransactionDialog.class.getResource("/styles/global.css").toExternalForm());
-        } catch (Exception ex) {
-            System.err.println("Warning: Could not load global.css for Modal");
-        }
-
         modal.setScene(scene);
 
-        // Input Animation
+        // Animation
         shadowWrapper.setOpacity(0);
         shadowWrapper.setTranslateY(30);
 
@@ -212,9 +203,8 @@ public class AddTransactionDialog {
 
     private static VBox createLabeledField(String labelText, Node field) {
         Label label = new Label(labelText);
-        label.setStyle("-fx-font-weight: bold; -fx-text-fill: #111827; -fx-font-size: 13px;");
-        VBox box = new VBox(5, label, field);
-        return box;
+        label.setStyle("-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-size: 13px;"); // Cleaned
+        return new VBox(5, label, field);
     }
 
     private static void closeWithAnimation(Stage modal, Node animatedNode) {
@@ -225,7 +215,6 @@ public class AddTransactionDialog {
         slideDown.setToY(30);
 
         ParallelTransition exitAnimation = new ParallelTransition(fadeOut, slideDown);
-
         exitAnimation.setOnFinished(e -> modal.close());
         exitAnimation.play();
     }
