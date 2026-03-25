@@ -1,11 +1,20 @@
 package org.example.view.templates;
 
+import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
+import javafx.animation.ParallelTransition;
 import javafx.animation.PauseTransition;
+import javafx.animation.SequentialTransition;
+import javafx.animation.TranslateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -22,8 +31,6 @@ public class ToastManager {
 
     private static void showToast(Stage ownerStage, String titleText, String messageText, String colorHex, String iconText) {
         Popup popup = new Popup();
-        popup.setAutoFix(true);
-        popup.setHideOnEscape(true);
 
         HBox root = new HBox(15);
         root.setAlignment(Pos.CENTER_LEFT);
@@ -41,26 +48,33 @@ public class ToastManager {
         );
 
         Label icon = new Label(iconText);
-        icon.setStyle("-fx-text-fill: " + colorHex + "; -fx-font-size: 20px; -fx-font-weight: bold;");
 
         VBox textBox = new VBox(5);
         Label title = new Label(titleText);
-        title.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
-        Label message = new Label(messageText);
-        message.setWrapText(true);
-        message.setStyle("-fx-font-size: 12px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+        title.setStyle("-fx-font-size: 16px; -fx-font-weight: 800; -fx-text-fill: #0F172A;");
+
+        Label msg = new Label(messageText);
 
         textBox.getChildren().addAll(title, message);
         root.getChildren().addAll(icon, textBox);
         popup.getContent().add(root);
 
         popup.setOnShown(e -> {
-            popup.setX(ownerStage.getX() + ownerStage.getWidth() - root.getPrefWidth() - 40);
-            popup.setY(ownerStage.getY() + 40);
+            double popupWidth = 440;
+            double indentationRight = 35;
+            double indentationUp = 40;
+
+            popup.setX(ownerStage.getX() + ownerStage.getWidth() - popupWidth + indentationRight);
+            popup.setY(ownerStage.getY() + indentationUp);
         });
 
-        popup.show(ownerStage);
+        // Animation
+        wrapper.setOpacity(0);
+        wrapper.setTranslateX(50);
+
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(350), wrapper);
+        fadeIn.setToValue(1.0);
 
         PauseTransition delay = new PauseTransition(Duration.seconds(3));
         delay.setOnFinished(e -> popup.hide());

@@ -149,8 +149,10 @@ public class Sidebar {
     }
 
     private VBox buildProfileCard() {
-        VBox profileCard = new VBox(8);
+        VBox profileCard = new VBox(15);
         profileCard.setStyle("-fx-background-color: " + Themes.SIDEBAR_PROFILE_BG + "; -fx-background-radius: 12; -fx-padding: 16;");
+
+        VBox textContainer = new VBox(2);
 
         Label name = new Label("Alex Johnson");
         name.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: white;");
@@ -158,15 +160,29 @@ public class Sidebar {
         Label role = new Label("System Admin");
         role.setStyle("-fx-font-size: 13px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
+        textContainer.getChildren().addAll(name, role);
+
         Button logoutBtn = new Button("Logout");
 
         logoutBtn.setMaxWidth(Double.MAX_VALUE);
 
+        // Original
+//        logoutBtn.setStyle("-fx-background-color: " + Themes.SIDEBAR_LOGOUT_BG + "; -fx-text-fill: #D1D5DB; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;");
+//        logoutBtn.setOnMouseEntered(e -> logoutBtn.setStyle("-fx-background-color: " + Themes.SIDEBAR_LOGOUT_HOVER + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;"));
+//        logoutBtn.setOnMouseExited(e -> logoutBtn.setStyle("-fx-background-color: " + Themes.SIDEBAR_LOGOUT_BG + "; -fx-text-fill: #D1D5DB; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;"));
+
+
+        // TEST TOAST MESSAGE !!!
         logoutBtn.setStyle("-fx-background-color: " + Themes.SIDEBAR_LOGOUT_BG + "; -fx-text-fill: #D1D5DB; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;");
         logoutBtn.setOnMouseEntered(e -> logoutBtn.setStyle("-fx-background-color: " + Themes.SIDEBAR_LOGOUT_HOVER + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;"));
         logoutBtn.setOnMouseExited(e -> logoutBtn.setStyle("-fx-background-color: " + Themes.SIDEBAR_LOGOUT_BG + "; -fx-text-fill: #D1D5DB; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;"));
 
-        profileCard.getChildren().addAll(name, role, logoutBtn);
+        logoutBtn.setOnMouseClicked(e -> {
+            ToastManager.showSuccess(stage, "Toast Message !!");
+        });
+        // TEST TOAST MESSAGE !!!
+
+        profileCard.getChildren().addAll(textContainer, logoutBtn);
 
         return profileCard;
     }
