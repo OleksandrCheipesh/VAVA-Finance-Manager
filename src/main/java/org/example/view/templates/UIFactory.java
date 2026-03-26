@@ -212,8 +212,34 @@ public class UIFactory {
 
         picker.setMaxWidth(Double.MAX_VALUE);
 
-        addSmartPromptListener(picker.getEditor(), placeholder);
+        // Replace the default converter with one that catches DateTimeParseException.
+        // JavaFX's internal focusedProperty listener calls commitValue() → fromString() on blur.
+        // The default converter throws on invalid text (e.g. "hello"), crashing the FX thread.
+        // Returning null instead lets the picker set its value to null — safe and detectable.
+        picker.setConverter(safeDateConverter());
 
         return picker;
+    }
+
+    // Reusable safe date converter — returns null instead of throwing on invalid input.
+    // Apply to ANY DatePicker to prevent DateTimeParseException crashes.
+    public static javafx.util.StringConverter<java.time.LocalDate> safeDateConverter() {
+        java.time.format.DateTimeFormatter fmt =
+                java.time.format.DateTimeFormatter.ofPattern("M/d/yyyy");
+        return new javafx.util.StringConverter<>() {
+            @Override
+            public String toString(java.time.LocalDate date) {
+                return date != null ? fmt.format(date) : "";
+            }
+            @Override
+            public java.time.LocalDate fromString(String text) {
+                if (text == null || text.isBlank()) return null;
+                try {
+                    return java.time.LocalDate.parse(text, fmt);
+                } catch (java.time.format.DateTimeParseException e) {
+                    return null;
+                }
+            }
+        };
     }
 }

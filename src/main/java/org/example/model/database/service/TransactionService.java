@@ -3,6 +3,7 @@ package org.example.model.database.service;
 import org.example.model.database.ConnectionProvider;
 import org.example.model.database.entity.Transaction;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +11,24 @@ import java.util.Optional;
 
 public class TransactionService {
 
+    private void validate(Transaction t) {
+        if (t == null)
+            throw new IllegalArgumentException("Transaction must not be null");
+        if (t.getAccountId() <= 0)
+            throw new IllegalArgumentException("Account ID must be positive");
+        String type = t.getType();
+        if (type == null || type.isBlank() || (!type.equalsIgnoreCase("SALE") && !type.equalsIgnoreCase("PURCHASE")))
+            throw new IllegalArgumentException("Type must be SALE or PURCHASE");
+        if (t.getAmount() == null || t.getAmount().compareTo(BigDecimal.ZERO) <= 0)
+            throw new IllegalArgumentException("Amount must be greater than zero");
+        if (t.getDate() == null)
+            throw new IllegalArgumentException("Date is required");
+        if (t.getDescription() == null || t.getDescription().isBlank())
+            throw new IllegalArgumentException("Description is required");
+    }
+
     public Transaction addTransaction(Transaction transaction) throws SQLException {
+        validate(transaction);
         String sql = "INSERT INTO transactions (company_id, account_id, project_id, client_id, type, amount, description, date) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id, created_at";
 
@@ -135,6 +153,9 @@ public class TransactionService {
     }
 
     public boolean updateTransaction(Transaction transaction) throws SQLException {
+        validate(transaction);
+        if (transaction.getId() <= 0)
+            throw new IllegalArgumentException("Transaction ID must be positive for update");
         String sql = "UPDATE transactions SET company_id = ?, account_id = ?, project_id = ?, client_id = ?, " +
                      "type = ?, amount = ?, description = ?, date = ? WHERE id = ?";
         try (Connection connection = ConnectionProvider.getConnection();
@@ -163,6 +184,8 @@ public class TransactionService {
     }
 
     public boolean deleteTransaction(int id) throws SQLException {
+        if (id <= 0)
+            throw new IllegalArgumentException("Transaction ID must be positive for delete");
         String sql = "DELETE FROM transactions WHERE id = ?";
 
         try (Connection connection = ConnectionProvider.getConnection();
