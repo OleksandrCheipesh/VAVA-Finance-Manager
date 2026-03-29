@@ -1,8 +1,9 @@
 package org.example.model.database.entity;
 
+import org.example.model.database.entity.Person;
+
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.time.LocalDate;
 
 public class Employee extends Person {
     private int id;
@@ -11,6 +12,7 @@ public class Employee extends Person {
     private BigDecimal salary;
     private String position;
     private OffsetDateTime hiredAt;
+    private String email;
 
     public Employee() {}
 
@@ -98,4 +100,3 @@ public class Employee extends Person {
         this.hiredAt = hiredAt;
     }
 }
-

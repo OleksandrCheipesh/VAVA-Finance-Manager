@@ -5,6 +5,7 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.example.model.database.entity.Employee;
+import org.example.model.database.service.EmployeeService;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -16,6 +17,7 @@ public class EmployeesViewModel {
 
     // For passing success/error messages to the View's Toasts
     private final StringProperty message = new SimpleStringProperty("");
+    private EmployeeService db = new EmployeeService();
 
     public EmployeesViewModel() {
         loadEmployees();
