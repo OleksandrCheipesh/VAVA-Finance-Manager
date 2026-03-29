@@ -2,7 +2,7 @@ package org.example.model.database.service;
 
 import org.example.model.database.ConnectionProvider;
 import org.example.model.database.entity.Employee;
-import org.example.model.database.service.validation.EmployeeValidator;
+import org.example.model.validation.EmployeeValidator;
 
 import java.sql.*;
 import java.util.ArrayList;

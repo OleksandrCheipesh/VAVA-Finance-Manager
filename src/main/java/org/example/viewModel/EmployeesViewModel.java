@@ -4,6 +4,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import org.example.SessionManager;
 import org.example.model.database.entity.Employee;
 import org.example.model.database.service.EmployeeService;
 
@@ -25,8 +26,7 @@ public class EmployeesViewModel {
     }
 
     public void loadEmployees() {
-        int companyId = 1; // TODO: заменить на SessionManager.getCompanyId() когда будет готово
-
+        int companyId = SessionManager.getInstance().getCurrentCompanyId();
         try {
             List<Employee> dbEmployees = db.getEmployeesByCompanyId(companyId);
 

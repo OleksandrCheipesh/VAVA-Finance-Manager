@@ -17,11 +17,13 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
+import org.example.SessionManager;
 import org.example.model.database.entity.Employee;
-import org.example.model.database.service.validation.EmployeeValidator;
-import org.example.view.templates.StateButton;
+import org.example.model.validation.EmpValExept;
+import org.example.model.validation.EmployeeValidator;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.function.Consumer;
 
@@ -127,10 +129,10 @@ public class AddEmployeeDialog {
         saveBtn.setMaxWidth(Double.MAX_VALUE);
 
         saveBtn.setOnAction(e -> {
-            if (nameField.getText().isEmpty()) {
-                nameField.setStyle(nameField.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";");
-                return;
-            }
+//            if (nameField.getText().isEmpty()) {
+//                nameField.setStyle(nameField.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";");
+//                return;
+//            }
 
             saveBtn.setLoading(true);
             new Thread(() -> {
@@ -143,8 +145,51 @@ public class AddEmployeeDialog {
                         String pos = positionField.getText();
                         BigDecimal salary = salaryField.getText().isEmpty() ? BigDecimal.ZERO : new BigDecimal(salaryField.getText());
 
-                        Employee newEmp = new Employee(1, name, surname, name.toLowerCase() + "@company.com", age, salary, pos, OffsetDateTime.now());
-                        EmployeeValidator.validate(newEmp);
+                        Employee newEmp = new Employee(SessionManager.getInstance().getCurrentCompanyId(), name, surname, name.toLowerCase() + "@company.com", age, salary, pos, OffsetDateTime.now());
+                        try {
+                            EmployeeValidator.validate(newEmp);
+                        }catch (EmpValExept iae){
+                            saveBtn.setLoading(false);
+                            System.err.println("Unexpected error saving emploes: " + iae.getMessage());
+                            String errorStyle = "-fx-background-color: " + Themes.BG_FIELD_LARGE + ";" +
+                                    "-fx-border-color: " + Themes.TEXT_ERROR + ";" +
+                                    "-fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10;" +
+                                    "-fx-prompt-text-fill: " + Themes.TEXT_PRIMARY + ";" +
+                                    "-fx-text-fill: " + Themes.TEXT_PRIMARY + ";";
+                            String style = "-fx-background-color: " + Themes.BG_FIELD_LARGE + ";" +
+                                    "-fx-border-color: " + Themes.BORDER_LARGE + ";" +
+                                    "-fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10;" +
+                                    "-fx-prompt-text-fill: " + Themes.TEXT_PRIMARY + ";" +
+                                    "-fx-text-fill: " + Themes.TEXT_PRIMARY + ";";
+                            nameField.setStyle(style);
+                            surnameField.setStyle(style);
+                            positionField.setStyle(style);
+                            ageField.setStyle(style);
+                            salaryField.setStyle(style);
+                            switch (iae.getCode()) {
+                                case NAME_EMPTY -> nameField.setStyle(errorStyle);
+
+                                case SURNAME_EMPTY -> surnameField.setStyle(errorStyle);
+
+                                case POSITION_EMPTY -> positionField.setStyle(errorStyle);
+
+                                case INVALID_AGE -> ageField.setStyle(errorStyle);
+
+                                case NEGATIVE_SALARY -> salaryField.setStyle(errorStyle);
+
+                                case INVALID_EMAIL -> {
+                                    // у тебя сейчас email генерится, но на будущее
+                                }
+
+                                case INVALID_COMPANY_ID -> {
+                                    // это системная ошибка, поле не подсвечиваем
+                                }
+                            }
+
+                            ToastManager.showError(owner, "Unexpected error saving emploes: " + iae.getMessage());
+//                            closeWithAnimation(modal, (Node) saveBtn.getParent());
+                            return;
+                        }
                         onSuccess.accept(newEmp);
                         ToastManager.showSuccess(owner, "Employee added successfully!");
                         closeWithAnimation(modal, shadowWrapper);
