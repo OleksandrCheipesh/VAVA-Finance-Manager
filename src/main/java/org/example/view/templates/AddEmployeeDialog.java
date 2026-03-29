@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.example.model.database.entity.Employee;
+import org.example.model.database.service.validation.EmployeeValidator;
 import org.example.view.templates.StateButton;
 
 import java.math.BigDecimal;
@@ -143,7 +144,7 @@ public class AddEmployeeDialog {
                         BigDecimal salary = salaryField.getText().isEmpty() ? BigDecimal.ZERO : new BigDecimal(salaryField.getText());
 
                         Employee newEmp = new Employee(1, name, surname, name.toLowerCase() + "@company.com", age, salary, pos, OffsetDateTime.now());
-
+                        EmployeeValidator.validate(newEmp);
                         onSuccess.accept(newEmp);
                         ToastManager.showSuccess(owner, "Employee added successfully!");
                         closeWithAnimation(modal, shadowWrapper);

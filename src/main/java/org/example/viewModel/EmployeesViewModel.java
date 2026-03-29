@@ -9,6 +9,7 @@ import org.example.model.database.service.EmployeeService;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 public class EmployeesViewModel {
 
@@ -23,23 +24,26 @@ public class EmployeesViewModel {
         loadEmployees();
     }
 
-    // 1. Fetch data from the database
     public void loadEmployees() {
-        // TODO: Your backend team will eventually replace this dummy data
-        // with something like: employees.addAll(employeeService.getAllEmployees());
+        int companyId = 1; // TODO: заменить на SessionManager.getCompanyId() когда будет готово
 
-        employees.clear();
-        employees.addAll(
-                new Employee(1, "Sarah", "Williams", "sarah.w@company.com", 32, new BigDecimal("85000"), "Senior Designer", OffsetDateTime.now().minusYears(2)),
-                new Employee(1, "Marcus", "Chen", "m.chen@company.com", 28, new BigDecimal("95000"), "Full Stack Engineer", OffsetDateTime.now().minusMonths(6))
-        );
+        try {
+            List<Employee> dbEmployees = db.getEmployeesByCompanyId(companyId);
+
+            employees.clear();
+            employees.addAll(dbEmployees);
+
+            message.set("Success: Employees loaded successfully!");
+
+        } catch (Exception e) {
+            message.set("Error: Failed to load employees. " + e.getMessage());
+        }
     }
 
     // 2. Add a new employee to the database and the UI
     public void addEmployee(Employee newEmployee) {
         try {
-            // TODO: Call backend to save to database here
-            // employeeService.addEmployee(newEmployee);
+            db.addEmployee(newEmployee);
 
             // If database save is successful, add to the UI list
             employees.add(newEmployee);
