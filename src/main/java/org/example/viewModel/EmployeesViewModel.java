@@ -1,5 +1,7 @@
 package org.example.viewModel;
 
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -21,6 +23,20 @@ public class EmployeesViewModel {
     private final StringProperty message = new SimpleStringProperty("");
     private EmployeeService db = new EmployeeService();
 
+    // Summary
+    private final IntegerProperty totalEmployees = new SimpleIntegerProperty(0);
+    private final IntegerProperty activeEmployees = new SimpleIntegerProperty(0);
+    private final IntegerProperty onboardingEmployees = new SimpleIntegerProperty(0);
+    private final StringProperty totalEmployeesChangeText = new SimpleStringProperty("");
+    private final IntegerProperty activeEmployeesRate = new SimpleIntegerProperty(0);
+    private final StringProperty onboardingEmployeesActionText = new SimpleStringProperty("");
+    public IntegerProperty totalEmployeesProperty() { return totalEmployees; }
+    public IntegerProperty activeEmployeesProperty() { return activeEmployees; }
+    public IntegerProperty onboardingEmployeesProperty() { return onboardingEmployees; }
+    public StringProperty totalEmployeesChangeTextProperty() { return totalEmployeesChangeText; }
+    public IntegerProperty activeEmployeesRateProperty() { return activeEmployeesRate; }
+    public StringProperty onboardingEmployeesActionTextProperty() { return onboardingEmployeesActionText; }
+
     public EmployeesViewModel() {
         loadEmployees();
     }
@@ -38,6 +54,18 @@ public class EmployeesViewModel {
         } catch (Exception e) {
             message.set("Error: Failed to load employees. " + e.getMessage());
         }
+        finally {
+//            TO DO: dinamic calculations
+            totalEmployees.set(employees.size());
+            activeEmployees.set(employees.size());
+            onboardingEmployees.set(0);
+            totalEmployeesChangeText.set("+4 this month");
+            double rate = totalEmployees.get() == 0
+                    ? 0
+                    : (double) activeEmployees.get() / totalEmployees.get() * 100;
+            activeEmployeesRate.set((int)rate);
+            onboardingEmployeesActionText.set("Action needed");
+        }
     }
 
     // 2. Add a new employee to the database and the UI
@@ -54,6 +82,18 @@ public class EmployeesViewModel {
         } catch (Exception e) {
             // Trigger error message
             message.set("Error: Failed to add employee. " + e.getMessage());
+        }
+        finally {
+//            TO DO: dinamic calculations
+            totalEmployees.set(employees.size());
+            activeEmployees.set(employees.size());
+            onboardingEmployees.set(0);
+            totalEmployeesChangeText.set("+4 this month");
+            double rate = totalEmployees.get() == 0
+                    ? 0
+                    : (double) activeEmployees.get() / totalEmployees.get() * 100;
+            activeEmployeesRate.set((int)rate);
+            onboardingEmployeesActionText.set("Action needed");
         }
     }
 

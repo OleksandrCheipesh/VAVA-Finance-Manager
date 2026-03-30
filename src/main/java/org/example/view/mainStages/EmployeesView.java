@@ -102,10 +102,19 @@ public class EmployeesView extends BaseView {
         filterBar = new FilterBar();
 
         HBox summaryContainer = new HBox(20);
+
+        Label totalEmpLabel = new Label();
+        Label activeLabel = new Label();
+        Label onboardingLabel = new Label();
+
+        totalEmpLabel.textProperty().bind(viewModel.totalEmployeesProperty().asString());
+        activeLabel.textProperty().bind(viewModel.activeEmployeesProperty().asString());
+        onboardingLabel.textProperty().bind(viewModel.onboardingEmployeesProperty().asString());
+
         summaryContainer.getChildren().addAll(
-                createSummaryCard("TOTAL EMPLOYEES", "124", "+4 this month", Themes.TEXT_SUCCESS),
-                createSummaryCard("ACTIVE", "118", "95.2% rate", Themes.TEXT_MUTED),
-                createSummaryCard("ONBOARDING", "3", "Action needed", "#F59E0B")
+                createSummaryCard("TOTAL EMPLOYEES", totalEmpLabel.getText(), viewModel.totalEmployeesChangeTextProperty().get(), Themes.TEXT_SUCCESS),
+                createSummaryCard("ACTIVE", activeLabel.getText(), viewModel.activeEmployeesRateProperty().get() + "% rate", Themes.TEXT_MUTED),
+                createSummaryCard("ONBOARDING", onboardingLabel.getText(), viewModel.onboardingEmployeesActionTextProperty().get(), "#F59E0B")
         );
 
         table = new AppTable<>("No employees found. Click '+ Add Employee' to start.");
