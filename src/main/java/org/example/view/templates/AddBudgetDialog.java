@@ -221,15 +221,26 @@ public class AddBudgetDialog {
         StateButton saveBtn = new StateButton("Save Framework", StateButton.ButtonType.PRIMARY);
 
         saveBtn.setMinHeight(50);
-        saveBtn.setPrefWidth(380);
-        saveBtn.setStyle(
-                "-fx-background-color: " + Themes.PRIMARY + ";" +
-                        "-fx-text-fill: white;" +
-                        "-fx-font-size: 16px; " +
-                        "-fx-font-weight: bold; " +
-                        "-fx-background-radius: 10; " +
-                        "-fx-cursor: hand;"
-        );
+        saveBtn.setPrefWidth(340);
+
+        String normalStyle = "-fx-background-color: " + Themes.PRIMARY + ";" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 16px; " +
+                "-fx-font-weight: bold; " +
+                "-fx-background-radius: 10; " +
+                "-fx-cursor: hand;";
+
+        String hoverStyle = "-fx-background-color: " + Themes.BTN_PRIMARY_HOVER + ";" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 16px; " +
+                "-fx-font-weight: bold; " +
+                "-fx-background-radius: 10; " +
+                "-fx-cursor: hand;";
+
+        saveBtn.setStyle(normalStyle);
+
+        saveBtn.setOnMouseEntered(e -> saveBtn.setStyle(hoverStyle));
+        saveBtn.setOnMouseExited(e -> saveBtn.setStyle(normalStyle));
 
         saveBtn.setOnAction(e -> {
             boolean isValid = true;

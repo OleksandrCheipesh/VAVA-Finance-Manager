@@ -152,15 +152,36 @@ public class BudgetView extends BaseView {
         Region spacer2 = new Region();
         HBox.setHgrow(spacer2, Priority.ALWAYS);
 
-        searchField = UIFactory.inputField("Search accounts...");
-        searchField.setPrefWidth(250);
-        searchField.setStyle("-fx-background-color: white; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8 12;");
+        HBox searchContainer = new HBox(10);
+
+        searchContainer.setAlignment(Pos.CENTER_LEFT);
+        searchContainer.setPrefWidth(250);
+        searchContainer.setMinHeight(44);
+        searchContainer.setPrefHeight(44);
+        searchContainer.setMaxHeight(44);
+        searchContainer.setStyle("-fx-background-color: white; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 0 12;");
+
+        SVGPath searchIcon = new SVGPath();
+        searchIcon.setContent("M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z");
+        searchIcon.setFill(Color.web(Themes.TEXT_MUTED));
+        searchIcon.setScaleX(0.8);
+        searchIcon.setScaleY(0.8);
+
+        searchField = new TextField();
+        searchField.setPromptText("Search accounts...");
+        searchField.setStyle("-fx-background-color: transparent; -fx-border-width: 0; -fx-padding: 0; -fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+
+        HBox.setHgrow(searchField, Priority.ALWAYS);
+
+        searchContainer.getChildren().addAll(searchIcon, searchField);
 
         addAccountBtnMid = new StateButton("+ Add New Account", StateButton.ButtonType.PRIMARY);
+        addAccountBtnMid.setMinHeight(44);
+        addAccountBtnMid.setPrefHeight(44);
+        addAccountBtnMid.setMaxHeight(44);
 
-        midHeader.getChildren().addAll(midTitleBox, spacer2, searchField, addAccountBtnMid);
+        midHeader.getChildren().addAll(midTitleBox, spacer2, searchContainer, addAccountBtnMid);
 
-        // Accounts grid
         accountsGrid = new FlowPane(GRID_GAP, GRID_GAP);
         accountsGrid.setAlignment(Pos.TOP_LEFT);
 
