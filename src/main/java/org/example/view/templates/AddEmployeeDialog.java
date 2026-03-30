@@ -107,6 +107,9 @@ public class AddEmployeeDialog {
         HBox.setHgrow(surnameBox, Priority.ALWAYS);
         splitName.getChildren().addAll(nameBox, surnameBox);
 
+        TextField emailField = UIFactory.inputField("example@example.ex");
+        VBox emailBox = createLabeledField("Email", emailField);
+
         TextField positionField = UIFactory.inputField("e.g. Developer");
         VBox positionBox = createLabeledField("Position", positionField);
 
@@ -122,7 +125,7 @@ public class AddEmployeeDialog {
         HBox.setHgrow(salaryBox, Priority.ALWAYS);
         splitDetails.getChildren().addAll(ageBox, salaryBox);
 
-        form.getChildren().addAll(splitName, positionBox, splitDetails);
+        form.getChildren().addAll(splitName, positionBox, emailBox, splitDetails);
 
         // ONLY Save Button (Cancel removed)
         StateButton saveBtn = new StateButton("Save", StateButton.ButtonType.PRIMARY);
@@ -144,8 +147,19 @@ public class AddEmployeeDialog {
                         int age = ageField.getText().isEmpty() ? 0 : Integer.parseInt(ageField.getText());
                         String pos = positionField.getText();
                         BigDecimal salary = salaryField.getText().isEmpty() ? BigDecimal.ZERO : new BigDecimal(salaryField.getText());
+                        String email = emailField.getText();
 
-                        Employee newEmp = new Employee(SessionManager.getInstance().getCurrentCompanyId(), name, surname, name.toLowerCase() + "@company.com", age, salary, pos, OffsetDateTime.now());
+                        Employee newEmp = new Employee(
+                                SessionManager.getInstance().getCurrentCompanyId(),
+                                name,
+                                surname,
+                                email,
+                                age,
+                                salary,
+                                pos,
+                                OffsetDateTime.now()
+                        );
+
                         try {
                             EmployeeValidator.validate(newEmp);
                         }catch (EmpValExept iae){
@@ -166,6 +180,7 @@ public class AddEmployeeDialog {
                             positionField.setStyle(style);
                             ageField.setStyle(style);
                             salaryField.setStyle(style);
+                            emailField.setStyle(style);
                             switch (iae.getCode()) {
                                 case NAME_EMPTY -> nameField.setStyle(errorStyle);
 
@@ -177,13 +192,9 @@ public class AddEmployeeDialog {
 
                                 case NEGATIVE_SALARY -> salaryField.setStyle(errorStyle);
 
-                                case INVALID_EMAIL -> {
-                                    // у тебя сейчас email генерится, но на будущее
-                                }
+                                case INVALID_EMAIL -> emailField.setStyle(errorStyle);
 
-                                case INVALID_COMPANY_ID -> {
-                                    // это системная ошибка, поле не подсвечиваем
-                                }
+                                case INVALID_COMPANY_ID -> {}
                             }
 
                             ToastManager.showError(owner, "Unexpected error saving emploes: " + iae.getMessage());
