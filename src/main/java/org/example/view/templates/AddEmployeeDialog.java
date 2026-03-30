@@ -17,10 +17,13 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
+import org.example.SessionManager;
 import org.example.model.database.entity.Employee;
-import org.example.view.templates.StateButton;
+import org.example.model.validation.EmpValExept;
+import org.example.model.validation.EmployeeValidator;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.function.Consumer;
 
@@ -104,6 +107,9 @@ public class AddEmployeeDialog {
         HBox.setHgrow(surnameBox, Priority.ALWAYS);
         splitName.getChildren().addAll(nameBox, surnameBox);
 
+        TextField emailField = UIFactory.inputField("example@example.ex");
+        VBox emailBox = createLabeledField("Email", emailField);
+
         TextField positionField = UIFactory.inputField("e.g. Developer");
         VBox positionBox = createLabeledField("Position", positionField);
 
@@ -119,17 +125,17 @@ public class AddEmployeeDialog {
         HBox.setHgrow(salaryBox, Priority.ALWAYS);
         splitDetails.getChildren().addAll(ageBox, salaryBox);
 
-        form.getChildren().addAll(splitName, positionBox, splitDetails);
+        form.getChildren().addAll(splitName, positionBox, emailBox, splitDetails);
 
         // ONLY Save Button (Cancel removed)
         StateButton saveBtn = new StateButton("Save", StateButton.ButtonType.PRIMARY);
         saveBtn.setMaxWidth(Double.MAX_VALUE);
 
         saveBtn.setOnAction(e -> {
-            if (nameField.getText().isEmpty()) {
-                nameField.setStyle(nameField.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";");
-                return;
-            }
+//            if (nameField.getText().isEmpty()) {
+//                nameField.setStyle(nameField.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";");
+//                return;
+//            }
 
             saveBtn.setLoading(true);
             new Thread(() -> {
@@ -141,9 +147,60 @@ public class AddEmployeeDialog {
                         int age = ageField.getText().isEmpty() ? 0 : Integer.parseInt(ageField.getText());
                         String pos = positionField.getText();
                         BigDecimal salary = salaryField.getText().isEmpty() ? BigDecimal.ZERO : new BigDecimal(salaryField.getText());
+                        String email = emailField.getText();
 
-                        Employee newEmp = new Employee(1, name, surname, name.toLowerCase() + "@company.com", age, salary, pos, OffsetDateTime.now());
+                        Employee newEmp = new Employee(
+                                SessionManager.getInstance().getCurrentCompanyId(),
+                                name,
+                                surname,
+                                email,
+                                age,
+                                salary,
+                                pos,
+                                OffsetDateTime.now()
+                        );
 
+                        try {
+                            EmployeeValidator.validate(newEmp);
+                        }catch (EmpValExept iae){
+                            saveBtn.setLoading(false);
+                            System.err.println("Unexpected error saving emploes: " + iae.getMessage());
+                            String errorStyle = "-fx-background-color: " + Themes.BG_FIELD_LARGE + ";" +
+                                    "-fx-border-color: " + Themes.TEXT_ERROR + ";" +
+                                    "-fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10;" +
+                                    "-fx-prompt-text-fill: " + Themes.TEXT_PRIMARY + ";" +
+                                    "-fx-text-fill: " + Themes.TEXT_PRIMARY + ";";
+                            String style = "-fx-background-color: " + Themes.BG_FIELD_LARGE + ";" +
+                                    "-fx-border-color: " + Themes.BORDER_LARGE + ";" +
+                                    "-fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10;" +
+                                    "-fx-prompt-text-fill: " + Themes.TEXT_PRIMARY + ";" +
+                                    "-fx-text-fill: " + Themes.TEXT_PRIMARY + ";";
+                            nameField.setStyle(style);
+                            surnameField.setStyle(style);
+                            positionField.setStyle(style);
+                            ageField.setStyle(style);
+                            salaryField.setStyle(style);
+                            emailField.setStyle(style);
+                            switch (iae.getCode()) {
+                                case NAME_EMPTY -> nameField.setStyle(errorStyle);
+
+                                case SURNAME_EMPTY -> surnameField.setStyle(errorStyle);
+
+                                case POSITION_EMPTY -> positionField.setStyle(errorStyle);
+
+                                case INVALID_AGE -> ageField.setStyle(errorStyle);
+
+                                case NEGATIVE_SALARY -> salaryField.setStyle(errorStyle);
+
+                                case INVALID_EMAIL -> emailField.setStyle(errorStyle);
+
+                                case INVALID_COMPANY_ID -> {}
+                            }
+
+                            ToastManager.showError(owner, "Unexpected error saving emploes: " + iae.getMessage());
+//                            closeWithAnimation(modal, (Node) saveBtn.getParent());
+                            return;
+                        }
                         onSuccess.accept(newEmp);
                         ToastManager.showSuccess(owner, "Employee added successfully!");
                         closeWithAnimation(modal, shadowWrapper);
