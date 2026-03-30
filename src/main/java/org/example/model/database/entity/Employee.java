@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 public class Employee extends Person {
+    //TO DO: active and pasive status
     private int id;
     private int companyId;
     private Integer age;

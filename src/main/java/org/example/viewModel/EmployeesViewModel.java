@@ -55,11 +55,15 @@ public class EmployeesViewModel {
             message.set("Error: Failed to load employees. " + e.getMessage());
         }
         finally {
-//            TO DO: dinamic calculations
+//            TO DO: active and pasive status
             totalEmployees.set(employees.size());
             activeEmployees.set(employees.size());
             onboardingEmployees.set(0);
-            totalEmployeesChangeText.set("+4 this month");
+            long addedThisMonth = employees.stream()
+                    .filter(e -> e.getHiredAt() != null)
+                    .filter(e -> e.getHiredAt().isAfter(OffsetDateTime.now().minusMonths(1)))
+                    .count();
+            totalEmployeesChangeText.set("+" + addedThisMonth + " this month");
             double rate = totalEmployees.get() == 0
                     ? 0
                     : (double) activeEmployees.get() / totalEmployees.get() * 100;
@@ -84,11 +88,15 @@ public class EmployeesViewModel {
             message.set("Error: Failed to add employee. " + e.getMessage());
         }
         finally {
-//            TO DO: dinamic calculations
+//            TO DO: active and pasive status
             totalEmployees.set(employees.size());
             activeEmployees.set(employees.size());
             onboardingEmployees.set(0);
-            totalEmployeesChangeText.set("+4 this month");
+            long addedThisMonth = employees.stream()
+                    .filter(e -> e.getHiredAt() != null)
+                    .filter(e -> e.getHiredAt().isAfter(OffsetDateTime.now().minusMonths(1)))
+                    .count();
+            totalEmployeesChangeText.set("+" + addedThisMonth + " this month");
             double rate = totalEmployees.get() == 0
                     ? 0
                     : (double) activeEmployees.get() / totalEmployees.get() * 100;
