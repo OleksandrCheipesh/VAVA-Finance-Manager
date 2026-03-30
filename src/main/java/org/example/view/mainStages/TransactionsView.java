@@ -9,6 +9,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import org.example.model.database.entity.Project;
 import org.example.model.database.entity.Transaction;
 import org.example.view.templates.*;
 import org.example.viewModel.TransactionsViewModel;
@@ -105,14 +106,29 @@ public class TransactionsView extends BaseView {
         // Filter Bar
         HBox filterBar = createCustomFilterBar();
 
-        // Summary Cards
+        // Summary Cards — values bound to ViewModel computed properties
+        SummaryCard incomeCard   = new SummaryCard("INCOME",      "0.00", "0 sales",     Themes.TEXT_SUCCESS);
+        SummaryCard expensesCard = new SummaryCard("EXPENSES",    "0.00", "0 purchases", Themes.TEXT_ERROR);
+        SummaryCard netCard      = new SummaryCard("NET BALANCE", "0.00", "",            Themes.TEXT_SUCCESS);
+        SummaryCard largestCard  = new SummaryCard("LARGEST",     "0.00", "",            Themes.TEXT_SUCCESS);
+
+        viewModel.totalIncomeProperty()   .addListener((obs, o, v) -> incomeCard.setValue(v));
+        viewModel.incomeSubtextProperty() .addListener((obs, o, v) -> incomeCard.setSubText(v));
+        viewModel.totalExpensesProperty() .addListener((obs, o, v) -> expensesCard.setValue(v));
+        viewModel.expensesSubtextProperty().addListener((obs, o, v) -> expensesCard.setSubText(v));
+        viewModel.netBalanceProperty()    .addListener((obs, o, v) -> netCard.setValue(v));
+        viewModel.largestAmountProperty() .addListener((obs, o, v) -> largestCard.setValue(v));
+
+        // Seed initial values (already computed during ViewModel construction)
+        incomeCard.setValue(viewModel.totalIncomeProperty().get());
+        incomeCard.setSubText(viewModel.incomeSubtextProperty().get());
+        expensesCard.setValue(viewModel.totalExpensesProperty().get());
+        expensesCard.setSubText(viewModel.expensesSubtextProperty().get());
+        netCard.setValue(viewModel.netBalanceProperty().get());
+        largestCard.setValue(viewModel.largestAmountProperty().get());
+
         HBox cardsBox = new HBox(20);
-        cardsBox.getChildren().addAll(
-                new SummaryCard("INCOME", "15 000", "1 sales", Themes.TEXT_SUCCESS),
-                new SummaryCard("EXPENSES", "15 000", "1 purchases", Themes.TEXT_ERROR),
-                new SummaryCard("NET BALANCE", "15 000", "", Themes.TEXT_SUCCESS),
-                new SummaryCard("LARGEST", "15 000", "", Themes.TEXT_SUCCESS)
-        );
+        cardsBox.getChildren().addAll(incomeCard, expensesCard, netCard, largestCard);
 
         // Table and empty state
         table = new AppTable<>("");
@@ -152,22 +168,24 @@ public class TransactionsView extends BaseView {
         amountCol.setStyle(headerStyle);
 
         amountCol.setCellFactory(col -> new TableCell<>() {
+            // Created once per cell, not on every render
+            private final java.text.DecimalFormat df = new java.text.DecimalFormat(
+                    "#,##0.00", new java.text.DecimalFormatSymbols(java.util.Locale.US));
+
             @Override protected void updateItem(BigDecimal item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
                     setText(null);
                     setStyle("");
                 } else {
-                    Transaction t = getTableView().getItems().get(getIndex());
+                    // Bounds check — getIndex() can be stale during rapid list updates
+                    int idx = getIndex();
+                    if (idx < 0 || idx >= getTableView().getItems().size()) return;
+                    Transaction t = getTableView().getItems().get(idx);
                     if (t == null) return;
 
                     boolean isSale = "SALE".equalsIgnoreCase(t.getType());
-
-                    java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols(java.util.Locale.US);
-                    java.text.DecimalFormat df = new java.text.DecimalFormat("#,##0.00", symbols);
-
                     setText((isSale ? "+$" : "-$") + df.format(item));
-
                     String color = isSale ? Themes.TEXT_SUCCESS : Themes.TEXT_ERROR;
                     setStyle("-fx-text-fill: " + color + "; -fx-font-weight: 800; -fx-font-size: 16px; -fx-alignment: center-left;");
                 }
@@ -181,9 +199,13 @@ public class TransactionsView extends BaseView {
         projectCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(Integer item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) { setText(null); }
-                else {
-                    setText("Design");
+                if (empty || item == null) {
+                    setText(null);
+                    setFont(Font.getDefault());
+                    setTextFill(Color.BLACK);
+                    setAlignment(Pos.CENTER_LEFT);
+                } else {
+                    setText(viewModel.getProjectName(item));
                     setFont(Font.font("System", FontWeight.NORMAL, 15));
                     setTextFill(Color.web(Themes.TEXT_MUTED));
                     setAlignment(Pos.CENTER_LEFT);
@@ -198,8 +220,12 @@ public class TransactionsView extends BaseView {
         descCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) { setText(null); }
-                else {
+                if (empty || item == null) {
+                    setText(null);
+                    setFont(Font.getDefault());
+                    setTextFill(Color.BLACK);
+                    setAlignment(Pos.CENTER_LEFT);
+                } else {
                     setText(item);
                     setFont(Font.font("System", FontWeight.NORMAL, 15));
                     setTextFill(Color.web(Themes.TEXT_MUTED));
@@ -215,8 +241,10 @@ public class TransactionsView extends BaseView {
         typeCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) { setGraphic(null); }
-                else {
+                if (empty || item == null) {
+                    setGraphic(null);
+                    setAlignment(Pos.CENTER_LEFT);
+                } else {
                     boolean isSale = "SALE".equalsIgnoreCase(item);
                     Label pill = new Label(isSale ? "Sale" : "Buy");
                     String color = isSale ? Themes.TEXT_SUCCESS : "#F59E0B";
@@ -290,7 +318,7 @@ public class TransactionsView extends BaseView {
     @Override
     protected void setLogic() {
         addBtn.setOnAction(e -> {
-            AddTransactionDialog.show(stage, newTx -> {
+            AddTransactionDialog.show(stage, viewModel.getProjects(), newTx -> {
                 viewModel.addTransaction(newTx);
             });
         });
@@ -321,50 +349,93 @@ public class TransactionsView extends BaseView {
         StackPane searchPane = createPromptWrapper(search, "\uD83D\uDD0D Search by name...");
         HBox.setHgrow(searchPane, Priority.ALWAYS);
 
-        // ComboBox handles prompt text correctly on its own
-        ComboBox<String> proj = new ComboBox<>();
+        // Project ComboBox — populated from DB
+        ComboBox<Project> proj = new ComboBox<>();
         proj.setPromptText("Project");
         proj.setStyle(filterStyle);
         proj.getStyleClass().add("filter-item");
         proj.setPrefHeight(40);
         proj.setPrefWidth(130);
+        proj.setItems(viewModel.getProjects());
+        proj.setCellFactory(lv -> new javafx.scene.control.ListCell<>() {
+            @Override protected void updateItem(Project item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getName());
+            }
+        });
+        proj.setButtonCell(new javafx.scene.control.ListCell<>() {
+            @Override protected void updateItem(Project item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getName());
+            }
+        });
+        proj.valueProperty().addListener((obs, old, val) ->
+                viewModel.filterByProject(val == null ? null : val.getId()));
 
+        // Type ComboBox
         ComboBox<String> type = new ComboBox<>();
         type.setPromptText("Type");
         type.setStyle(filterStyle);
         type.getStyleClass().add("filter-item");
         type.setPrefHeight(40);
         type.setPrefWidth(130);
+        type.getItems().addAll("ALL", "SALE", "PURCHASE");
+        type.valueProperty().addListener((obs, old, val) ->
+                viewModel.filterByType(val == null ? "ALL" : val));
 
         DatePicker d1 = new DatePicker();
         d1.setStyle(filterStyle);
         d1.getStyleClass().add("filter-item");
         d1.setPrefHeight(40);
         d1.setPrefWidth(130);
-        // Wrap DatePicker 1
-        StackPane d1Pane = createPromptWrapper(d1, "01/01/01");
+        d1.setConverter(UIFactory.safeDateConverter());
 
         DatePicker d2 = new DatePicker();
         d2.setStyle(filterStyle);
         d2.getStyleClass().add("filter-item");
         d2.setPrefHeight(40);
         d2.setPrefWidth(130);
+        d2.setConverter(UIFactory.safeDateConverter());
+
+        // Reset editor text on blur so invalid input (e.g. "hello") doesn't linger visually
+        d1.getEditor().focusedProperty().addListener((obs, was, isFocused) -> {
+            if (!isFocused) {
+                java.time.LocalDate val = d1.getValue();
+                d1.getEditor().setText(val != null ? d1.getConverter().toString(val) : "");
+            }
+        });
+        d2.getEditor().focusedProperty().addListener((obs, was, isFocused) -> {
+            if (!isFocused) {
+                java.time.LocalDate val = d2.getValue();
+                d2.getEditor().setText(val != null ? d2.getConverter().toString(val) : "");
+            }
+        });
+
+        // Listeners added after both pickers are declared so each can reference the other
+        d1.valueProperty().addListener((obs, old, val) ->
+                viewModel.filterByDateRange(val, d2.getValue()));
+        d2.valueProperty().addListener((obs, old, val) ->
+                viewModel.filterByDateRange(d1.getValue(), val));
+
+        // Wrap DatePicker 1
+        StackPane d1Pane = createPromptWrapper(d1, "01/01/01");
         // Wrap DatePicker 2
         StackPane d2Pane = createPromptWrapper(d2, "01/01/01");
 
         Button clear = new Button("Clear");
         clear.setStyle("-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-weight: bold; -fx-cursor: hand;");
         clear.setOnAction(e -> {
-            // Clear text and values
             search.clear();
             proj.setValue(null);
             type.setValue(null);
 
             d1.setValue(null);
-            d1.getEditor().clear(); // Clears raw typed text
+            d1.getEditor().clear();
 
             d2.setValue(null);
-            d2.getEditor().clear(); // Clears raw typed text
+            d2.getEditor().clear();
+
+            viewModel.clearFilters();
         });
 
         // Add the wrappers instead of the raw inputs
