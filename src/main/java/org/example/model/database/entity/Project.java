@@ -14,6 +14,7 @@ public class Project {
     private LocalDate endDate;
     private boolean isActive;
     private OffsetDateTime createdAt;
+    private BigDecimal currentSpend = BigDecimal.ZERO;
 
     public Project() {}
 
@@ -89,6 +90,19 @@ public class Project {
     }
     public void setCreatedAt(OffsetDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public BigDecimal getCurrentSpend() {
+        return currentSpend == null ? BigDecimal.ZERO : currentSpend;
+    }
+
+    public void setCurrentSpend(BigDecimal currentSpend) {
+        this.currentSpend = currentSpend;
+    }
+
+    public double getSpendPercentage() {
+        if (budgetLimit == null || budgetLimit.compareTo(BigDecimal.ZERO) == 0) return 0.0;
+        return getCurrentSpend().divide(budgetLimit, 4, java.math.RoundingMode.HALF_UP).doubleValue();
     }
 }
 
