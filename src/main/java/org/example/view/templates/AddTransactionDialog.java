@@ -158,7 +158,7 @@ public class AddTransactionDialog {
             if (!isFocused) {
                 java.time.LocalDate val = datePicker.getValue();
                 datePicker.getEditor().setText(
-                    val != null ? datePicker.getConverter().toString(val) : ""
+                        val != null ? datePicker.getConverter().toString(val) : ""
                 );
             }
         });
@@ -172,7 +172,7 @@ public class AddTransactionDialog {
         saveBtn.setMaxWidth(Double.MAX_VALUE);
 
         // Capture original styles before any error styling is applied.
-        // Restoring these is safer than regex-stripping specific properties,
+        // Restoring these are safer than regex-stripping specific properties,
         // which would also remove the original border-color and border-radius.
         final String origAmountStyle = amountField.getStyle();
         final String origDescStyle   = descField.getStyle();
@@ -242,6 +242,13 @@ public class AddTransactionDialog {
 
         Scene scene = new Scene(shadowWrapper);
         scene.setFill(null);
+
+        try {
+            scene.getStylesheets().add(AddTransactionDialog.class.getResource("/styles/global.css").toExternalForm());
+        } catch (Exception e) {
+            System.err.println("Warning: Could not load global.css for AddTransactionDialog.");
+        }
+
         modal.setScene(scene);
 
         // Animation

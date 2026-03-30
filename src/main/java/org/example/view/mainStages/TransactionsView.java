@@ -7,6 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import org.example.model.database.entity.Project;
@@ -119,11 +120,13 @@ public class TransactionsView extends BaseView {
         viewModel.netBalanceProperty()    .addListener((obs, o, v) -> netCard.setValue(v));
         viewModel.largestAmountProperty() .addListener((obs, o, v) -> largestCard.setValue(v));
 
-        // Seed initial values (already computed during ViewModel construction)
+        // Seed initial values
         incomeCard.setValue(viewModel.totalIncomeProperty().get());
         incomeCard.setSubText(viewModel.incomeSubtextProperty().get());
+
         expensesCard.setValue(viewModel.totalExpensesProperty().get());
         expensesCard.setSubText(viewModel.expensesSubtextProperty().get());
+
         netCard.setValue(viewModel.netBalanceProperty().get());
         largestCard.setValue(viewModel.largestAmountProperty().get());
 
@@ -132,16 +135,25 @@ public class TransactionsView extends BaseView {
 
         // Table and empty state
         table = new AppTable<>("");
-        table.setItems(viewModel.getFilteredTransactions());
+
+        javafx.collections.ObservableList<Transaction> dummyData = javafx.collections.FXCollections.observableArrayList(
+                new Transaction(1, 1, 1, 1, "SALE", new BigDecimal("2400.00"), "Description description", LocalDate.of(2001, 1, 1)),
+                new Transaction(2, 1, 1, 1, "PURCHASE", new BigDecimal("24.50"), "Description description", LocalDate.of(2001, 1, 1))
+        );
+        table.setItems(dummyData);
+
         VBox.setVgrow(table, Priority.ALWAYS);
 
         VBox emptyStateBox = new VBox(5);
         emptyStateBox.setAlignment(Pos.CENTER);
+
         Label emptyTitle = new Label("No Transactions Yet");
         emptyTitle.setStyle("-fx-font-size: 36px; -fx-font-weight: 900; -fx-text-fill: #111827;");
+
         Label emptySub = new Label("Register your first sale or purchase");
         emptySub.setStyle("-fx-font-size: 18px; -fx-text-fill: #869F9B;");
         emptyStateBox.getChildren().addAll(emptyTitle, emptySub);
+
         table.setPlaceholder(emptyStateBox);
 
         String headerStyle = "-fx-alignment: center-left; -fx-padding: 0 0 0 20;";
@@ -164,11 +176,11 @@ public class TransactionsView extends BaseView {
         });
 
         TableColumn<Transaction, BigDecimal> amountCol = new TableColumn<>("AMOUNT");
+
         amountCol.setCellValueFactory(new PropertyValueFactory<>("amount"));
         amountCol.setStyle(headerStyle);
 
         amountCol.setCellFactory(col -> new TableCell<>() {
-            // Created once per cell, not on every render
             private final java.text.DecimalFormat df = new java.text.DecimalFormat(
                     "#,##0.00", new java.text.DecimalFormatSymbols(java.util.Locale.US));
 
@@ -178,7 +190,6 @@ public class TransactionsView extends BaseView {
                     setText(null);
                     setStyle("");
                 } else {
-                    // Bounds check — getIndex() can be stale during rapid list updates
                     int idx = getIndex();
                     if (idx < 0 || idx >= getTableView().getItems().size()) return;
                     Transaction t = getTableView().getItems().get(idx);
@@ -205,7 +216,8 @@ public class TransactionsView extends BaseView {
                     setTextFill(Color.BLACK);
                     setAlignment(Pos.CENTER_LEFT);
                 } else {
-                    setText(viewModel.getProjectName(item));
+                    setText("Design");
+
                     setFont(Font.font("System", FontWeight.NORMAL, 15));
                     setTextFill(Color.web(Themes.TEXT_MUTED));
                     setAlignment(Pos.CENTER_LEFT);
@@ -214,6 +226,7 @@ public class TransactionsView extends BaseView {
         });
 
         TableColumn<Transaction, String> descCol = new TableColumn<>("DESCRIPTION");
+
         descCol.setCellValueFactory(new PropertyValueFactory<>("description"));
         descCol.setStyle(headerStyle);
 
@@ -275,6 +288,16 @@ public class TransactionsView extends BaseView {
                                     "-fx-background-color: transparent;"
                     );
 
+                    dots.setOnMouseClicked(e -> {
+                        Transaction tx = getTableView().getItems().get(getIndex());
+                        TransactionDetailDialog.show(
+                                stage,
+                                tx,
+                                () -> System.out.println("Here call ViewModel for Edit!"),
+                                () -> System.out.println("Here call ViewModel for Delete!")
+                        );
+                    });
+
                     setGraphic(dots);
                     setAlignment(Pos.CENTER_LEFT);
                 }
@@ -332,7 +355,6 @@ public class TransactionsView extends BaseView {
         });
     }
 
-    // Custom filter bar
     private HBox createCustomFilterBar() {
         HBox bar = new HBox(15);
         bar.setAlignment(Pos.CENTER_LEFT);
@@ -340,16 +362,35 @@ public class TransactionsView extends BaseView {
 
         String filterStyle = "-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 14px; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;";
 
+        HBox searchContainer = new HBox(8);
+        searchContainer.setAlignment(Pos.CENTER_LEFT);
+        searchContainer.setStyle(filterStyle + " -fx-padding: 0 12;");
+        searchContainer.setPrefHeight(40);
+
+        SVGPath searchIcon = new SVGPath();
+        searchIcon.setContent("M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z");
+        searchIcon.setFill(Color.web(Themes.TEXT_MUTED));
+        searchIcon.setScaleX(0.8);
+        searchIcon.setScaleY(0.8);
+
         TextField search = new TextField();
-        search.setStyle(filterStyle + " -fx-padding: 8 12;");
-        search.setPrefHeight(40);
+        search.setStyle("-fx-background-color: transparent; -fx-border-width: 0; -fx-padding: 0; -fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_DARK + ";");
         search.textProperty().addListener((obs, old, val) -> viewModel.filterBySearch(val));
 
-        // Wrap search field
-        StackPane searchPane = createPromptWrapper(search, "\uD83D\uDD0D Search by name...");
-        HBox.setHgrow(searchPane, Priority.ALWAYS);
+        StackPane searchPane = new StackPane();
+        searchPane.setAlignment(Pos.CENTER_LEFT);
+        Label searchPrompt = new Label("Search by name...");
+        searchPrompt.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 14px;");
+        searchPrompt.setMouseTransparent(true);
+        search.textProperty().addListener((obs, old, val) -> searchPrompt.setVisible(val.isEmpty()));
 
-        // Project ComboBox — populated from DB
+        searchPane.getChildren().addAll(search, searchPrompt);
+
+        HBox.setHgrow(searchPane, Priority.ALWAYS);
+        HBox.setHgrow(searchContainer, Priority.ALWAYS);
+
+        searchContainer.getChildren().addAll(searchIcon, searchPane);
+
         ComboBox<Project> proj = new ComboBox<>();
         proj.setPromptText("Project");
         proj.setStyle(filterStyle);
@@ -372,7 +413,6 @@ public class TransactionsView extends BaseView {
         proj.valueProperty().addListener((obs, old, val) ->
                 viewModel.filterByProject(val == null ? null : val.getId()));
 
-        // Type ComboBox
         ComboBox<String> type = new ComboBox<>();
         type.setPromptText("Type");
         type.setStyle(filterStyle);
@@ -397,7 +437,6 @@ public class TransactionsView extends BaseView {
         d2.setPrefWidth(130);
         d2.setConverter(UIFactory.safeDateConverter());
 
-        // Reset editor text on blur so invalid input (e.g. "hello") doesn't linger visually
         d1.getEditor().focusedProperty().addListener((obs, was, isFocused) -> {
             if (!isFocused) {
                 java.time.LocalDate val = d1.getValue();
@@ -411,15 +450,12 @@ public class TransactionsView extends BaseView {
             }
         });
 
-        // Listeners added after both pickers are declared so each can reference the other
         d1.valueProperty().addListener((obs, old, val) ->
                 viewModel.filterByDateRange(val, d2.getValue()));
         d2.valueProperty().addListener((obs, old, val) ->
                 viewModel.filterByDateRange(d1.getValue(), val));
 
-        // Wrap DatePicker 1
         StackPane d1Pane = createPromptWrapper(d1, "01/01/01");
-        // Wrap DatePicker 2
         StackPane d2Pane = createPromptWrapper(d2, "01/01/01");
 
         Button clear = new Button("Clear");
@@ -438,8 +474,7 @@ public class TransactionsView extends BaseView {
             viewModel.clearFilters();
         });
 
-        // Add the wrappers instead of the raw inputs
-        bar.getChildren().addAll(searchPane, proj, type, d1Pane, d2Pane, clear);
+        bar.getChildren().addAll(searchContainer, proj, type, d1Pane, d2Pane, clear);
         return bar;
     }
 
@@ -449,16 +484,13 @@ public class TransactionsView extends BaseView {
 
         Label prompt = new Label(promptText);
         prompt.setStyle("-fx-text-fill: #9CA3AF; -fx-padding: 0 0 0 12; -fx-font-size: 14px;");
-        prompt.setMouseTransparent(true); // Clicks pass through to the input
+        prompt.setMouseTransparent(true);
 
-        // Listen to actual text changes to hide the custom label
         if (control instanceof TextField) {
             TextField tf = (TextField) control;
-
             tf.textProperty().addListener((obs, old, val) -> prompt.setVisible(val.isEmpty()));
         } else if (control instanceof DatePicker) {
             DatePicker dp = (DatePicker) control;
-
             dp.getEditor().textProperty().addListener((obs, old, val) -> prompt.setVisible(val.isEmpty()));
         }
 

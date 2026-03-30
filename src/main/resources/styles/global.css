@@ -24,12 +24,18 @@
     -fx-text-fill: #6B7280;
     -fx-font-weight: 800;
     -fx-font-size: 11px;
+    -fx-min-width: 36px;
+    -fx-pref-width: 36px;
+    -fx-alignment: center;
 }
 
 .date-picker-popup .day-cell {
     -fx-background-color: white;
     -fx-text-fill: #111827;
     -fx-padding: 8;
+    -fx-min-width: 36px;
+    -fx-pref-width: 36px;
+    -fx-alignment: center;
 }
 
 .date-picker-popup .day-cell:hover {
@@ -117,6 +123,9 @@
     -fx-font-weight: bold;
     -fx-font-size: 12px;
     -fx-padding: 10 5;
+    -fx-min-width: 36px;
+    -fx-pref-width: 36px;
+    -fx-alignment: center;
 }
 
 /* Regular cells with days */
@@ -126,6 +135,9 @@
     -fx-padding: 8;
     -fx-cursor: hand;
     -fx-background-radius: 8;
+    -fx-min-width: 36px;
+    -fx-pref-width: 36px;
+    -fx-alignment: center;
 }
 
 .date-picker-popup .day-cell:hover {

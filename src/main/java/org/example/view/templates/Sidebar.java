@@ -98,40 +98,62 @@ public class Sidebar {
 
     private HBox createMenuItem(String text) {
         HBox box = new HBox(15);
-
         box.setAlignment(Pos.CENTER_LEFT);
         box.setCursor(Cursor.HAND);
+        box.setSpacing(15);
 
-        String iconFileName = text.equals("Manage Company") ? "company.png" : text.toLowerCase() + ".png";
+        String svgPath = "";
 
-        ImageView iconView = new ImageView();
+        switch (text) {
+            case "Settings":
+                svgPath = "M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 0 0-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 0 0-2.282.819l-.922 1.597a1.875 1.875 0 0 0 .432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 0 0 0 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 0 0-.432 2.385l.922 1.597a1.875 1.875 0 0 0 2.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.57.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 0 0 2.28-.819l.923-1.597a1.875 1.875 0 0 0-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 0 0 0-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 0 0-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 0 0-.985-.57c-.183-.087-.277-.227-.297-.348l-.179-1.072a1.875 1.875 0 0 0-1.85-1.567h-1.843ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z";
+                break;
+            case "Manage Company":
+                svgPath = "M1.5 5.625c0-1.036.84-1.875 1.875-1.875h17.25c1.035 0 1.875.84 1.875 1.875v12.75c0 1.035-.84 1.875-1.875 1.875H3.375A1.875 1.875 0 0 1 1.5 18.375V5.625ZM21 9.375A.375.375 0 0 0 20.625 9h-7.5a.375.375 0 0 0-.375.375v1.5c0 .207.168.375.375.375h7.5A.375.375 0 0 0 21 10.875v-1.5Zm0 3.75a.375.375 0 0 0-.375-.375h-7.5a.375.375 0 0 0-.375.375v1.5c0 .207.168.375.375.375h7.5a.375.375 0 0 0 .375-.375v-1.5Zm0 3.75a.375.375 0 0 0-.375-.375h-7.5a.375.375 0 0 0-.375.375v1.5c0 .207.168.375.375.375h7.5a.375.375 0 0 0 .375-.375v-1.5ZM10.875 18.75a.375.375 0 0 0 .375-.375v-1.5a.375.375 0 0 0-.375-.375h-7.5a.375.375 0 0 0-.375.375v1.5c0 .207.168.375.375.375h7.5ZM3.375 15h7.5a.375.375 0 0 0 .375-.375v-1.5a.375.375 0 0 0-.375-.375h-7.5a.375.375 0 0 0-.375.375v1.5c0 .207.168.375.375.375Zm0-3.75h7.5a.375.375 0 0 0 .375-.375v-1.5A.375.375 0 0 0 10.875 9h-7.5A.375.375 0 0 0 3 9.375v1.5c0 .207.168.375.375.375Z";
+                break;
+            case "Employees":
+                svgPath = "M4.5 6.375a4.125 4.125 0 1 1 8.25 0 4.125 4.125 0 0 1-8.25 0ZM14.25 8.625a3.375 3.375 0 1 1 6.75 0 3.375 3.375 0 0 1-6.75 0ZM1.5 19.125a7.125 7.125 0 0 1 14.25 0v.003l-.001.119a.75.75 0 0 1-.363.63 13.067 13.067 0 0 1-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 0 1-.364-.63l-.001-.122ZM17.25 19.128l-.001.144a2.25 2.25 0 0 1-.233.96 10.088 10.088 0 0 0 5.06-1.01.75.75 0 0 0 .42-.643 4.875 4.875 0 0 0-6.957-4.611 8.586 8.586 0 0 1 1.71 5.157v.003Z";
+                break;
+            case "Budget":
+                svgPath = "M2.273 5.625A4.483 4.483 0 0 1 5.25 4.5h13.5c1.141 0 2.183.425 2.977 1.125A3 3 0 0 0 18.75 3H5.25a3 3 0 0 0-2.977 2.625Z M2.273 8.625A4.483 4.483 0 0 1 5.25 7.5h13.5c1.141 0 2.183.425 2.977 1.125A3 3 0 0 0 18.75 6H5.25a3 3 0 0 0-2.977 2.625Z M5.25 9a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h13.5a3 3 0 0 0 3-3v-6a3 3 0 0 0-3-3H5.25Zm7.205 4.155a.75.75 0 0 1 .045 1.06l-1.594 1.75h1.344a.75.75 0 0 1 0 1.5H10.5a.75.75 0 0 1-.556-1.253l1.594-1.75H10.5a.75.75 0 0 1 0-1.5h1.75a.75.75 0 0 1 .705.193Zm3.795-.405a.75.75 0 0 1 .75.75v3a.75.75 0 0 1-1.5 0v-3a.75.75 0 0 1 .75-.75Z";
+                break;
+            case "Reports":
+                svgPath = "M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75ZM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 0 1-1.875-1.875V8.625ZM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 0 1 3 19.875v-6.75Z";
+                break;
+            case "Dashboard":
+                svgPath = "M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z";
+                break;
+            case "Transactions":
+                svgPath = "M2.25 3a.75.75 0 0 0-.75.75v16.5c0 .414.336.75.75.75h.75a.75.75 0 0 0 .545-.236l1.955-2.151 1.955 2.151A.75.75 0 0 0 8 21h.001a.75.75 0 0 0 .544-.236l1.956-2.151 1.955 2.151A.75.75 0 0 0 13 21h.001a.75.75 0 0 0 .544-.236l1.956-2.151 1.955 2.151A.75.75 0 0 0 18 21h.75a.75.75 0 0 0 .75-.75V3.75A.75.75 0 0 0 18.75 3H2.25ZM6.75 7.5a.75.75 0 0 0 0 1.5h7.5a.75.75 0 0 0 0-1.5h-7.5Zm0 3a.75.75 0 0 0 0 1.5h7.5a.75.75 0 0 0 0-1.5h-7.5Zm0 3a.75.75 0 0 0 0 1.5h3.75a.75.75 0 0 0 0-1.5H6.75Z";
+                break;
+            default:
+                svgPath = "";
+        }
 
-        iconView.setFitWidth(26);
-        iconView.setFitHeight(26);
+        // Creating SVG Icon
+        javafx.scene.shape.SVGPath icon = new javafx.scene.shape.SVGPath();
+        icon.setContent(svgPath);
+        icon.setFill(javafx.scene.paint.Color.web(Themes.TEXT_MUTED));
 
-        iconView.setPreserveRatio(true);
-        iconView.setSmooth(true);
-
-        box.setSpacing(20);
-
-        try {
-            InputStream iconStream = getClass().getResourceAsStream("/icons/" + iconFileName);
-
-            if (iconStream != null) {
-                iconView.setImage(new Image(iconStream));
-            }
-        } catch (Exception e) {}
+        // Size
+        StackPane iconPane = new StackPane(icon);
+        iconPane.setMinSize(24, 24);
+        iconPane.setPrefSize(24, 24);
+        iconPane.setMaxSize(24, 24);
 
         Label label = new Label(text);
+        box.getChildren().addAll(iconPane, label);
 
-        box.getChildren().addAll(iconView, label);
         applyDefaultMenuStyle(box);
 
+        // Hover effect
         box.setOnMouseEntered(e -> {
             String windowTitle = stage.getTitle() != null ? stage.getTitle() : "";
 
             if (!windowTitle.contains(text)) {
                 applyHoverMenuStyle(box);
+
+                icon.setFill(javafx.scene.paint.Color.WHITE);
             }
         });
 
@@ -140,6 +162,8 @@ public class Sidebar {
 
             if (!windowTitle.contains(text)) {
                 applyDefaultMenuStyle(box);
+
+                icon.setFill(javafx.scene.paint.Color.web(Themes.TEXT_MUTED));
             }
         });
 
@@ -234,6 +258,15 @@ public class Sidebar {
 
         if (box.getChildren().size() > 1 && box.getChildren().get(1) instanceof Label) {
             ((Label) box.getChildren().get(1)).setStyle("-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold;");
+        }
+
+        // Color SVG icon to white
+        if (box.getChildren().size() > 0 && box.getChildren().get(0) instanceof StackPane) {
+            StackPane iconPane = (StackPane) box.getChildren().get(0);
+
+            if (!iconPane.getChildren().isEmpty() && iconPane.getChildren().get(0) instanceof javafx.scene.shape.SVGPath) {
+                ((javafx.scene.shape.SVGPath) iconPane.getChildren().get(0)).setFill(javafx.scene.paint.Color.WHITE);
+            }
         }
     }
 }
