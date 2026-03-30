@@ -7,6 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import org.example.model.database.entity.Project;
@@ -340,14 +341,34 @@ public class TransactionsView extends BaseView {
 
         String filterStyle = "-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 14px; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;";
 
+        HBox searchContainer = new HBox(8);
+        searchContainer.setAlignment(Pos.CENTER_LEFT);
+        searchContainer.setStyle(filterStyle + " -fx-padding: 0 12;");
+        searchContainer.setPrefHeight(40);
+
+        SVGPath searchIcon = new SVGPath();
+        searchIcon.setContent("M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z");
+        searchIcon.setFill(Color.web(Themes.TEXT_MUTED));
+        searchIcon.setScaleX(0.8);
+        searchIcon.setScaleY(0.8);
+
         TextField search = new TextField();
-        search.setStyle(filterStyle + " -fx-padding: 8 12;");
-        search.setPrefHeight(40);
+        search.setStyle("-fx-background-color: transparent; -fx-border-width: 0; -fx-padding: 0; -fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_DARK + ";");
         search.textProperty().addListener((obs, old, val) -> viewModel.filterBySearch(val));
 
-        // Wrap search field
-        StackPane searchPane = createPromptWrapper(search, "\uD83D\uDD0D Search by name...");
+        StackPane searchPane = new StackPane();
+        searchPane.setAlignment(Pos.CENTER_LEFT);
+        Label searchPrompt = new Label("Search by name...");
+        searchPrompt.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 14px;");
+        searchPrompt.setMouseTransparent(true);
+        search.textProperty().addListener((obs, old, val) -> searchPrompt.setVisible(val.isEmpty()));
+
+        searchPane.getChildren().addAll(search, searchPrompt);
+
         HBox.setHgrow(searchPane, Priority.ALWAYS);
+        HBox.setHgrow(searchContainer, Priority.ALWAYS);
+
+        searchContainer.getChildren().addAll(searchIcon, searchPane);
 
         // Project ComboBox — populated from DB
         ComboBox<Project> proj = new ComboBox<>();
@@ -439,7 +460,7 @@ public class TransactionsView extends BaseView {
         });
 
         // Add the wrappers instead of the raw inputs
-        bar.getChildren().addAll(searchPane, proj, type, d1Pane, d2Pane, clear);
+        bar.getChildren().addAll(searchContainer, proj, type, d1Pane, d2Pane, clear);
         return bar;
     }
 

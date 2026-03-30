@@ -302,6 +302,13 @@ public class AddBudgetDialog {
 
         Scene scene = new Scene(shadowWrapper);
         scene.setFill(null);
+
+        try {
+            scene.getStylesheets().add(AddBudgetDialog.class.getResource("/styles/global.css").toExternalForm());
+        } catch (Exception e) {
+            System.err.println("Warning: Could not load global.css for AddBudgetDialog.");
+        }
+
         modal.setScene(scene);
 
         // Animation
