@@ -136,11 +136,7 @@ public class TransactionsView extends BaseView {
         // Table and empty state
         table = new AppTable<>("");
 
-        javafx.collections.ObservableList<Transaction> dummyData = javafx.collections.FXCollections.observableArrayList(
-                new Transaction(1, 1, 1, 1, "SALE", new BigDecimal("2400.00"), "Description description", LocalDate.of(2001, 1, 1)),
-                new Transaction(2, 1, 1, 1, "PURCHASE", new BigDecimal("24.50"), "Description description", LocalDate.of(2001, 1, 1))
-        );
-        table.setItems(dummyData);
+        table.setItems(viewModel.getFilteredTransactions());
 
         VBox.setVgrow(table, Priority.ALWAYS);
 
