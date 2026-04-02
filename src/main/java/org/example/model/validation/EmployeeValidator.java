@@ -12,7 +12,7 @@ public class EmployeeValidator {
             "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"
     );
 
-    public static void validate(Employee employee) {
+    public static void validate(Employee employee) throws EmpValExept {
 
         if (employee == null) {
             throw new EmpValExept(EmployeeErrorCode.INVALID_COMPANY_ID, "Employee cannot be null.");

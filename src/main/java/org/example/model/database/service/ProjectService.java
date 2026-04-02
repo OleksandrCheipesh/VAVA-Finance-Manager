@@ -2,6 +2,7 @@ package org.example.model.database.service;
 
 import org.example.model.database.ConnectionProvider;
 import org.example.model.database.entity.Project;
+import org.example.model.validation.ProjectValidator;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.Optional;
 public class ProjectService {
 
     public Project addProject(Project project) throws SQLException {
+        ProjectValidator.validate(project);
         String sql = "INSERT INTO projects (company_id, name, description, budget_limit, start_date, end_date, is_active) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id, created_at";
         
@@ -48,6 +50,9 @@ public class ProjectService {
     }
 
     public Optional<Project> getProjectById(int id) throws SQLException {
+        if (id <= 0) {
+            throw new IllegalArgumentException("Project ID must be positive.");
+        }
         String sql = "SELECT * FROM projects WHERE id = ?";
 
         try (Connection connection = ConnectionProvider.getConnection();
@@ -63,6 +68,9 @@ public class ProjectService {
     }
 
     public List<Project> getProjectsByCompanyId(int companyId) throws SQLException {
+        if (companyId <= 0) {
+            throw new IllegalArgumentException("Company ID must be positive.");
+        }
         String sql = "SELECT * FROM projects WHERE company_id = ? ORDER BY id";
         List<Project> list = new ArrayList<>();
 
@@ -78,6 +86,9 @@ public class ProjectService {
     }
 
     public List<Project> getActiveProjectsByCompanyId(int companyId) throws SQLException {
+        if (companyId <= 0) {
+            throw new IllegalArgumentException("Company ID must be positive.");
+        }
         String sql = "SELECT * FROM projects WHERE company_id = ? AND is_active = true ORDER BY id";
         List<Project> list = new ArrayList<>();
 
@@ -107,6 +118,7 @@ public class ProjectService {
     }
 
     public boolean updateProject(Project project) throws SQLException {
+        ProjectValidator.validate(project);
         String sql = "UPDATE projects SET company_id = ?, name = ?, description = ?, budget_limit = ?, " +
                      "start_date = ?, end_date = ?, is_active = ? WHERE id = ?";
 
@@ -138,6 +150,9 @@ public class ProjectService {
     }
 
     public boolean deleteProject(int id) throws SQLException {
+        if (id <= 0) {
+            throw new IllegalArgumentException("Project ID must be positive.");
+        }
         String sql = "DELETE FROM projects WHERE id = ?";
 
         try (Connection connection = ConnectionProvider.getConnection();
