@@ -202,8 +202,9 @@ public class TransactionDetailDialog {
         editIcon.setFill(Color.WHITE); editIcon.setScaleX(0.7); editIcon.setScaleY(0.7);
         editBtn.setGraphic(editIcon);
         editBtn.setOnAction(e -> {
-            closeWithAnimation(modal, shadowWrapper);
-            if (onEdit != null) onEdit.run();
+            closeWithAnimation(modal, shadowWrapper, () -> {
+                if (onEdit != null) onEdit.run();
+            });
         });
 
         Button delBtn = new Button();
@@ -217,8 +218,9 @@ public class TransactionDetailDialog {
         trashIcon.setFill(Color.web("#DC2626")); trashIcon.setScaleX(0.8); trashIcon.setScaleY(0.8);
         delBtn.setGraphic(trashIcon);
         delBtn.setOnAction(e -> {
-            closeWithAnimation(modal, shadowWrapper);
-            if (onDelete != null) onDelete.run();
+            closeWithAnimation(modal, shadowWrapper, () -> {
+                if (onDelete != null) onDelete.run();
+            });
         });
 
         actionBox.getChildren().addAll(editBtn, delBtn);
@@ -267,13 +269,20 @@ public class TransactionDetailDialog {
         return box;
     }
 
-    private static void closeWithAnimation(Stage modal, Node animatedNode) {
+    private static void closeWithAnimation(Stage modal, Node animatedNode, Runnable afterClose) {
         FadeTransition fadeOut = new FadeTransition(Duration.millis(200), animatedNode); fadeOut.setToValue(0);
 
         TranslateTransition slideDown = new TranslateTransition(Duration.millis(200), animatedNode); slideDown.setToY(30);
 
         ParallelTransition exitAnimation = new ParallelTransition(fadeOut, slideDown);
-        exitAnimation.setOnFinished(e -> modal.close());
+        exitAnimation.setOnFinished(e -> {
+            modal.close();
+            if (afterClose != null) afterClose.run();
+        });
         exitAnimation.play();
+    }
+
+    private static void closeWithAnimation(Stage modal, Node animatedNode) {
+        closeWithAnimation(modal, animatedNode, null);
     }
 }

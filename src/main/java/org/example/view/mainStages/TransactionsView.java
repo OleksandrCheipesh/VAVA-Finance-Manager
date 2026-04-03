@@ -289,8 +289,14 @@ public class TransactionsView extends BaseView {
                         TransactionDetailDialog.show(
                                 stage,
                                 tx,
-                                () -> System.out.println("Here call ViewModel for Edit!"),
-                                () -> System.out.println("Here call ViewModel for Delete!")
+                                () -> {
+                                    EditTransactionDialog.show(stage, tx, viewModel.getProjects(), updatedTx -> {
+                                        viewModel.updateTransaction(updatedTx);
+                                    });
+                                },
+                                () -> {
+                                    viewModel.deleteTransaction(tx);
+                                }
                         );
                     });
 

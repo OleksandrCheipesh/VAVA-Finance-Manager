@@ -26,11 +26,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class AddTransactionDialog {
+public class EditTransactionDialog {
 
     private static String selectedType = "SALE";
 
-    public static void show(Stage owner, ObservableList<Project> projects, Consumer<Transaction> onSuccess) {
+    public static void show(Stage owner, Transaction existingTx, ObservableList<Project> projects, Consumer<Transaction> onSuccess) {
         Stage modal = new Stage();
         modal.initOwner(owner);
         modal.initModality(Modality.APPLICATION_MODAL);
@@ -38,7 +38,7 @@ public class AddTransactionDialog {
 
         Scene ownerScene = owner.getScene();
         Paint originalFill = ownerScene.getFill();
-        ownerScene.setFill(Color.web(Themes.TEXT_DARK)); // Cleaned
+        ownerScene.setFill(Color.web(Themes.TEXT_DARK));
 
         Node backgroundRoot = ownerScene.getRoot();
 
@@ -68,20 +68,20 @@ public class AddTransactionDialog {
         shadowWrapper.setStyle("-fx-background-color: transparent;");
         shadowWrapper.setPadding(new Insets(30));
 
-        // Header & Close Button
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER_LEFT);
-        Label title = new Label("New Transaction");
-        title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";"); // Cleaned
+        Label title = new Label("Edit Transaction");
+        title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+
 
         Button closeBtn = new Button("X");
         closeBtn.setMinSize(32, 32);
         closeBtn.setMaxSize(32, 32);
         closeBtn.setStyle(
-                "-fx-background-color: " + Themes.BG_FIELD + ";" + // Cleaned
+                "-fx-background-color: " + Themes.BG_FIELD + ";" +
                         "-fx-background-radius: 8;" +
                         "-fx-cursor: hand;" +
-                        "-fx-text-fill: " + Themes.TEXT_MUTED + ";" + // Cleaned
+                        "-fx-text-fill: " + Themes.TEXT_MUTED + ";" +
                         "-fx-font-weight: bold;" +
                         "-fx-font-size: 14px;" +
                         "-fx-padding: 0;"
@@ -93,11 +93,17 @@ public class AddTransactionDialog {
         HBox.setHgrow(spacer, Priority.ALWAYS);
         header.getChildren().addAll(title, spacer, closeBtn);
 
-        // Custom Toggle
+
         HBox toggleBox = new HBox();
         toggleBox.setStyle("-fx-background-color: " + Themes.BG_FIELD + "; -fx-background-radius: 8; -fx-padding: 4;");
         Button saleBtn = new Button("+ Sale");
         Button purchaseBtn = new Button("- Purchase");
+
+        if (existingTx != null && existingTx.getType() != null) {
+            selectedType = existingTx.getType().toUpperCase();
+        } else {
+            selectedType = "SALE";
+        }
 
         String activeStyle = "-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: default;";
         String inactiveStyle = "-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-weight: bold; -fx-cursor: hand;";
@@ -122,24 +128,34 @@ public class AddTransactionDialog {
         });
         toggleBox.getChildren().addAll(saleBtn, purchaseBtn);
 
-        // Fields
+        // fields
+        String initialAmount = existingTx != null && existingTx.getAmount() != null ? existingTx.getAmount().toString() : "";
         VBox form = new VBox(15);
         TextField amountField = UIFactory.inputField("0.00");
+        if (!initialAmount.isEmpty()) amountField.setText(initialAmount);
         VBox amountBox = createLabeledField("Amount", amountField);
 
+        String initialDesc = existingTx != null && existingTx.getDescription() != null ? existingTx.getDescription() : "";
         TextField descField = UIFactory.inputField("Enter description");
+        if (!initialDesc.isEmpty()) descField.setText(initialDesc);
         VBox descBox = createLabeledField("Description", descField);
 
         ComboBox<String> clientCombo = UIFactory.inputComboBox("Select Client");
         clientCombo.getItems().addAll("TechCorp", "Adobe", "Microsoft");
         VBox clientBox = createLabeledField("Client", clientCombo);
 
-        // Projects supplied by the ViewModel — no service call needed here
         Map<String, Integer> projectNameToId = new HashMap<>();
         ComboBox<String> projectCombo = UIFactory.inputComboBox("Select Project");
+        String initialProject = null;
         for (Project p : projects) {
             projectCombo.getItems().add(p.getName());
             projectNameToId.put(p.getName(), p.getId());
+            if (existingTx != null && existingTx.getProjectId() != null && p.getId() == existingTx.getProjectId()) {
+                initialProject = p.getName();
+            }
+        }
+        if (initialProject != null) {
+            projectCombo.setValue(initialProject);
         }
         VBox projectBox = createLabeledField("Project", projectCombo);
 
@@ -149,11 +165,9 @@ public class AddTransactionDialog {
         splitBox.getChildren().addAll(clientBox, projectBox);
 
         DatePicker datePicker = UIFactory.inputDatePicker("Select date");
-        datePicker.setValue(java.time.LocalDate.now());
+        java.time.LocalDate initialDate = existingTx != null && existingTx.getDate() != null ? existingTx.getDate() : java.time.LocalDate.now();
+        datePicker.setValue(initialDate);
 
-        // When the editor loses focus, re-sync its displayed text to the actual committed value.
-        // Without this, typing "hello" leaves the field showing garbage while getValue() silently
-        // returns the old pre-filled date — the user would never know the input was rejected.
         datePicker.getEditor().focusedProperty().addListener((obs, wasFocused, isFocused) -> {
             if (!isFocused) {
                 java.time.LocalDate val = datePicker.getValue();
@@ -167,13 +181,9 @@ public class AddTransactionDialog {
 
         form.getChildren().addAll(amountBox, descBox, splitBox, dateBox);
 
-        // Save Button
         StateButton saveBtn = new StateButton("Save", StateButton.ButtonType.PRIMARY);
         saveBtn.setMaxWidth(Double.MAX_VALUE);
 
-        // Capture original styles before any error styling is applied.
-        // Restoring these are safer than regex-stripping specific properties,
-        // which would also remove the original border-color and border-radius.
         final String origAmountStyle = amountField.getStyle();
         final String origDescStyle = descField.getStyle();
         final String origDateStyle = datePicker.getStyle();
@@ -186,7 +196,6 @@ public class AddTransactionDialog {
             descField.setStyle(origDescStyle);
             datePicker.setStyle(origDateStyle);
 
-            // Validate before starting the loading thread
             boolean valid = true;
             if (amountField.getText().isBlank()) {
                 amountField.setStyle(amountField.getStyle() + errorBorder);
@@ -220,9 +229,10 @@ public class AddTransactionDialog {
                         Integer projectId = projectNameToId.get(projectCombo.getValue());
                         int accountId = 1; // TODO: replace with real account selection
 
-                        // companyId is intentionally not set here — TransactionsViewModel.addTransaction()
-                        // sets it from SessionManager, keeping session access out of the View layer
-                        Transaction newTx = new Transaction(0, accountId, projectId, clientId, selectedType, amount, desc, date);
+                        int txId = existingTx != null ? existingTx.getId() : 0;
+                        int txCompanyId = existingTx != null ? existingTx.getCompanyId() : 0;
+                        Transaction newTx = new Transaction(txCompanyId, accountId, projectId, clientId, selectedType, amount, desc, date);
+                        newTx.setId(txId);
 
                         onSuccess.accept(newTx);
                         closeWithAnimation(modal, shadowWrapper);
@@ -230,7 +240,6 @@ public class AddTransactionDialog {
                         saveBtn.setLoading(false);
                         amountField.setStyle(amountField.getStyle() + errorBorder);
                     } catch (Exception ex) {
-                        // Catch-all: prevent any uncaught exception from crashing the FX thread
                         saveBtn.setLoading(false);
                         System.err.println("Unexpected error saving transaction: " + ex.getMessage());
                     }
@@ -244,14 +253,14 @@ public class AddTransactionDialog {
         scene.setFill(null);
 
         try {
-            scene.getStylesheets().add(AddTransactionDialog.class.getResource("/styles/global.css").toExternalForm());
+            scene.getStylesheets().add(EditTransactionDialog.class.getResource("/styles/global.css").toExternalForm());
         } catch (Exception e) {
             System.err.println("Warning: Could not load global.css for AddTransactionDialog.");
         }
 
         modal.setScene(scene);
 
-        // Animation
+        // animation
         shadowWrapper.setOpacity(0);
         shadowWrapper.setTranslateY(30);
 
@@ -269,7 +278,7 @@ public class AddTransactionDialog {
 
     private static VBox createLabeledField(String labelText, Node field) {
         Label label = new Label(labelText);
-        label.setStyle("-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-size: 13px;"); // Cleaned
+        label.setStyle("-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-size: 13px;");
         return new VBox(5, label, field);
     }
 
