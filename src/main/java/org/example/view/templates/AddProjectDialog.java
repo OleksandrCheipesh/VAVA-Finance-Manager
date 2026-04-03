@@ -154,7 +154,7 @@ public class AddProjectDialog {
                         LocalDate start = startDateField.getValue() != null ? startDateField.getValue() : LocalDate.now();
                         LocalDate end = endDateField.getValue() != null ? endDateField.getValue() : LocalDate.now().plusMonths(3);
 
-                        Project newProj = new Project(1, name, desc, budget, start, end, true);
+                        Project newProj = new Project(0, name, desc, budget, start, end, true);
                         onSuccess.accept(newProj);
                         closeWithAnimation(modal, root);
                     } catch (NumberFormatException ex) {

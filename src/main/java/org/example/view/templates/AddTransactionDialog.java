@@ -31,6 +31,7 @@ public class AddTransactionDialog {
     private static String selectedType = "SALE";
 
     public static void show(Stage owner, ObservableList<Project> projects, Consumer<Transaction> onSuccess) {
+        selectedType = "SALE";
         Stage modal = new Stage();
         modal.initOwner(owner);
         modal.initModality(Modality.APPLICATION_MODAL);
@@ -218,7 +219,7 @@ public class AddTransactionDialog {
                         java.time.LocalDate date = datePicker.getValue();
                         Integer clientId = null; // TODO: replace with real client selection
                         Integer projectId = projectNameToId.get(projectCombo.getValue());
-                        int accountId = 1; // TODO: replace with real account selection
+                        int accountId = org.example.SessionManager.getInstance().getCurrentAccountId();
 
                         // companyId is intentionally not set here — TransactionsViewModel.addTransaction()
                         // sets it from SessionManager, keeping session access out of the View layer

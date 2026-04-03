@@ -9,6 +9,7 @@ public final class SessionManager {
 
     private static SessionManager instance;
     private User currentUser;
+    private Integer currentAccountId;
 
 
     private SessionManager() {
@@ -40,6 +41,7 @@ public final class SessionManager {
      */
     public synchronized void logout() {
         this.currentUser = null;
+        this.currentAccountId = null;
     }
 
     /**
@@ -53,6 +55,17 @@ public final class SessionManager {
             throw new IllegalStateException("No authenticated user in session");
         }
         return currentUser;
+    }
+
+    public synchronized void setCurrentAccountId(int accountId) {
+        this.currentAccountId = accountId;
+    }
+
+    public synchronized int getCurrentAccountId() {
+        if (currentAccountId == null) {
+            throw new IllegalStateException("No active account in session");
+        }
+        return currentAccountId;
     }
 
     public synchronized int getCurrentCompanyId() {

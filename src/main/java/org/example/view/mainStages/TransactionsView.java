@@ -212,8 +212,7 @@ public class TransactionsView extends BaseView {
                     setTextFill(Color.BLACK);
                     setAlignment(Pos.CENTER_LEFT);
                 } else {
-                    setText("Design");
-
+                    setText(viewModel.getProjectName(item));
                     setFont(Font.font("System", FontWeight.NORMAL, 15));
                     setTextFill(Color.web(Themes.TEXT_MUTED));
                     setAlignment(Pos.CENTER_LEFT);

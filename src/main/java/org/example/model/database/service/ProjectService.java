@@ -3,6 +3,7 @@ package org.example.model.database.service;
 import org.example.model.database.ConnectionProvider;
 import org.example.model.database.entity.Project;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -154,7 +155,8 @@ public class ProjectService {
         project.setName(resultSet.getString("name"));
         project.setDescription(resultSet.getString("description"));
 
-        project.setBudgetLimit(resultSet.wasNull() ? null : resultSet.getBigDecimal("budget_limit"));
+        BigDecimal budgetLimit = resultSet.getBigDecimal("budget_limit");
+        project.setBudgetLimit(resultSet.wasNull() ? null : budgetLimit);
 
         Date startDate = resultSet.getDate("start_date");
         project.setStartDate(startDate != null ? startDate.toLocalDate() : null);

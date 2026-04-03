@@ -11,6 +11,8 @@ import java.util.Optional;
 
 public class TransactionService {
 
+    private final AccountService accountService = new AccountService();
+
     private void validate(Transaction t) {
         if (t == null)
             throw new IllegalArgumentException("Transaction must not be null");
@@ -59,6 +61,10 @@ public class TransactionService {
                 }
             }
         }
+        BigDecimal delta = "SALE".equalsIgnoreCase(transaction.getType())
+                ? transaction.getAmount()
+                : transaction.getAmount().negate();
+        accountService.updateBalance(transaction.getAccountId(), delta);
         return transaction;
     }
 
@@ -186,12 +192,22 @@ public class TransactionService {
     public boolean deleteTransaction(int id) throws SQLException {
         if (id <= 0)
             throw new IllegalArgumentException("Transaction ID must be positive for delete");
-        String sql = "DELETE FROM transactions WHERE id = ?";
 
+        Optional<Transaction> existing = getTransactionById(id);
+
+        String sql = "DELETE FROM transactions WHERE id = ?";
         try (Connection connection = ConnectionProvider.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, id);
-            return preparedStatement.executeUpdate() > 0;
+            boolean deleted = preparedStatement.executeUpdate() > 0;
+            if (deleted && existing.isPresent()) {
+                Transaction t = existing.get();
+                BigDecimal delta = "SALE".equalsIgnoreCase(t.getType())
+                        ? t.getAmount().negate()
+                        : t.getAmount();
+                accountService.updateBalance(t.getAccountId(), delta);
+            }
+            return deleted;
         }
     }
 

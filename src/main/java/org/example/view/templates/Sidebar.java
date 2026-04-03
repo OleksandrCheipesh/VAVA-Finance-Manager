@@ -75,7 +75,7 @@ public class Sidebar {
         menuItems = new VBox(5);
         menuItems.setAlignment(Pos.TOP_LEFT);
 
-        String[] menuLabels = {"Dashboard", "Transactions", "Employees", "Projects", "Budget", "Reports", "Manage Company", "Settings"};
+        String[] menuLabels = {"Dashboard", "Transactions", "Accounts", "Employees", "Projects", "Budget", "Reports", "Manage Company", "Settings"};
 
         for (String label : menuLabels) {
             HBox menuItem = createMenuItem(label);
@@ -125,6 +125,9 @@ public class Sidebar {
                 break;
             case "Transactions":
                 svgPath = "M2.25 3a.75.75 0 0 0-.75.75v16.5c0 .414.336.75.75.75h.75a.75.75 0 0 0 .545-.236l1.955-2.151 1.955 2.151A.75.75 0 0 0 8 21h.001a.75.75 0 0 0 .544-.236l1.956-2.151 1.955 2.151A.75.75 0 0 0 13 21h.001a.75.75 0 0 0 .544-.236l1.956-2.151 1.955 2.151A.75.75 0 0 0 18 21h.75a.75.75 0 0 0 .75-.75V3.75A.75.75 0 0 0 18.75 3H2.25ZM6.75 7.5a.75.75 0 0 0 0 1.5h7.5a.75.75 0 0 0 0-1.5h-7.5Zm0 3a.75.75 0 0 0 0 1.5h7.5a.75.75 0 0 0 0-1.5h-7.5Zm0 3a.75.75 0 0 0 0 1.5h3.75a.75.75 0 0 0 0-1.5H6.75Z";
+                break;
+            case "Accounts":
+                svgPath = "M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z";
                 break;
             default:
                 svgPath = "";
@@ -224,10 +227,11 @@ public class Sidebar {
             case "Settings"       -> new SettingsView();
             case "Manage Company" -> new ManageCompanyView();
             case "Employees"      -> new EmployeesView();
-            case "Projects"     -> new ProjectsView();
+            case "Projects"       -> new ProjectsView();
             case "Budget"         -> new BudgetView();
             case "Reports"        -> new ReportsView();
             case "Transactions"   -> new TransactionsView();
+            case "Accounts"       -> new AccountsView();
             default               -> null;
         };
 

@@ -1,11 +1,14 @@
 package org.example.model.models;
 
 import org.example.SessionManager;
+import org.example.model.database.entity.Account;
 import org.example.model.database.entity.Company;
 import org.example.model.database.entity.User;
+import org.example.model.database.service.AccountService;
 import org.example.model.database.service.CompanyService;
 import org.example.model.database.service.UserService;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 
 public class CreateCompanyModel {
@@ -24,5 +27,10 @@ public class CreateCompanyModel {
         User currentUser = SessionManager.getInstance().getCurrentUser();
         currentUser.setCompanyId(savedCompany.getId());
         userService.updateUser(currentUser);
+
+        AccountService accountService = new AccountService();
+        Account mainAccount = new Account(savedCompany.getId(), "Main Account", BigDecimal.ZERO, company.getCurrency());
+        Account savedAccount = accountService.addAccount(mainAccount);
+        SessionManager.getInstance().setCurrentAccountId(savedAccount.getId());
     }
 }

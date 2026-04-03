@@ -3,6 +3,7 @@ package org.example.model.database.service;
 import org.example.model.database.ConnectionProvider;
 import org.example.model.database.entity.Account;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -90,6 +91,16 @@ public class AccountService {
             preparedStatement.setString(4, account.getCurrency());
             preparedStatement.setInt(5, account.getId());
             return preparedStatement.executeUpdate() > 0;
+        }
+    }
+
+    public void updateBalance(int accountId, BigDecimal delta) throws SQLException {
+        String sql = "UPDATE accounts SET current_balance = current_balance + ? WHERE id = ?";
+        try (Connection connection = ConnectionProvider.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setBigDecimal(1, delta);
+            preparedStatement.setInt(2, accountId);
+            preparedStatement.executeUpdate();
         }
     }
 
