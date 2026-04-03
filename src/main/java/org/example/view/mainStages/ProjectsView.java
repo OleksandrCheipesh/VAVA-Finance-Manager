@@ -79,9 +79,12 @@ public class ProjectsView extends BaseView {
 
         // Summary Widgets
         HBox summaryBox = new HBox(15);
+
+//        Мне нужно здесь подключить данные из view model
         summaryBox.getChildren().addAll(
-                createHeaderWidget("TOTAL BUDGET", "$2.4M", "💼"),
-                createHeaderWidget("ACTIVE SPRINT", "12 Units", "⏱")
+
+                createHeaderWidget("TOTAL BUDGET", viewModel.budgetProperty().getValue(), "💼"),
+                createHeaderWidget("ACTIVE SPRINT", viewModel.activeProjectProperty().getValue(), "⏱")
         );
 
         contentHeader.getChildren().addAll(activeTitle, searchBar, headerSpacer, summaryBox);

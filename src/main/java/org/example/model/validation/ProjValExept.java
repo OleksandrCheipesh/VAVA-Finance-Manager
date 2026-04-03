@@ -13,4 +13,7 @@ public class ProjValExept extends IllegalArgumentException {
         super(message);
         this.code = code;
     }
+    public ProjValExept.ProjErrorCode getCode() {
+        return code;
+    }
 }
