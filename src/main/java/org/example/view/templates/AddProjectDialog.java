@@ -17,12 +17,19 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
+import org.example.SessionManager;
 import org.example.model.database.entity.Project;
+import org.example.model.validation.EmpValExept;
+import org.example.model.validation.EmployeeValidator;
+import org.example.model.validation.ProjValExept;
+import org.example.model.validation.ProjectValidator;
 import org.example.view.templates.StateButton;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.function.Consumer;
+
+import static org.example.model.validation.ProjValExept.ProjErrorCode.*;
 
 public class AddProjectDialog {
 
@@ -134,11 +141,6 @@ public class AddProjectDialog {
         saveBtn.setPrefWidth(250);
 
         saveBtn.setOnAction(e -> {
-            if (nameField.getText().isEmpty()) {
-                nameField.setStyle(nameField.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";");
-                return;
-            }
-
             saveBtn.setLoading(true);
             new Thread(() -> {
                 try { Thread.sleep(800); } catch (InterruptedException ex) {}
@@ -154,7 +156,46 @@ public class AddProjectDialog {
                         LocalDate start = startDateField.getValue() != null ? startDateField.getValue() : LocalDate.now();
                         LocalDate end = endDateField.getValue() != null ? endDateField.getValue() : LocalDate.now().plusMonths(3);
 
-                        Project newProj = new Project(1, name, desc, budget, start, end, true);
+                        Project newProj = new Project(SessionManager.getInstance().getCurrentCompanyId(), name, desc, budget, start, end, true);
+                        try {
+                            ProjectValidator.validate(newProj);
+                        }catch (ProjValExept pe) {
+                            saveBtn.setLoading(false);
+
+                            String errorStyle = "-fx-background-color: " + Themes.BG_FIELD_LARGE + ";" +
+                                    "-fx-border-color: " + Themes.TEXT_ERROR + ";" +
+                                    "-fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10;" +
+                                    "-fx-text-fill: " + Themes.TEXT_PRIMARY + ";";
+
+                            String normalStyle = "-fx-background-color: " + Themes.BG_FIELD_LARGE + ";" +
+                                    "-fx-border-color: " + Themes.BORDER_LARGE + ";" +
+                                    "-fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10;" +
+                                    "-fx-text-fill: " + Themes.TEXT_PRIMARY + ";";
+
+                            nameField.setStyle(normalStyle);
+                            budgetField.setStyle(normalStyle);
+                            startDateField.setStyle(normalStyle);
+                            endDateField.setStyle(normalStyle);
+
+                            switch (pe.getCode()) {
+                                case NAME_EMPTY -> nameField.setStyle(errorStyle);
+
+                                case BUDGET_NEGATIVE,
+                                     SPEND_EXCEEDS_BUDGET -> budgetField.setStyle(errorStyle);
+
+                                case DATE_INVALID_RANGE -> {
+                                    startDateField.setStyle(errorStyle);
+                                    endDateField.setStyle(errorStyle);
+                                }
+
+                                case PROJECT_NULL -> {
+                                    // вообще не должно случаться тут
+                                }
+                            }
+
+                            ToastManager.showError(owner, pe.getMessage());
+                            return;
+                        }
                         onSuccess.accept(newProj);
                         closeWithAnimation(modal, root);
                     } catch (NumberFormatException ex) {

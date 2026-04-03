@@ -18,19 +18,25 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
+import org.example.SessionManager;
 import org.example.model.database.entity.Project;
+import org.example.model.validation.ProjValExept;
+import org.example.model.validation.ProjectValidator;
 import org.example.view.templates.StateButton;
+import org.example.viewModel.ProjectsViewModel;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.function.Consumer;
 
 public class ProjectDetailsDialog {
 
     private static final DecimalFormat currencyFormat = new DecimalFormat("$#,##0");
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
-    public static void show(Stage owner, Project project) {
+    public static void show(Stage owner, Project project, Consumer<Project> onSuccess) {
         Stage modal = new Stage();
         modal.initOwner(owner);
         modal.initModality(Modality.APPLICATION_MODAL);
@@ -197,9 +203,38 @@ public class ProjectDetailsDialog {
         HBox.setHgrow(editBtn, Priority.ALWAYS);
         editBtn.setOnAction(e -> System.out.println("Edit Budget clicked"));
 
-        Button deleteBtn = new Button("🗑");
+//        Button deleteBtn = new Button("🗑");
+        StateButton deleteBtn = new StateButton("🗑", StateButton.ButtonType.DANGER);
+
+        deleteBtn.setOnAction(e -> {
+            deleteBtn.setLoading(true);
+
+            new Thread(() -> {
+                try {
+                    javafx.application.Platform.runLater(() -> {
+                        onSuccess.accept(project);
+                    });
+
+                    Thread.sleep(300);
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    javafx.application.Platform.runLater(() -> {
+                        deleteBtn.setLoading(false);
+                        ToastManager.showError(owner, "Failed to delete project.");
+                    });
+                    return;
+                }
+
+                javafx.application.Platform.runLater(() -> {
+                    deleteBtn.setLoading(false);
+                    ToastManager.showSuccess(owner, "Project deleted successfully!");
+                    closeWithAnimation(modal, root);
+                });
+            }).start();
+        });
+
         deleteBtn.setStyle("-fx-background-color: #FEE2E2; -fx-text-fill: #EF4444; -fx-background-radius: 12; -fx-font-size: 18px; -fx-padding: 8 18; -fx-cursor: hand;");
-        deleteBtn.setOnAction(e -> System.out.println("Delete Project clicked"));
 
         bottomButtons.getChildren().addAll(editBtn, deleteBtn);
 
