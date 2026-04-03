@@ -141,11 +141,6 @@ public class AddProjectDialog {
         saveBtn.setPrefWidth(250);
 
         saveBtn.setOnAction(e -> {
-            if (nameField.getText().isEmpty()) {
-                nameField.setStyle(nameField.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";");
-                return;
-            }
-
             saveBtn.setLoading(true);
             new Thread(() -> {
                 try { Thread.sleep(800); } catch (InterruptedException ex) {}

@@ -28,13 +28,13 @@ public class EmployeesViewModel {
     private final IntegerProperty activeEmployees = new SimpleIntegerProperty(0);
     private final IntegerProperty onboardingEmployees = new SimpleIntegerProperty(0);
     private final StringProperty totalEmployeesChangeText = new SimpleStringProperty("");
-    private final IntegerProperty activeEmployeesRate = new SimpleIntegerProperty(0);
+    private final StringProperty activeEmployeesRate = new SimpleStringProperty("");
     private final StringProperty onboardingEmployeesActionText = new SimpleStringProperty("");
     public IntegerProperty totalEmployeesProperty() { return totalEmployees; }
     public IntegerProperty activeEmployeesProperty() { return activeEmployees; }
     public IntegerProperty onboardingEmployeesProperty() { return onboardingEmployees; }
     public StringProperty totalEmployeesChangeTextProperty() { return totalEmployeesChangeText; }
-    public IntegerProperty activeEmployeesRateProperty() { return activeEmployeesRate; }
+    public StringProperty activeEmployeesRateProperty() { return activeEmployeesRate; }
     public StringProperty onboardingEmployeesActionTextProperty() { return onboardingEmployeesActionText; }
 
     public EmployeesViewModel() {
@@ -67,7 +67,7 @@ public class EmployeesViewModel {
             double rate = totalEmployees.get() == 0
                     ? 0
                     : (double) activeEmployees.get() / totalEmployees.get() * 100;
-            activeEmployeesRate.set((int)rate);
+            activeEmployeesRate.set((int)rate + "% rate");
             onboardingEmployeesActionText.set("Action needed");
         }
     }
@@ -100,7 +100,7 @@ public class EmployeesViewModel {
             double rate = totalEmployees.get() == 0
                     ? 0
                     : (double) activeEmployees.get() / totalEmployees.get() * 100;
-            activeEmployeesRate.set((int)rate);
+            activeEmployeesRate.set((int)rate + "% rate");
             onboardingEmployeesActionText.set("Action needed");
         }
     }

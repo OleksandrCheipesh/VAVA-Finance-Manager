@@ -48,7 +48,7 @@ public class ProjectsViewModel {
             message.set("Error: Failed to load projects. " + e.getMessage());
         }
         finally {
-            activeProject.set((int) projects.stream()
+            activeProject.set(projects.stream()
                     .filter(Project::isActive)
                     .count() + " Units");
 
@@ -70,6 +70,22 @@ public class ProjectsViewModel {
 
         }
     }
+    public void deleteProject(Project p) {
+        try {
+            projects.removeIf(project -> project.getId() == p.getId());
+            db.deleteProject(p.getId());
+            message.set("Success: Project '" + p.getName() + "' delete successfully!");
+        } catch (Exception e) {
+            message.set("Error: Failed to delete project.");
+        }
+        finally {
+            activeProject.set(projects.stream()
+                    .filter(Project::isActive)
+                    .count() + " Units");
+
+        }
+    }
+
 
     // Real-time Regex Search
     public void filterBySearch(String regex) {

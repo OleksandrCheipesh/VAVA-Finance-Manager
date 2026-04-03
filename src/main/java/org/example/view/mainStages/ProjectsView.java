@@ -1,5 +1,6 @@
 package org.example.view.mainStages;
 
+import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -83,8 +84,8 @@ public class ProjectsView extends BaseView {
 //        Мне нужно здесь подключить данные из view model
         summaryBox.getChildren().addAll(
 
-                createHeaderWidget("TOTAL BUDGET", viewModel.budgetProperty().getValue(), "💼"),
-                createHeaderWidget("ACTIVE SPRINT", viewModel.activeProjectProperty().getValue(), "⏱")
+                createHeaderWidget("TOTAL BUDGET", viewModel.budgetProperty(), "💼"),
+                createHeaderWidget("ACTIVE SPRINT", viewModel.activeProjectProperty(), "⏱")
         );
 
         contentHeader.getChildren().addAll(activeTitle, searchBar, headerSpacer, summaryBox);
@@ -146,7 +147,9 @@ public class ProjectsView extends BaseView {
         card.setPrefSize(320, 300);
         card.setPadding(new Insets(25));
         card.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-border-color: #E2E8F0; -fx-border-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 4); -fx-cursor: hand;");
-        card.setOnMouseClicked(e -> ProjectDetailsDialog.show(stage, p));
+        card.setOnMouseClicked(e -> ProjectDetailsDialog.show(stage, p, deletedProject -> {
+            viewModel.deleteProject(deletedProject);
+        }));
 
         // Top Row (Icon + Pill)
         HBox topRow = new HBox();
@@ -249,7 +252,7 @@ public class ProjectsView extends BaseView {
         return card;
     }
 
-    private HBox createHeaderWidget(String title, String value, String iconTxt) {
+    private HBox createHeaderWidget(String title, StringProperty valueProperty, String iconTxt) {
         HBox widget = new HBox(15);
         widget.setAlignment(Pos.CENTER_LEFT);
         widget.setStyle("-fx-background-color: white; -fx-border-color: #E2E8F0; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12 20;");
@@ -260,7 +263,8 @@ public class ProjectsView extends BaseView {
         VBox textBox = new VBox(2);
         Label lblTitle = new Label(title);
         lblTitle.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
-        Label lblValue = new Label(value);
+        Label lblValue = new Label();
+        lblValue.textProperty().bind(valueProperty);
         lblValue.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
         textBox.getChildren().addAll(lblTitle, lblValue);
 
