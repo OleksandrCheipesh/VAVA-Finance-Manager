@@ -34,10 +34,10 @@ public class TransactionsViewModel {
     private final StringProperty message = new SimpleStringProperty("");
 
     // Summary card properties
-    private final StringProperty totalIncome = new SimpleStringProperty("0.00");
-    private final StringProperty totalExpenses = new SimpleStringProperty("0.00");
-    private final StringProperty netBalance = new SimpleStringProperty("0.00");
-    private final StringProperty largestAmount = new SimpleStringProperty("0.00");
+    private final StringProperty totalIncome = new SimpleStringProperty("0.00$");
+    private final StringProperty totalExpenses = new SimpleStringProperty("0.00$");
+    private final StringProperty netBalance = new SimpleStringProperty("0.00$");
+    private final StringProperty largestAmount = new SimpleStringProperty("0.00$");
     private final StringProperty incomeSubtext = new SimpleStringProperty("0 sales");
     private final StringProperty expensesSubtext= new SimpleStringProperty("0 purchases");
 
@@ -229,10 +229,10 @@ public class TransactionsViewModel {
         }
 
         BigDecimal net = income.subtract(expenses);
-        totalIncome.set(df.format(income));
-        totalExpenses.set(df.format(expenses));
-        netBalance.set(df.format(net));
-        largestAmount.set(df.format(largest));
+        totalIncome.set(df.format(income) + "$");
+        totalExpenses.set(df.format(expenses) + "$");
+        netBalance.set(df.format(net) + "$");
+        largestAmount.set(df.format(largest) + "$");
         incomeSubtext.set(salesCount + " sales");
         expensesSubtext.set(purchaseCount + " purchases");
     }

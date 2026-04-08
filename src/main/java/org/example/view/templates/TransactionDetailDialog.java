@@ -158,32 +158,7 @@ public class TransactionDetailDialog {
         detailsGrid.add(createDetailItem("PAYMENT METHOD", "M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z", "Corporate Visa **** 9012"), 0, 1);
         detailsGrid.add(createDetailItem("VENDOR", "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5", "Azure Cloud Services"), 1, 1);
 
-        // Dividing line 2
-        Region divider2 = new Region();
-        divider2.setMinHeight(1); divider2.setStyle("-fx-background-color: #F1F5F9;");
-
-        // Attachments
-        VBox attachBox = new VBox(10);
-
-        Label attachTitle = new Label("ATTACHMENTS");
-        attachTitle.setStyle("-fx-font-size: 11px; -fx-font-weight: 900; -fx-text-fill: #64748B; -fx-letter-spacing: 1px;");
-
-        HBox attachPill = new HBox(8);
-
-        attachPill.setAlignment(Pos.CENTER_LEFT);
-        attachPill.setStyle("-fx-background-color: #F1F5F9; -fx-padding: 8 12; -fx-background-radius: 6; -fx-max-width: -Infinity; -fx-cursor: hand;");
-
-        SVGPath fileIcon = new SVGPath();
-        fileIcon.setContent("M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8V4h5v5h5v11z");
-        fileIcon.setFill(Color.web("#64748B")); fileIcon.setScaleX(0.7); fileIcon.setScaleY(0.7);
-
-        Label fileName = new Label("invoice_oct_24.pdf");
-        fileName.setStyle("-fx-text-fill: #475569; -fx-font-size: 12px; -fx-font-weight: bold;");
-        attachPill.getChildren().addAll(fileIcon, fileName);
-
-        attachBox.getChildren().addAll(attachTitle, attachPill);
-
-        card.getChildren().addAll(mainTitleBox, amountBox, divider1, detailsGrid, divider2, attachBox);
+        card.getChildren().addAll(mainTitleBox, amountBox, divider1, detailsGrid);
 
         // Down Buttons
         HBox actionBox = new HBox(15);

@@ -108,10 +108,10 @@ public class TransactionsView extends BaseView {
         HBox filterBar = createCustomFilterBar();
 
         // Summary Cards — values bound to ViewModel computed properties
-        SummaryCard incomeCard   = new SummaryCard("INCOME",      "0.00", "0 sales",     Themes.TEXT_SUCCESS);
-        SummaryCard expensesCard = new SummaryCard("EXPENSES",    "0.00", "0 purchases", Themes.TEXT_ERROR);
-        SummaryCard netCard      = new SummaryCard("NET BALANCE", "0.00", "",            Themes.TEXT_SUCCESS);
-        SummaryCard largestCard  = new SummaryCard("LARGEST",     "0.00", "",            Themes.TEXT_SUCCESS);
+        SummaryCard incomeCard   = new SummaryCard("INCOME",      "0.00$", "0 sales",     Themes.TEXT_SUCCESS);
+        SummaryCard expensesCard = new SummaryCard("EXPENSES",    "0.00$", "0 purchases", Themes.TEXT_ERROR);
+        SummaryCard netCard      = new SummaryCard("NET BALANCE", "0.00$", "",            Themes.TEXT_SUCCESS);
+        SummaryCard largestCard  = new SummaryCard("LARGEST",     "0.00$", "",            Themes.TEXT_SUCCESS);
 
         viewModel.totalIncomeProperty()   .addListener((obs, o, v) -> incomeCard.setValue(v));
         viewModel.incomeSubtextProperty() .addListener((obs, o, v) -> incomeCard.setSubText(v));
@@ -212,7 +212,7 @@ public class TransactionsView extends BaseView {
                     setTextFill(Color.BLACK);
                     setAlignment(Pos.CENTER_LEFT);
                 } else {
-                    setText("Design");
+                    setText(viewModel.getProjectName(item));
 
                     setFont(Font.font("System", FontWeight.NORMAL, 15));
                     setTextFill(Color.web(Themes.TEXT_MUTED));
