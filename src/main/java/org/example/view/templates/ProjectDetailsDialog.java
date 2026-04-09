@@ -18,19 +18,25 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
+import org.example.SessionManager;
 import org.example.model.database.entity.Project;
+import org.example.model.validation.ProjValExept;
+import org.example.model.validation.ProjectValidator;
 import org.example.view.templates.StateButton;
+import org.example.viewModel.ProjectsViewModel;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.function.Consumer;
 
 public class ProjectDetailsDialog {
 
     private static final DecimalFormat currencyFormat = new DecimalFormat("$#,##0");
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
-    public static void show(Stage owner, Project project) {
+    public static void show(Stage owner, Project project, Consumer<Project> onSuccess) {
         Stage modal = new Stage();
         modal.initOwner(owner);
         modal.initModality(Modality.APPLICATION_MODAL);

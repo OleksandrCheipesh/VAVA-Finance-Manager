@@ -34,11 +34,11 @@ public class TransactionsViewModel {
     private final StringProperty message = new SimpleStringProperty("");
 
     // Summary card properties
-    private final StringProperty totalIncome    = new SimpleStringProperty("0.00");
-    private final StringProperty totalExpenses  = new SimpleStringProperty("0.00");
-    private final StringProperty netBalance     = new SimpleStringProperty("0.00");
-    private final StringProperty largestAmount  = new SimpleStringProperty("0.00");
-    private final StringProperty incomeSubtext  = new SimpleStringProperty("0 sales");
+    private final StringProperty totalIncome = new SimpleStringProperty("0.00$");
+    private final StringProperty totalExpenses = new SimpleStringProperty("0.00$");
+    private final StringProperty netBalance = new SimpleStringProperty("0.00$");
+    private final StringProperty largestAmount = new SimpleStringProperty("0.00$");
+    private final StringProperty incomeSubtext = new SimpleStringProperty("0 sales");
     private final StringProperty expensesSubtext= new SimpleStringProperty("0 purchases");
 
     // Active filters
@@ -95,6 +95,44 @@ public class TransactionsViewModel {
             message.set("Error: No active session. Please log in.");
         } catch (Exception e) {
             message.set("Error: Failed to record transaction — " + e.getMessage());
+        }
+    }
+
+    public void updateTransaction(Transaction t) {
+        message.set("");
+        try {
+            boolean updated = transactionService.updateTransaction(t);
+            if (updated) {
+                // Find by id and replace transaction in the list
+                for (int i = 0; i < transactions.size(); i++) {
+                    if (transactions.get(i).getId() == t.getId()) {
+                        transactions.set(i, t);
+                        break;
+                    }
+                }
+                message.set("Success: Transaction updated successfully!");
+            } else {
+                message.set("Error: Transaction not found.");
+            }
+        } catch (IllegalArgumentException e) {
+            message.set("Error: " + e.getMessage());
+        } catch (Exception e) {
+            message.set("Error: Failed to update transaction — " + e.getMessage());
+        }
+    }
+
+    public void deleteTransaction(Transaction t) {
+        message.set("");
+        try {
+            boolean deleted = transactionService.deleteTransaction(t.getId());
+            if (deleted) {
+                transactions.removeIf(tx -> tx.getId() == t.getId());
+                message.set("Success: Transaction deleted successfully!");
+            } else {
+                message.set("Error: Transaction not found.");
+            }
+        } catch (Exception e) {
+            message.set("Error: Failed to delete transaction — " + e.getMessage());
         }
     }
 
@@ -173,9 +211,9 @@ public class TransactionsViewModel {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
         DecimalFormat df = new DecimalFormat("#,##0.00", symbols);
 
-        BigDecimal income   = BigDecimal.ZERO;
+        BigDecimal income = BigDecimal.ZERO;
         BigDecimal expenses = BigDecimal.ZERO;
-        BigDecimal largest  = BigDecimal.ZERO;
+        BigDecimal largest= BigDecimal.ZERO;
         int salesCount = 0, purchaseCount = 0;
 
         for (Transaction t : transactions) {
@@ -191,21 +229,21 @@ public class TransactionsViewModel {
         }
 
         BigDecimal net = income.subtract(expenses);
-        totalIncome.set(df.format(income));
-        totalExpenses.set(df.format(expenses));
-        netBalance.set(df.format(net));
-        largestAmount.set(df.format(largest));
+        totalIncome.set(df.format(income) + "$");
+        totalExpenses.set(df.format(expenses) + "$");
+        netBalance.set(df.format(net) + "$");
+        largestAmount.set(df.format(largest) + "$");
         incomeSubtext.set(salesCount + " sales");
         expensesSubtext.set(purchaseCount + " purchases");
     }
 
     public ObservableList<Project> getProjects() { return projects; }
     public FilteredList<Transaction> getFilteredTransactions() { return filteredTransactions; }
-    public StringProperty messageProperty()      { return message; }
-    public StringProperty totalIncomeProperty()    { return totalIncome; }
-    public StringProperty totalExpensesProperty()  { return totalExpenses; }
-    public StringProperty netBalanceProperty()     { return netBalance; }
-    public StringProperty largestAmountProperty()  { return largestAmount; }
-    public StringProperty incomeSubtextProperty()  { return incomeSubtext; }
+    public StringProperty messageProperty() { return message; }
+    public StringProperty totalIncomeProperty() { return totalIncome; }
+    public StringProperty totalExpensesProperty() { return totalExpenses; }
+    public StringProperty netBalanceProperty() { return netBalance; }
+    public StringProperty largestAmountProperty() { return largestAmount; }
+    public StringProperty incomeSubtextProperty() { return incomeSubtext; }
     public StringProperty expensesSubtextProperty(){ return expensesSubtext; }
 }

@@ -16,10 +16,13 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
+import org.example.SessionManager;
 import org.example.model.database.entity.Employee;
-import org.example.view.templates.StateButton;
+import org.example.model.validation.EmpValExept;
+import org.example.model.validation.EmployeeValidator;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.function.Consumer;
 

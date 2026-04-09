@@ -70,7 +70,7 @@ public class Sidebar {
         menuItems = new VBox(5);
         menuItems.setAlignment(Pos.TOP_LEFT);
 
-        String[] menuLabels = {"Dashboard", "Transactions", "Employees", "Projects", "Budget", "Reports", "Manage Company", "Settings"};
+        String[] menuLabels = {"Dashboard", "Transactions", "Employees", "Projects", "Budget", "Reports", "Settings"};
 
         for (String label : menuLabels) {
             HBox menuItem = createMenuItem(label);
@@ -111,14 +111,17 @@ public class Sidebar {
         SVGPath iconView = IconFactory.getIcon(iconName, Themes.TEXT_MUTED, 24);
 
         Label label = new Label(text);
+        box.getChildren().addAll(iconPane, label);
 
-        box.getChildren().addAll(iconView, label);
         applyDefaultMenuStyle(box);
 
+        // Hover effect
         box.setOnMouseEntered(e -> {
             String windowTitle = stage.getTitle() != null ? stage.getTitle() : "";
             if (!windowTitle.contains(text)) {
                 applyHoverMenuStyle(box);
+
+                icon.setFill(javafx.scene.paint.Color.WHITE);
             }
         });
 
@@ -126,6 +129,8 @@ public class Sidebar {
             String windowTitle = stage.getTitle() != null ? stage.getTitle() : "";
             if (!windowTitle.contains(text)) {
                 applyDefaultMenuStyle(box);
+
+                icon.setFill(javafx.scene.paint.Color.web(Themes.TEXT_MUTED));
             }
         });
 
@@ -173,7 +178,6 @@ public class Sidebar {
         BaseView view = switch (menuLabel) {
             case "Dashboard"      -> new DashBoardView();
             case "Settings"       -> new SettingsView();
-            case "Manage Company" -> new ManageCompanyView();
             case "Employees"      -> new EmployeesView();
             case "Projects"       -> new ProjectsView();
             case "Budget"         -> new BudgetView();
@@ -218,6 +222,15 @@ public class Sidebar {
         }
         if (box.getChildren().size() > 1 && box.getChildren().get(1) instanceof Label lbl) {
             lbl.setStyle("-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold;");
+        }
+
+        // Color SVG icon to white
+        if (box.getChildren().size() > 0 && box.getChildren().get(0) instanceof StackPane) {
+            StackPane iconPane = (StackPane) box.getChildren().get(0);
+
+            if (!iconPane.getChildren().isEmpty() && iconPane.getChildren().get(0) instanceof javafx.scene.shape.SVGPath) {
+                ((javafx.scene.shape.SVGPath) iconPane.getChildren().get(0)).setFill(javafx.scene.paint.Color.WHITE);
+            }
         }
     }
 }

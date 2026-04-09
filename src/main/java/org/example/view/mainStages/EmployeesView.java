@@ -89,10 +89,27 @@ public class EmployeesView extends BaseView {
         filterBar = new FilterBar();
 
         HBox summaryContainer = new HBox(20);
+
+        Label totalEmpLabel = new Label();
+        Label activeLabel = new Label();
+        Label onboardingLabel = new Label();
+
+        Label totalEmpLabelSub = new Label();
+        Label activeLabelSub = new Label();
+        Label onboardingLabelSub = new Label();
+
+        totalEmpLabel.textProperty().bind(viewModel.totalEmployeesProperty().asString());
+        activeLabel.textProperty().bind(viewModel.activeEmployeesProperty().asString());
+        onboardingLabel.textProperty().bind(viewModel.onboardingEmployeesProperty().asString());
+
+        totalEmpLabelSub.textProperty().bind(viewModel.totalEmployeesChangeTextProperty());
+        activeLabelSub.textProperty().bind(viewModel.activeEmployeesRateProperty());
+        onboardingLabelSub.textProperty().bind(viewModel.onboardingEmployeesActionTextProperty());
+
         summaryContainer.getChildren().addAll(
-                createSummaryCard("TOTAL EMPLOYEES", "124", "+4 this month", Themes.TEXT_SUCCESS),
-                createSummaryCard("ACTIVE", "118", "95.2% rate", Themes.TEXT_MUTED),
-                createSummaryCard("ONBOARDING", "3", "Action needed", "#F59E0B")
+                createSummaryCard("TOTAL EMPLOYEES", totalEmpLabel, totalEmpLabelSub, Themes.TEXT_SUCCESS),
+                createSummaryCard("ACTIVE", activeLabel, activeLabelSub, Themes.TEXT_MUTED),
+                createSummaryCard("ONBOARDING", onboardingLabel, onboardingLabelSub, "#F59E0B")
         );
 
         table = new AppTable<>("No employees found. Click '+ Add Employee' to start.");
@@ -206,7 +223,7 @@ public class EmployeesView extends BaseView {
         });
     }
 
-    private VBox createSummaryCard(String title, String mainValue, String subText, String subTextColor) {
+    private VBox createSummaryCard(String title, Label valueLabel, Label subText, String subTextColor) {
         VBox card = new VBox(8);
         card.setStyle("-fx-background-color: " + Themes.BG_CARD + "; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 20;");
         HBox.setHgrow(card, Priority.ALWAYS);
@@ -217,10 +234,10 @@ public class EmployeesView extends BaseView {
         HBox valueBox = new HBox(10);
         valueBox.setAlignment(Pos.BASELINE_LEFT);
 
-        Label lblValue = new Label(mainValue);
+        Label lblValue = valueLabel;
         lblValue.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
-        Label lblSub = new Label(subText);
+        Label lblSub = subText;
         lblSub.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + subTextColor + ";");
 
         valueBox.getChildren().addAll(lblValue, lblSub);
