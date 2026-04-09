@@ -29,13 +29,11 @@ public class TransactionDetailDialog {
 
     public static void show(Stage owner, Transaction transaction, Runnable onEdit, Runnable onDelete) {
         Stage modal = new Stage();
-
         modal.initOwner(owner);
         modal.initModality(Modality.APPLICATION_MODAL);
         modal.initStyle(StageStyle.TRANSPARENT);
 
         Scene ownerScene = owner.getScene();
-
         Paint originalFill = ownerScene.getFill();
         ownerScene.setFill(Color.web(Themes.TEXT_DARK));
 
@@ -54,7 +52,6 @@ public class TransactionDetailDialog {
         });
 
         VBox root = new VBox(20);
-
         root.setPadding(new Insets(30));
         root.setStyle(
                 "-fx-background-color: #F8FAFC;" +
@@ -65,7 +62,6 @@ public class TransactionDetailDialog {
         root.setPrefWidth(500);
 
         StackPane shadowWrapper = new StackPane(root);
-
         shadowWrapper.setStyle("-fx-background-color: transparent;");
         shadowWrapper.setPadding(new Insets(30));
 
@@ -77,16 +73,10 @@ public class TransactionDetailDialog {
         iconCircle.setMinSize(48, 48);
         iconCircle.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-background-radius: 12;");
 
-        SVGPath receiptIcon = new SVGPath();
-
-        receiptIcon.setContent("M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z");
-        receiptIcon.setFill(Color.WHITE);
-        receiptIcon.setScaleX(0.8); receiptIcon.setScaleY(0.8);
-
-        iconCircle.getChildren().add(receiptIcon);
+        // NEW: Load receipt icon from factory
+        iconCircle.getChildren().add(IconFactory.getIcon("receipt", "#ffffff", 24));
 
         VBox titleBox = new VBox(2);
-
         Label title = new Label("TRANSACTION DETAIL");
         title.setStyle("-fx-font-size: 14px; -fx-font-weight: 900; -fx-text-fill: #64748B; -fx-letter-spacing: 1px;");
 
@@ -117,7 +107,6 @@ public class TransactionDetailDialog {
         boolean isSale = "SALE".equalsIgnoreCase(transaction.getType());
 
         Label typePill = new Label(isSale ? "Sale" : "Purchase");
-
         String pillBg = isSale ? "#D1FAE5" : "#FEF3C7";
         String pillText = isSale ? "#059669" : "#D97706";
         typePill.setStyle("-fx-background-color: " + pillBg + "; -fx-text-fill: " + pillText + "; -fx-padding: 4 16; -fx-background-radius: 20; -fx-font-weight: bold; -fx-font-size: 12px;");
@@ -135,7 +124,7 @@ public class TransactionDetailDialog {
         HBox.setHgrow(amountSpacer, Priority.ALWAYS);
 
         DecimalFormat df = new DecimalFormat("#,##0.00", new java.text.DecimalFormatSymbols(Locale.US));
-        Label amountValue = new Label((isSale ? "$" : "$") + df.format(transaction.getAmount()));
+        Label amountValue = new Label((isSale ? "+$" : "-$") + df.format(transaction.getAmount()));
         amountValue.setStyle("-fx-font-size: 32px; -fx-font-weight: 900; -fx-text-fill: " + (isSale ? Themes.DARK_GREEN : "#EF4444") + ";");
 
         amountBox.getChildren().addAll(amountLabel, amountSpacer, amountValue);
@@ -146,17 +135,17 @@ public class TransactionDetailDialog {
 
         // Grid
         GridPane detailsGrid = new GridPane();
-
         detailsGrid.setVgap(20); detailsGrid.setHgap(20);
 
         ColumnConstraints col1 = new ColumnConstraints(); col1.setPercentWidth(50);
         ColumnConstraints col2 = new ColumnConstraints(); col2.setPercentWidth(50);
         detailsGrid.getColumnConstraints().addAll(col1, col2);
 
-        detailsGrid.add(createDetailItem("PROJECT", "M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z", "Project Nova"), 0, 0);
-        detailsGrid.add(createDetailItem("DATE", "M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z", transaction.getDate().format(DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.US))), 1, 0);
-        detailsGrid.add(createDetailItem("PAYMENT METHOD", "M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z", "Corporate Visa **** 9012"), 0, 1);
-        detailsGrid.add(createDetailItem("VENDOR", "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5", "Azure Cloud Services"), 1, 1);
+        // NEW: Load grid icons from factory
+        detailsGrid.add(createDetailItem("PROJECT", "folder", "Project Nova"), 0, 0);
+        detailsGrid.add(createDetailItem("DATE", "calendar", transaction.getDate().format(DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.US))), 1, 0);
+        detailsGrid.add(createDetailItem("PAYMENT METHOD", "wallet", "Corporate Visa **** 9012"), 0, 1);
+        detailsGrid.add(createDetailItem("VENDOR", "users-round", "Azure Cloud Services"), 1, 1);
 
         card.getChildren().addAll(mainTitleBox, amountBox, divider1, detailsGrid);
 
@@ -164,18 +153,13 @@ public class TransactionDetailDialog {
         HBox actionBox = new HBox(15);
 
         Button editBtn = new Button("Edit Transaction");
-
         editBtn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 8; -fx-cursor: hand;");
         editBtn.setMaxWidth(Double.MAX_VALUE);
         editBtn.setMinHeight(45);
-
         HBox.setHgrow(editBtn, Priority.ALWAYS);
 
-        SVGPath editIcon = new SVGPath();
-
-        editIcon.setContent("M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z");
-        editIcon.setFill(Color.WHITE); editIcon.setScaleX(0.7); editIcon.setScaleY(0.7);
-        editBtn.setGraphic(editIcon);
+        // NEW: Load edit icon from factory
+        editBtn.setGraphic(IconFactory.getIcon("square-pen", "#ffffff", 18));
         editBtn.setOnAction(e -> {
             closeWithAnimation(modal, shadowWrapper, () -> {
                 if (onEdit != null) onEdit.run();
@@ -183,15 +167,11 @@ public class TransactionDetailDialog {
         });
 
         Button delBtn = new Button();
-
         delBtn.setStyle("-fx-background-color: #FECACA; -fx-background-radius: 8; -fx-cursor: hand;");
         delBtn.setMinSize(55, 45); delBtn.setMaxSize(55, 45);
 
-        SVGPath trashIcon = new SVGPath();
-
-        trashIcon.setContent("M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z");
-        trashIcon.setFill(Color.web("#DC2626")); trashIcon.setScaleX(0.8); trashIcon.setScaleY(0.8);
-        delBtn.setGraphic(trashIcon);
+        // NEW: Load trash icon from factory
+        delBtn.setGraphic(IconFactory.getIcon("trash", "#DC2626", 20));
         delBtn.setOnAction(e -> {
             closeWithAnimation(modal, shadowWrapper, () -> {
                 if (onDelete != null) onDelete.run();
@@ -218,23 +198,19 @@ public class TransactionDetailDialog {
         modal.show();
     }
 
-    private static VBox createDetailItem(String titleText, String svgPath, String valueText) {
+    private static VBox createDetailItem(String titleText, String iconName, String valueText) {
         VBox box = new VBox(6);
 
         Label title = new Label(titleText);
         title.setStyle("-fx-font-size: 11px; -fx-font-weight: 900; -fx-text-fill: #64748B; -fx-letter-spacing: 1px;");
 
         HBox valBox = new HBox(8);
-
         valBox.setAlignment(Pos.CENTER_LEFT);
-        SVGPath icon = new SVGPath();
 
-        icon.setContent(svgPath);
-        icon.setFill(Color.web(Themes.PRIMARY));
-        icon.setScaleX(0.7); icon.setScaleY(0.7);
+        // NEW: Load item icon from factory
+        SVGPath icon = IconFactory.getIcon(iconName, Themes.PRIMARY, 16);
 
         Label value = new Label(valueText);
-
         value.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0F172A;");
         value.setWrapText(true);
 
@@ -246,7 +222,6 @@ public class TransactionDetailDialog {
 
     private static void closeWithAnimation(Stage modal, Node animatedNode, Runnable afterClose) {
         FadeTransition fadeOut = new FadeTransition(Duration.millis(200), animatedNode); fadeOut.setToValue(0);
-
         TranslateTransition slideDown = new TranslateTransition(Duration.millis(200), animatedNode); slideDown.setToY(30);
 
         ParallelTransition exitAnimation = new ParallelTransition(fadeOut, slideDown);

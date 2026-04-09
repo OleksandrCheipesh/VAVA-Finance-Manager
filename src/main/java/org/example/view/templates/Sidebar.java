@@ -111,7 +111,7 @@ public class Sidebar {
         SVGPath iconView = IconFactory.getIcon(iconName, Themes.TEXT_MUTED, 24);
 
         Label label = new Label(text);
-        box.getChildren().addAll(iconPane, label);
+        box.getChildren().addAll(iconView, label);
 
         applyDefaultMenuStyle(box);
 
@@ -120,8 +120,6 @@ public class Sidebar {
             String windowTitle = stage.getTitle() != null ? stage.getTitle() : "";
             if (!windowTitle.contains(text)) {
                 applyHoverMenuStyle(box);
-
-                icon.setFill(javafx.scene.paint.Color.WHITE);
             }
         });
 
@@ -129,8 +127,6 @@ public class Sidebar {
             String windowTitle = stage.getTitle() != null ? stage.getTitle() : "";
             if (!windowTitle.contains(text)) {
                 applyDefaultMenuStyle(box);
-
-                icon.setFill(javafx.scene.paint.Color.web(Themes.TEXT_MUTED));
             }
         });
 
@@ -222,15 +218,6 @@ public class Sidebar {
         }
         if (box.getChildren().size() > 1 && box.getChildren().get(1) instanceof Label lbl) {
             lbl.setStyle("-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold;");
-        }
-
-        // Color SVG icon to white
-        if (box.getChildren().size() > 0 && box.getChildren().get(0) instanceof StackPane) {
-            StackPane iconPane = (StackPane) box.getChildren().get(0);
-
-            if (!iconPane.getChildren().isEmpty() && iconPane.getChildren().get(0) instanceof javafx.scene.shape.SVGPath) {
-                ((javafx.scene.shape.SVGPath) iconPane.getChildren().get(0)).setFill(javafx.scene.paint.Color.WHITE);
-            }
         }
     }
 }
