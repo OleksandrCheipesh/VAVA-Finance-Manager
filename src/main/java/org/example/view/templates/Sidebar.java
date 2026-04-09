@@ -6,13 +6,11 @@ import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.SVGPath;
 import javafx.stage.Stage;
 import org.example.view.mainStages.*;
-
-import java.io.InputStream;
 
 public class Sidebar {
 
@@ -52,15 +50,12 @@ public class Sidebar {
 
     private HBox buildSidebarTitle() {
         HBox logoBox = new HBox(15);
-
         logoBox.setAlignment(Pos.CENTER_LEFT);
         logoBox.setPadding(new Insets(0, 0, 10, 0));
 
         Region logo = new Region();
-
         logo.setPrefSize(36, 36);
         logo.setMinSize(36, 36);
-
         logo.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-background-radius: 10;");
 
         Label adminLabel = new Label("Admin");
@@ -82,10 +77,8 @@ public class Sidebar {
 
             Platform.runLater(() -> {
                 String windowTitle = stage.getTitle() != null ? stage.getTitle() : "";
-
                 if (windowTitle.contains(label)) {
                     activeLabel = label;
-
                     applyActiveMenuStyle(menuItem);
                 }
             });
@@ -98,29 +91,24 @@ public class Sidebar {
 
     private HBox createMenuItem(String text) {
         HBox box = new HBox(15);
-
         box.setAlignment(Pos.CENTER_LEFT);
         box.setCursor(Cursor.HAND);
-
-        String iconFileName = text.equals("Manage Company") ? "company.png" : text.toLowerCase() + ".png";
-
-        ImageView iconView = new ImageView();
-
-        iconView.setFitWidth(26);
-        iconView.setFitHeight(26);
-
-        iconView.setPreserveRatio(true);
-        iconView.setSmooth(true);
-
         box.setSpacing(20);
 
-        try {
-            InputStream iconStream = getClass().getResourceAsStream("/icons/" + iconFileName);
+        // Map the text label to the new Lucide SVG icons
+        String iconName = switch (text) {
+            case "Dashboard" -> "layout-dashboard";
+            case "Transactions" -> "receipt";
+            case "Employees" -> "users-round";
+            case "Projects" -> "folder";
+            case "Budget" -> "wallet";
+            case "Reports" -> "chart-column-big";
+            case "Settings", "Manage Company" -> "settings"; // Shared icon as fallback
+            default -> "folder";
+        };
 
-            if (iconStream != null) {
-                iconView.setImage(new Image(iconStream));
-            }
-        } catch (Exception e) {}
+        // Create the SVG graphic (Starts muted)
+        SVGPath iconView = IconFactory.getIcon(iconName, Themes.TEXT_MUTED, 24);
 
         Label label = new Label(text);
 
@@ -129,7 +117,6 @@ public class Sidebar {
 
         box.setOnMouseEntered(e -> {
             String windowTitle = stage.getTitle() != null ? stage.getTitle() : "";
-
             if (!windowTitle.contains(text)) {
                 applyHoverMenuStyle(box);
             }
@@ -137,7 +124,6 @@ public class Sidebar {
 
         box.setOnMouseExited(e -> {
             String windowTitle = stage.getTitle() != null ? stage.getTitle() : "";
-
             if (!windowTitle.contains(text)) {
                 applyDefaultMenuStyle(box);
             }
@@ -153,7 +139,6 @@ public class Sidebar {
         profileCard.setStyle("-fx-background-color: " + Themes.SIDEBAR_PROFILE_BG + "; -fx-background-radius: 12; -fx-padding: 16;");
 
         VBox textContainer = new VBox(2);
-
         Label name = new Label("Alex Johnson");
         name.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: white;");
 
@@ -163,24 +148,15 @@ public class Sidebar {
         textContainer.getChildren().addAll(name, role);
 
         Button logoutBtn = new Button("Logout");
-
         logoutBtn.setMaxWidth(Double.MAX_VALUE);
 
-        // Original
-//        logoutBtn.setStyle("-fx-background-color: " + Themes.SIDEBAR_LOGOUT_BG + "; -fx-text-fill: #D1D5DB; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;");
-//        logoutBtn.setOnMouseEntered(e -> logoutBtn.setStyle("-fx-background-color: " + Themes.SIDEBAR_LOGOUT_HOVER + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;"));
-//        logoutBtn.setOnMouseExited(e -> logoutBtn.setStyle("-fx-background-color: " + Themes.SIDEBAR_LOGOUT_BG + "; -fx-text-fill: #D1D5DB; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;"));
-
-
-        // TEST TOAST MESSAGE !!!
         logoutBtn.setStyle("-fx-background-color: " + Themes.SIDEBAR_LOGOUT_BG + "; -fx-text-fill: #D1D5DB; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;");
         logoutBtn.setOnMouseEntered(e -> logoutBtn.setStyle("-fx-background-color: " + Themes.SIDEBAR_LOGOUT_HOVER + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;"));
         logoutBtn.setOnMouseExited(e -> logoutBtn.setStyle("-fx-background-color: " + Themes.SIDEBAR_LOGOUT_BG + "; -fx-text-fill: #D1D5DB; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;"));
 
         logoutBtn.setOnMouseClicked(e -> {
-            ToastManager.showSuccess(stage, "Toast Message !!");
+            ToastManager.showSuccess(stage, "Logged out successfully");
         });
-        // TEST TOAST MESSAGE !!!
 
         profileCard.getChildren().addAll(textContainer, logoutBtn);
 
@@ -190,7 +166,6 @@ public class Sidebar {
     // NAVIGATION
     private void navigateTo(String menuLabel) {
         String windowTitle = stage.getTitle() != null ? stage.getTitle() : "";
-
         if (windowTitle.contains(menuLabel)) return; // is on same page
 
         activeLabel = menuLabel; // new page
@@ -200,7 +175,7 @@ public class Sidebar {
             case "Settings"       -> new SettingsView();
             case "Manage Company" -> new ManageCompanyView();
             case "Employees"      -> new EmployeesView();
-            case "Projects"     -> new ProjectsView();
+            case "Projects"       -> new ProjectsView();
             case "Budget"         -> new BudgetView();
             case "Reports"        -> new ReportsView();
             case "Transactions"   -> new TransactionsView();
@@ -212,28 +187,37 @@ public class Sidebar {
         }
     }
 
-    // STYLES
+    // STYLES - Now dynamically change the SVG stroke color!
     private void applyDefaultMenuStyle(HBox box) {
         box.setStyle("-fx-background-color: transparent; -fx-background-radius: 8; -fx-padding: 12 16;");
 
-        if (box.getChildren().size() > 1 && box.getChildren().get(1) instanceof Label) {
-            ((Label) box.getChildren().get(1)).setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 15px; -fx-font-weight: bold;");
+        if (box.getChildren().size() > 0 && box.getChildren().get(0) instanceof SVGPath svg) {
+            svg.setStroke(Color.web(Themes.TEXT_MUTED));
+        }
+        if (box.getChildren().size() > 1 && box.getChildren().get(1) instanceof Label lbl) {
+            lbl.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 15px; -fx-font-weight: bold;");
         }
     }
 
     private void applyHoverMenuStyle(HBox box) {
         box.setStyle("-fx-background-color: " + Themes.SIDEBAR_HOVER + "; -fx-background-radius: 8; -fx-padding: 12 16;");
 
-        if (box.getChildren().size() > 1 && box.getChildren().get(1) instanceof Label) {
-            ((Label) box.getChildren().get(1)).setStyle("-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold;");
+        if (box.getChildren().size() > 0 && box.getChildren().get(0) instanceof SVGPath svg) {
+            svg.setStroke(Color.WHITE); // Make icon white on hover
+        }
+        if (box.getChildren().size() > 1 && box.getChildren().get(1) instanceof Label lbl) {
+            lbl.setStyle("-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold;");
         }
     }
 
     private void applyActiveMenuStyle(HBox box) {
         box.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-background-radius: 8; -fx-padding: 12 16;");
 
-        if (box.getChildren().size() > 1 && box.getChildren().get(1) instanceof Label) {
-            ((Label) box.getChildren().get(1)).setStyle("-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold;");
+        if (box.getChildren().size() > 0 && box.getChildren().get(0) instanceof SVGPath svg) {
+            svg.setStroke(Color.WHITE); // Make icon white when active
+        }
+        if (box.getChildren().size() > 1 && box.getChildren().get(1) instanceof Label lbl) {
+            lbl.setStyle("-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold;");
         }
     }
 }

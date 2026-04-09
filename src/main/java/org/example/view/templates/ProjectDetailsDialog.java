@@ -191,14 +191,20 @@ public class ProjectDetailsDialog {
         // --- Bottom Buttons ---
         HBox bottomButtons = new HBox(15);
 
-        StateButton editBtn = new StateButton("✏ Edit Budget", StateButton.ButtonType.PRIMARY);
+        // Use setGraphic to inject the white SVG icon into the button!
+        StateButton editBtn = new StateButton("Edit Budget", StateButton.ButtonType.PRIMARY);
+        editBtn.setGraphic(IconFactory.getIcon("square-pen", "#ffffff", 16));
+
         editBtn.setMaxWidth(Double.MAX_VALUE);
         editBtn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-padding: 12; -fx-background-radius: 12; -fx-cursor: hand;");
         HBox.setHgrow(editBtn, Priority.ALWAYS);
         editBtn.setOnAction(e -> System.out.println("Edit Budget clicked"));
 
-        Button deleteBtn = new Button("🗑");
-        deleteBtn.setStyle("-fx-background-color: #FEE2E2; -fx-text-fill: #EF4444; -fx-background-radius: 12; -fx-font-size: 18px; -fx-padding: 8 18; -fx-cursor: hand;");
+        // Use setGraphic to inject the red SVG trash icon!
+        Button deleteBtn = new Button();
+        deleteBtn.setGraphic(IconFactory.getIcon("trash", "#EF4444", 20));
+
+        deleteBtn.setStyle("-fx-background-color: #FEE2E2; -fx-background-radius: 12; -fx-padding: 8 18; -fx-cursor: hand;");
         deleteBtn.setOnAction(e -> System.out.println("Delete Project clicked"));
 
         bottomButtons.getChildren().addAll(editBtn, deleteBtn);
