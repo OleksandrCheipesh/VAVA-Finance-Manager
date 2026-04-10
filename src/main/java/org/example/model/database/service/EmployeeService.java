@@ -11,8 +11,8 @@ import java.util.Optional;
 public class EmployeeService {
 
     public Employee addEmployee(Employee employee) throws SQLException {
-        String sql = "INSERT INTO employees (company_id, name, surname, employee, age, salary, position) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id, hired_at";
+        String sql = "INSERT INTO employees (company_id, name, surname, email, age, salary, position, status) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id, hired_at";
 
         try (Connection connection = ConnectionProvider.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -20,22 +20,26 @@ public class EmployeeService {
             preparedStatement.setString(2, employee.getName());
             preparedStatement.setString(3, employee.getSurname());
 
-            if (employee.getEmail() != null)
+            if (employee.getEmail() != null) {
                 preparedStatement.setString(4, employee.getEmail());
-             else
+            } else {
                 preparedStatement.setNull(4, Types.VARCHAR);
+            }
 
-            if (employee.getAge() != null)
-                preparedStatement.setInt(4, employee.getAge());
-             else
-                preparedStatement.setNull(4, Types.INTEGER);
+            if (employee.getAge() != null) {
+                preparedStatement.setInt(5, employee.getAge());
+            } else {
+                preparedStatement.setNull(5, Types.INTEGER);
+            }
 
-            if (employee.getSalary() != null)
-                preparedStatement.setBigDecimal(5, employee.getSalary());
-            else
-                preparedStatement.setNull(5, Types.NUMERIC);
+            if (employee.getSalary() != null) {
+                preparedStatement.setBigDecimal(6, employee.getSalary());
+            } else {
+                preparedStatement.setNull(6, Types.NUMERIC);
+            }
 
-            preparedStatement.setString(6, employee.getPosition());
+            preparedStatement.setString(7, employee.getPosition());
+            preparedStatement.setString(8, employee.getStatus() != null ? employee.getStatus().name() : "ACTIVE");
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
@@ -107,25 +111,28 @@ public class EmployeeService {
 
     public boolean updateEmployee(Employee employee) throws SQLException {
         String sql = "UPDATE employees SET company_id = ?, name = ?, surname = ?, age = ?, " +
-                     "salary = ?, position = ? WHERE id = ?";
+                     "salary = ?, position = ?, status = ? WHERE id = ?";
         try (Connection connection = ConnectionProvider.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, employee.getCompanyId());
             preparedStatement.setString(2, employee.getName());
             preparedStatement.setString(3, employee.getSurname());
 
-            if (employee.getAge() != null)
+            if (employee.getAge() != null) {
                 preparedStatement.setInt(4, employee.getAge());
-             else
-                 preparedStatement.setNull(4, Types.INTEGER);
+            } else {
+                preparedStatement.setNull(4, Types.INTEGER);
+            }
 
-            if (employee.getSalary() != null)
+            if (employee.getSalary() != null) {
                 preparedStatement.setBigDecimal(5, employee.getSalary());
-             else
-                 preparedStatement.setNull(5, Types.NUMERIC);
+            } else {
+                preparedStatement.setNull(5, Types.NUMERIC);
+            }
 
             preparedStatement.setString(6, employee.getPosition());
-            preparedStatement.setInt(7, employee.getId());
+            preparedStatement.setString(7, employee.getStatus() != null ? employee.getStatus().name() : "ACTIVE");
+            preparedStatement.setInt(8, employee.getId());
             return preparedStatement.executeUpdate() > 0;
         }
     }
@@ -153,6 +160,12 @@ public class EmployeeService {
 
         employee.setPosition(resultSet.getString("position"));
         employee.setHiredAt(resultSet.getObject("hired_at", java.time.OffsetDateTime.class));
+        String status = resultSet.getString("status");
+        if (status != null) {
+            try {
+                employee.setStatus(org.example.model.database.entity.EmployeeStatus.valueOf(status));
+            } catch (IllegalArgumentException _) {}
+        }
         return employee;
     }
 }
