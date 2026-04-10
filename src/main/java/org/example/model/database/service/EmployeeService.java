@@ -21,10 +21,11 @@ public class EmployeeService {
             preparedStatement.setString(2, employee.getName());
             preparedStatement.setString(3, employee.getSurname());
 
-            if (employee.getEmail() != null)
+            if (employee.getEmail() != null) {
                 preparedStatement.setString(4, employee.getEmail());
-             else
+            } else {
                 preparedStatement.setNull(4, Types.VARCHAR);
+            }
 
             if (employee.getAge() != null)
                 preparedStatement.setInt(5, employee.getAge());
@@ -122,15 +123,17 @@ public class EmployeeService {
             preparedStatement.setString(2, employee.getName());
             preparedStatement.setString(3, employee.getSurname());
 
-            if (employee.getAge() != null)
+            if (employee.getAge() != null) {
                 preparedStatement.setInt(4, employee.getAge());
-             else
-                 preparedStatement.setNull(4, Types.INTEGER);
+            } else {
+                preparedStatement.setNull(4, Types.INTEGER);
+            }
 
-            if (employee.getSalary() != null)
+            if (employee.getSalary() != null) {
                 preparedStatement.setBigDecimal(5, employee.getSalary());
-             else
-                 preparedStatement.setNull(5, Types.NUMERIC);
+            } else {
+                preparedStatement.setNull(5, Types.NUMERIC);
+            }
 
             preparedStatement.setString(6, employee.getPosition());
             if (employee.getEmail() != null)
@@ -169,6 +172,12 @@ public class EmployeeService {
 
         employee.setPosition(resultSet.getString("position"));
         employee.setHiredAt(resultSet.getObject("hired_at", java.time.OffsetDateTime.class));
+        String status = resultSet.getString("status");
+        if (status != null) {
+            try {
+                employee.setStatus(org.example.model.database.entity.EmployeeStatus.valueOf(status));
+            } catch (IllegalArgumentException _) {}
+        }
         return employee;
     }
 }

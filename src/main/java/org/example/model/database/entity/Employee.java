@@ -13,6 +13,7 @@ public class Employee extends Person {
     private BigDecimal salary;
     private String position;
     private OffsetDateTime hiredAt;
+    private EmployeeStatus status;
     private String email;
 
     public Employee() {}
@@ -100,4 +101,13 @@ public class Employee extends Person {
     public void setHiredAt(OffsetDateTime hiredAt) {
         this.hiredAt = hiredAt;
     }
+
+    public EmployeeStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(EmployeeStatus status) {
+        this.status = status;
+    }
+}
 }

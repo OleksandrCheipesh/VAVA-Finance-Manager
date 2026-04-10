@@ -10,6 +10,9 @@ public class Account {
     private BigDecimal currentBalance;
     private String currency;
     private OffsetDateTime createdAt;
+    private Integer limitAmount;
+    private AccountCategory category;
+    private AccountCycle cycle;
 
     public Account() {}
 
@@ -18,6 +21,30 @@ public class Account {
         this.accountName = accountName;
         this.currentBalance = currentBalance;
         this.currency = currency;
+    }
+
+    public Integer getLimitAmount() {
+        return limitAmount;
+    }
+
+    public void setLimitAmount(Integer limitAmount) {
+        this.limitAmount = limitAmount;
+    }
+
+    public AccountCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(AccountCategory category) {
+        this.category = category;
+    }
+
+    public AccountCycle getCycle() {
+        return cycle;
+    }
+
+    public void setCycle(AccountCycle cycle) {
+        this.cycle = cycle;
     }
 
     public int getId() {
