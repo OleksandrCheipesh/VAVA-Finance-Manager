@@ -7,6 +7,7 @@ import org.example.view.authentication.RegistrationView;
 import org.example.model.database.ConnectionProvider;
 import org.example.model.database.DatabaseConfig;
 import org.example.model.database.Migrations;
+import org.example.view.templates.ComponentTestView;
 
 // точка входу — окремий клас, більше нічого не робить
 public class Main extends Application {
@@ -21,4 +22,10 @@ public class Main extends Application {
         ConnectionProvider.init(config);
         launch();
     }
+
+//    @Override
+//    public void start(Stage stage) {
+//        // Add this line to test your components:
+//        new ComponentTestView().show(stage);
+//    }
 }

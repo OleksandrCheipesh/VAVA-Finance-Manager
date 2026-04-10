@@ -1,0 +1,138 @@
+/* Container styling */
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #E5E7EB;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 0;
+}
+
+/* Rows */
+.table-row-cell {
+    -fx-background-color: white;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #F1F5F9;
+    -fx-cell-size: 65px;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: #F8FAFC;
+}
+
+/* Header background */
+.table-view .column-header-background {
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 12 12 0 0;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #E5E7EB;
+    -fx-padding: 5 0;
+}
+
+/* Individual cells in header */
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-size: 50px;
+    -fx-border-width: 0;
+    -fx-padding: 0 0 0 20;
+    -fx-alignment: center-left;
+}
+
+/* Text in header */
+.table-view .column-header .label {
+    -fx-text-fill: #6B7280;
+    -fx-font-weight: 800;
+    -fx-font-size: 13px;
+    -fx-padding: 0;
+    -fx-alignment: center-left;
+}
+
+/* Text in tables */
+.table-view .table-cell {
+    -fx-border-width: 0;
+    -fx-text-fill: #111827;
+    -fx-font-size: 15px;
+    -fx-padding: 0 0 0 20;
+    -fx-alignment: center-left;
+}
+
+/* Eliminate empty corner */
+.table-view .filler {
+    -fx-background-color: #F8FAFC;
+}
+
+/* Eliminate blue frame */
+.table-view:focused {
+    -fx-background-color: white, white;
+    -fx-background-insets: 0, 1;
+}
+
+/* Selected row */
+.table-row-cell:selected {
+    -fx-background-color: #F8FAFC;
+    -fx-table-cell-border-color: transparent;
+}
+
+/* Force prompt text to stay visible inside ANY text input when focused */
+.filter-item .text-input,
+.filter-item .text-input:focused,
+.filter-item .text-field,
+.filter-item .text-field:focused {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-text-fill: #111827;
+    -fx-prompt-text-fill: #9CA3AF !important;
+}
+
+/* Global override just in case JavaFX tries to bypass the class */
+.text-input:focused {
+    -fx-prompt-text-fill: #9CA3AF !important;
+}
+
+/* Remove gray background from calendar/arrow icons */
+.filter-item .arrow-button,
+.filter-item .arrow-button:focused {
+    -fx-background-color: transparent;
+}
+
+/* Eliminates blue frame around the table when clicked */
+.table-view:focused {
+    -fx-background-color: white, white;
+    -fx-background-insets: 0, 1;
+}
+
+/* Force prompt text to stay visible inside ANY text input when focused, keeping placeholder text clean */
+.filter-item .text-input:focused,
+.filter-item .text-field:focused {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-text-fill: #111827;
+    -fx-prompt-text-fill: #9CA3AF !important;
+}
+
+/* Removes standard blue border on inputs when focused across the app */
+.text-input:focused {
+    -fx-prompt-text-fill: #9CA3AF !important;
+}
+
+/* --- THE KEY INTERACTION FIXES --- */
+
+/* 1. Removes default gray background from calendar/arrow icons for standard clean look */
+.filter-item .arrow-button,
+.filter-item .arrow-button:focused {
+    -fx-background-color: transparent;
+}
+
+/* 2. Changes the mouse on screen to a hand like transactions view when hovering over the icon area */
+.filter-item .arrow-button:hover {
+    -fx-cursor: hand;
+}
+
+/* 3. Green icon color on hover for DatePicker's calendar icon to match transactions view exactly */
+.filter-item.date-picker .arrow-button:hover .arrow {
+    -fx-background-color: #2DD4BF; /* Themes.PRIMARY or Themes.TEXT_SUCCESS */
+}
+
+/* 4. Green icon color on hover for ComboBox's arrow icon to match transactions view exactly */
+.filter-item.combo-box .arrow-button:hover .arrow {
+    -fx-background-color: #2DD4BF; /* Themes.PRIMARY or Themes.TEXT_SUCCESS */
+}

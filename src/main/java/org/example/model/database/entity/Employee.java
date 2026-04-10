@@ -1,9 +1,12 @@
 package org.example.model.database.entity;
 
+import org.example.model.database.entity.Person;
+
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 public class Employee extends Person {
+    //TO DO: active and pasive status
     private int id;
     private int companyId;
     private Integer age;
@@ -11,6 +14,7 @@ public class Employee extends Person {
     private String position;
     private OffsetDateTime hiredAt;
     private EmployeeStatus status;
+    private String email;
 
     public Employee() {}
 
@@ -22,6 +26,17 @@ public class Employee extends Person {
         this.age = age;
         this.salary = salary;
         this.position = position;
+    }
+
+    public Employee(int companyId, String name, String surname, String email, Integer age, BigDecimal salary, String position, OffsetDateTime hiredAt) {
+        this.companyId = companyId;
+        this.name = name;
+        this.surname = surname;
+        this.email = email;
+        this.age = age;
+        this.salary = salary;
+        this.position = position;
+        this.hiredAt = hiredAt;
     }
 
     public int getId() {
@@ -95,4 +110,4 @@ public class Employee extends Person {
         this.status = status;
     }
 }
-
+}

@@ -1,5 +1,6 @@
-package org.example.model;
+package org.example.model.models;
 
+import org.example.SessionManager;
 import org.example.model.database.entity.User;
 import org.example.model.database.entity.Position;
 import org.example.model.database.service.UserService;
@@ -11,9 +12,11 @@ public class RegistrationModel {
     private final UserService userService = new UserService();
 
     public void register(String name, String surname, String email, String passwordHash) throws SQLException {
-        // RegisterValidator.validate(name, email, passwordHash);
+        // Run the validator first!
+        RegisterValidator.validate(name, surname, email, passwordHash);
 
         User user = new User(name, surname, email, passwordHash, Position.Director, null);
         userService.addUser(user);
+        SessionManager.getInstance().login(user);
     }
 }

@@ -1,182 +1,104 @@
 package org.example.view.authentication;
 
-import javafx.application.Application;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.stage.Stage;
-import org.example.view.mainStages.DashBoardView;
 import org.example.view.templates.BaseView;
+import org.example.view.templates.Themes;
+import org.example.view.templates.UIFactory;
 import org.example.viewModel.RegistrationViewModel;
 
 public class RegistrationView extends BaseView {
 
     private final RegistrationViewModel viewModel = new RegistrationViewModel();
 
-    // fields
-    private VBox root, formBox, buttonBox;
+    private HBox root;
+    private StackPane leftPanel;
+    private VBox rightPanel, formBox, buttonBox;
     private TextField nameField, surnameField, emailField;
     private PasswordField passwordField;
     private Button registerButton;
-    private Label titleLabel, messageLabel;
-
+    private Label titleLabel, subtitleLabel, messageLabel;
+    private Hyperlink loginLink;
 
     @Override
     protected void setContent() {
-        root = new VBox(20);
-        formBox = new VBox(20);
-        buttonBox = new VBox();
+        root = new HBox();
 
-        titleLabel = new Label("Registration");
+        // Left brand panel with logo and background image
+        String imageUrl = getClass().getResource("/images/pen-and-notebook.png").toExternalForm();
+        leftPanel = UIFactory.brandPanel(imageUrl);
 
-        nameField = new TextField();
-        nameField.setPromptText("Name");
+        // Right panel with registration form
+        rightPanel = new VBox();
+        formBox    = new VBox(15);
+        buttonBox  = new VBox(10);
 
-        surnameField = new TextField();
-        surnameField.setPromptText("Surname");
+        titleLabel    = new Label("Registration");
+        subtitleLabel = new Label("Create account to get started");
 
-        emailField = new TextField();
-        emailField.setPromptText("E-mail");
+        // Input fields
+        nameField      = UIFactory.inputField("Name");
+        surnameField   = UIFactory.inputField("Surname");
+        emailField     = UIFactory.inputField("E-mail");
+        passwordField  = UIFactory.passwordField("Password");
 
-        passwordField = new PasswordField();
-        passwordField.setPromptText("Password");
+        // Submit button and navigation link
+        registerButton = UIFactory.primaryButton("Create Account", Themes.FORM_MAX_WIDTH);
+        loginLink      = UIFactory.navLink("Switch to Login");
 
-        registerButton = new Button("Next");
-        buttonBox.getChildren().add(registerButton);
-
-        messageLabel = new Label();
+        // Message label for success/error feedback
+        messageLabel   = UIFactory.messageLabel();
         messageLabel.textProperty().bind(viewModel.messageProperty());
 
-        formBox.getChildren().addAll(
-                titleLabel,
-                nameField,
-                surnameField,
-                emailField,
-                passwordField,
-                buttonBox,
-                messageLabel
-        );
+        buttonBox.getChildren().addAll(registerButton, loginLink);
+        formBox.getChildren().addAll(titleLabel, subtitleLabel, nameField, surnameField, emailField, passwordField, buttonBox, messageLabel);
+        rightPanel.getChildren().add(formBox);
+        root.getChildren().addAll(leftPanel, rightPanel);
 
-        root.getChildren().add(formBox);
-        scene = new Scene(root);
+        scene = new Scene(root, 800, 500);
     }
 
     @Override
     protected void setStyle() {
-        // root
-        root.setAlignment(Pos.CENTER);
-        root.setPadding(new Insets(50));
-        root.setStyle("-fx-background-color: white;");
+        // Split screen 50/50
+        HBox.setHgrow(leftPanel, Priority.ALWAYS);
+        HBox.setHgrow(rightPanel, Priority.ALWAYS);
+        leftPanel.setPrefWidth(Themes.PANEL_WIDTH);
+        rightPanel.setPrefWidth(Themes.PANEL_WIDTH);
 
-        // form box
-        formBox.setMaxWidth(400);
-        formBox.setAlignment(Pos.CENTER);
+        rightPanel.setAlignment(Pos.CENTER);
+        rightPanel.setStyle("-fx-background-color: " + Themes.BG_RIGHT + ";");
+        formBox.setMaxWidth(Themes.FORM_MAX_WIDTH);
 
-        // title
-        titleLabel.setFont(Font.font("System", FontWeight.NORMAL, 32));
-        titleLabel.setStyle("-fx-text-fill: #000000;");
+        titleLabel.setFont(Font.font("System", FontWeight.BOLD, 28));
+        subtitleLabel.setStyle("-fx-text-fill: " + Themes.TEXT_SUBTITLE + "; -fx-padding: 0 0 10 0;");
 
-        // fields
-        String fieldStyle =
-                "-fx-background-color: #F9FAFB;" +
-                        "-fx-border-color: #E5E7EB;" +
-                        "-fx-border-width: 2;" +
-                        "-fx-border-radius: 10;" +
-                        "-fx-background-radius: 10;" +
-                        "-fx-font-size: 15px;" +
-                        "-fx-padding: 8 15 8 15;";
-
-        nameField.setPrefHeight(45);
-        nameField.setMaxWidth(Double.MAX_VALUE);
-        nameField.setStyle(fieldStyle);
-
-        surnameField.setPrefHeight(45);
-        surnameField.setMaxWidth(Double.MAX_VALUE);
-        surnameField.setStyle(fieldStyle);
-
-        emailField.setPrefHeight(45);
-        emailField.setMaxWidth(Double.MAX_VALUE);
-        emailField.setStyle(fieldStyle);
-
-        passwordField.setPrefHeight(45);
-        passwordField.setMaxWidth(Double.MAX_VALUE);
-        passwordField.setStyle(fieldStyle);
-
-        // button
-        registerButton.setPrefWidth(200);
-        registerButton.setPrefHeight(44);
-        registerButton.setStyle(buttonDefaultStyle());
-
-        // button box
         buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.setPadding(new Insets(20, 0, 10, 0));
-
-        // message label
-        messageLabel.setMaxWidth(300);
-        messageLabel.setStyle(
-                "-fx-font-size: 14px;" +
-                        "-fx-wrap-text: true;" +
-                        "-fx-alignment: center;"
-        );
     }
 
     @Override
     protected void setLogic() {
-        // hover effect
-        registerButton.setOnMouseEntered(e -> registerButton.setStyle(buttonHoverStyle()));
-        registerButton.setOnMouseExited(e -> registerButton.setStyle(buttonDefaultStyle()));
-
-        // register action
+        // Send registration data to ViewModel
         registerButton.setOnAction(e ->
-                viewModel.register(
-                        nameField.getText(),
-                        surnameField.getText(),
-                        emailField.getText(),
-                        passwordField.getText()
-                )
+                viewModel.register(nameField.getText(), surnameField.getText(), emailField.getText(), passwordField.getText())
         );
 
-        // message listener
+        // Navigate back to login
+        loginLink.setOnAction(e -> navigateTo(new LoginView()));
+
+        // React to registration result
         viewModel.messageProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && newVal.contains("successful")) {
-                messageLabel.setStyle(
-                        "-fx-text-fill: #10B981;" +
-                                "-fx-font-size: 14px;" +
-                                "-fx-font-weight: bold;" +
-                                "-fx-alignment: center;"
-                );
-                navigateTo(new DashBoardView());
+                messageLabel.setTextFill(Color.web(Themes.TEXT_SUCCESS));
+                navigateTo(new CreateCompanyView());
             } else if (newVal != null && !newVal.isEmpty()) {
-                messageLabel.setStyle(
-                        "-fx-text-fill: #EF4444;" +
-                                "-fx-font-size: 13px;" +
-                                "-fx-wrap-text: true;" +
-                                "-fx-alignment: center;"
-                );
+                messageLabel.setTextFill(Color.web(Themes.TEXT_ERROR));
             }
         });
-    }
-
-    // BUTTON STYLES
-    private String buttonDefaultStyle() {
-        return  "-fx-background-color: #0ABAB5;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 16px;" +
-                "-fx-font-weight: bold;" +
-                "-fx-background-radius: 12px;" +
-                "-fx-cursor: hand;";
-    }
-
-    private String buttonHoverStyle() {
-        return  "-fx-background-color: #4F52E0;" +
-                "-fx-text-fill: white;" +
-                "-fx-font-size: 16px;" +
-                "-fx-font-weight: bold;" +
-                "-fx-background-radius: 12px;" +
-                "-fx-cursor: hand;";
     }
 }

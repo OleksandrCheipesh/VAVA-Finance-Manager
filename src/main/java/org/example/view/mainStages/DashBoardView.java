@@ -7,6 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import org.example.SessionManager;
 import org.example.view.templates.BaseView;
 import org.example.view.templates.Sidebar;
 
@@ -39,9 +40,9 @@ public class DashBoardView extends BaseView {
         VBox content = new VBox(30);
         content.setPadding(new Insets(30));
         content.setStyle("-fx-background-color: #F5F7FA;");
-
+        String name = SessionManager.getInstance().getCurrentUser().getName();
         content.getChildren().addAll(
-                buildContentTitle("Dashboard"),
+                buildContentTitle(name),
                 buildStatsCards(),
                 buildChartsSection(),
                 createRecentActivityTable()
