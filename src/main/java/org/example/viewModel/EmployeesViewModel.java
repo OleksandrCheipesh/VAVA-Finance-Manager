@@ -42,7 +42,9 @@ public class EmployeesViewModel {
     }
 
     public void loadEmployees() {
+        var logger = org.example.logging.AppLog.getLogger(EmployeesViewModel.class);
         int companyId = SessionManager.getInstance().getCurrentCompanyId();
+        logger.info("Loading employees for companyId={}", companyId);
         try {
             List<Employee> dbEmployees = db.getEmployeesByCompanyId(companyId);
 
@@ -50,9 +52,11 @@ public class EmployeesViewModel {
             employees.addAll(dbEmployees);
 
             message.set("Success: Employees loaded successfully!");
+            logger.info("Loaded {} employees for companyId={}", dbEmployees.size(), companyId);
 
         } catch (Exception e) {
             message.set("Error: Failed to load employees. " + e.getMessage());
+            logger.error("Failed to load employees for companyId={}", companyId, e);
         }
         finally {
 //            TO DO: active and pasive status

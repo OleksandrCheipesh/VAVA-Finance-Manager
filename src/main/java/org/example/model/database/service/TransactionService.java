@@ -218,13 +218,13 @@ public class TransactionService {
             if (updated) {
                 StringBuilder changes = new StringBuilder();
                 if (before != null) {
-                    if (!equalsNullable(before.getType(), transaction.getType())) changes.append(String.format("type: %s->%s; ", before.getType(), transaction.getType()));
+                    if (!java.util.Objects.equals(before.getType(), transaction.getType())) changes.append(String.format("type: %s->%s; ", before.getType(), transaction.getType()));
                     if (before.getAmount() == null || transaction.getAmount() == null || before.getAmount().compareTo(transaction.getAmount()) != 0)
                         changes.append(String.format("amount: %s->%s; ", before.getAmount(), transaction.getAmount()));
-                    if (!equalsNullable(before.getProjectId(), transaction.getProjectId())) changes.append(String.format("projectId: %s->%s; ", before.getProjectId(), transaction.getProjectId()));
-                    if (!equalsNullable(before.getClientId(), transaction.getClientId())) changes.append(String.format("clientId: %s->%s; ", before.getClientId(), transaction.getClientId()));
-                    if (!equalsNullable(before.getDescription(), transaction.getDescription())) changes.append("description changed; ");
-                    if (!equalsNullable(before.getDate(), transaction.getDate())) changes.append(String.format("date: %s->%s; ", before.getDate(), transaction.getDate()));
+                    if (!java.util.Objects.equals(before.getProjectId(), transaction.getProjectId())) changes.append(String.format("projectId: %s->%s; ", before.getProjectId(), transaction.getProjectId()));
+                    if (!java.util.Objects.equals(before.getClientId(), transaction.getClientId())) changes.append(String.format("clientId: %s->%s; ", before.getClientId(), transaction.getClientId()));
+                    if (!java.util.Objects.equals(before.getDescription(), transaction.getDescription())) changes.append("description changed; ");
+                    if (!java.util.Objects.equals(before.getDate(), transaction.getDate())) changes.append(String.format("date: %s->%s; ", before.getDate(), transaction.getDate()));
                 }
                 logger.info("Transaction updated: id={} changes={}", transaction.getId(), changes.toString());
             }
@@ -283,8 +283,6 @@ public class TransactionService {
         return transaction;
     }
 
-    private static boolean equalsNullable(Object a, Object b) {
-        return java.util.Objects.equals(a, b);
-    }
+
 }
 
