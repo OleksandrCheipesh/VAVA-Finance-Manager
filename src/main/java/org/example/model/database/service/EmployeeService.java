@@ -11,48 +11,56 @@ import java.util.Optional;
 
 public class EmployeeService {
     public Employee addEmployee(Employee employee) throws SQLException {
+        var logger = org.example.logging.AppLog.getLogger(EmployeeService.class);
         EmployeeValidator.validate(employee);
         String sql = "INSERT INTO employees (company_id, name, surname, email, age, salary, position) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id, hired_at";
+        logger.info("Adding employee: name={} surname={} email={} companyId={}", employee.getName(), employee.getSurname(), employee.getEmail(), employee.getCompanyId());
+        try {
+            try (Connection connection = ConnectionProvider.getConnection();
+                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setInt(1, employee.getCompanyId());
+                preparedStatement.setString(2, employee.getName());
+                preparedStatement.setString(3, employee.getSurname());
 
-        try (Connection connection = ConnectionProvider.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, employee.getCompanyId());
-            preparedStatement.setString(2, employee.getName());
-            preparedStatement.setString(3, employee.getSurname());
+                if (employee.getEmail() != null) {
+                    preparedStatement.setString(4, employee.getEmail());
+                } else {
+                    preparedStatement.setNull(4, Types.VARCHAR);
+                }
 
-            if (employee.getEmail() != null) {
-                preparedStatement.setString(4, employee.getEmail());
-            } else {
-                preparedStatement.setNull(4, Types.VARCHAR);
-            }
+                if (employee.getAge() != null)
+                    preparedStatement.setInt(5, employee.getAge());
+                 else
+                    preparedStatement.setNull(5, Types.INTEGER);
 
-            if (employee.getAge() != null)
-                preparedStatement.setInt(5, employee.getAge());
-             else
-                preparedStatement.setNull(5, Types.INTEGER);
+                if (employee.getSalary() != null)
+                    preparedStatement.setBigDecimal(6, employee.getSalary());
+                else
+                    preparedStatement.setNull(6, Types.NUMERIC);
 
-            if (employee.getSalary() != null)
-                preparedStatement.setBigDecimal(6, employee.getSalary());
-            else
-                preparedStatement.setNull(6, Types.NUMERIC);
+                preparedStatement.setString(7, employee.getPosition());
 
-            preparedStatement.setString(7, employee.getPosition());
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    employee.setId(resultSet.getInt("id"));
-                    employee.setHiredAt(resultSet.getObject("hired_at", java.time.OffsetDateTime.class));
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        employee.setId(resultSet.getInt("id"));
+                        employee.setHiredAt(resultSet.getObject("hired_at", java.time.OffsetDateTime.class));
+                    }
                 }
             }
+            logger.info("Employee added: id={} name={} email={} companyId={}", employee.getId(), employee.getName(), employee.getEmail(), employee.getCompanyId());
+            return employee;
+        } catch (SQLException e) {
+            logger.error("Failed to add employee: name={} email={} companyId={}", employee.getName(), employee.getEmail(), employee.getCompanyId(), e);
+            throw e;
         }
-        return employee;
     }
 
     public Optional<Employee> getEmployeeById(int id) throws SQLException {
         if (id <= 0) {
             throw new IllegalArgumentException("Employee ID must be positive.");
         }
+        var logger = org.example.logging.AppLog.getLogger(EmployeeService.class);
         String sql = "SELECT * FROM employees WHERE id = ?";
 
         try (Connection connection = ConnectionProvider.getConnection();
@@ -63,11 +71,15 @@ public class EmployeeService {
                 if (resultSet.next())
                     return Optional.of(mapRow(resultSet));
             }
+        } catch (SQLException e) {
+            logger.error("Failed to load employee by id={}", id, e);
+            throw e;
         }
         return Optional.empty();
     }
 
     public List<Employee> getEmployeeByEmail(String email) throws SQLException {
+        var logger = org.example.logging.AppLog.getLogger(EmployeeService.class);
         String sql = "SELECT * FROM employees WHERE email = ? ORDER BY id";
         List<Employee> list = new ArrayList<>();
 
@@ -79,6 +91,9 @@ public class EmployeeService {
                 while (resultSet.next())
                     list.add(mapRow(resultSet));
             }
+        } catch (SQLException e) {
+            logger.error("Failed to load employee(s) by email={}", email, e);
+            throw e;
         }
         return list;
     }
@@ -87,6 +102,7 @@ public class EmployeeService {
         if (companyId <= 0) {
             throw new IllegalArgumentException("Сompany ID must be positive.");
         }
+        var logger = org.example.logging.AppLog.getLogger(EmployeeService.class);
         String sql = "SELECT * FROM employees WHERE company_id = ? ORDER BY id";
         List<Employee> list = new ArrayList<>();
 
@@ -97,11 +113,15 @@ public class EmployeeService {
                 while (resultSet.next())
                     list.add(mapRow(resultSet));
             }
+        } catch (SQLException e) {
+            logger.error("Failed to load employees for companyId={}", companyId, e);
+            throw e;
         }
         return list;
     }
 
     public List<Employee> getAllEmployees() throws SQLException {
+        var logger = org.example.logging.AppLog.getLogger(EmployeeService.class);
         String sql = "SELECT * FROM employees ORDER BY id";
         List<Employee> list = new ArrayList<>();
         try (Connection connection = ConnectionProvider.getConnection();
@@ -109,12 +129,17 @@ public class EmployeeService {
              ResultSet resultSet = statement.executeQuery(sql)) {
             while (resultSet.next())
                 list.add(mapRow(resultSet));
+        } catch (SQLException e) {
+            logger.error("Failed to load all employees", e);
+            throw e;
         }
         return list;
     }
 
     public boolean updateEmployee(Employee employee) throws SQLException {
+        var logger = org.example.logging.AppLog.getLogger(EmployeeService.class);
         EmployeeValidator.validate(employee);
+        Employee before = getEmployeeById(employee.getId()).orElse(null);
         String sql = "UPDATE employees SET company_id = ?, name = ?, surname = ?, age = ?, " +
                      "salary = ?, position = ?,email = ? WHERE id = ?";
         try (Connection connection = ConnectionProvider.getConnection();
@@ -141,20 +166,49 @@ public class EmployeeService {
             else
                 preparedStatement.setNull(7, Types.VARCHAR);
             preparedStatement.setInt(8, employee.getId());
-            return preparedStatement.executeUpdate() > 0;
+            boolean updated = preparedStatement.executeUpdate() > 0;
+            if (updated) {
+                StringBuilder changes = new StringBuilder();
+                if (before != null) {
+                    if (!java.util.Objects.equals(before.getName(), employee.getName())) changes.append("name changed; ");
+                    if (!java.util.Objects.equals(before.getSurname(), employee.getSurname())) changes.append("surname changed; ");
+                    if (!java.util.Objects.equals(before.getEmail(), employee.getEmail())) changes.append(String.format("email: %s->%s; ", before.getEmail(), employee.getEmail()));
+                    if (!java.util.Objects.equals(before.getAge(), employee.getAge())) changes.append(String.format("age: %s->%s; ", before.getAge(), employee.getAge()));
+                    if (!java.util.Objects.equals(before.getSalary(), employee.getSalary())) changes.append(String.format("salary: %s->%s; ", before.getSalary(), employee.getSalary()));
+                    if (!java.util.Objects.equals(before.getPosition(), employee.getPosition())) changes.append(String.format("position: %s->%s; ", before.getPosition(), employee.getPosition()));
+                }
+                logger.info("Employee updated: id={} changes={}", employee.getId(), changes.toString());
+            }
+            return updated;
+        } catch (SQLException e) {
+            logger.error("Failed to update employee id={}", employee.getId(), e);
+            throw e;
         }
     }
 
     public boolean deleteEmployee(int id) throws SQLException {
+        var logger = org.example.logging.AppLog.getLogger(EmployeeService.class);
         if (id <= 0) {
             throw new IllegalArgumentException("Employee ID must be positive.");
         }
+        Employee before = getEmployeeById(id).orElse(null);
         String sql = "DELETE FROM employees WHERE id = ?";
 
         try (Connection connection = ConnectionProvider.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, id);
-            return preparedStatement.executeUpdate() > 0;
+            boolean deleted = preparedStatement.executeUpdate() > 0;
+            if (deleted) {
+                if (before != null) {
+                    logger.info("Employee deleted: id={} name={} companyId={}", before.getId(), before.getName(), before.getCompanyId());
+                } else {
+                    logger.info("Employee deleted: id={}", id);
+                }
+            }
+            return deleted;
+        } catch (SQLException e) {
+            logger.error("Failed to delete employee id={}", id, e);
+            throw e;
         }
     }
 

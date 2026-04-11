@@ -15,6 +15,7 @@ import org.example.view.templates.BaseView;
 import org.example.view.templates.Themes;
 import org.example.view.templates.UIFactory;
 import org.example.viewModel.CreateCompanyViewModel;
+import org.example.logging.AppLog;
 
 import java.io.File;
 import java.sql.SQLException;
@@ -169,7 +170,8 @@ public class CreateCompanyView extends BaseView {
         try {
             scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());
         } catch (Exception e) {
-            System.err.println("Global CSS not found.");
+            var logger = AppLog.getLogger(CreateCompanyView.class);
+            logger.warn("Global CSS not found for CreateCompanyView: {}", e.getMessage());
         }
     }
 

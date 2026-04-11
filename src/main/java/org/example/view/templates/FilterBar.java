@@ -6,6 +6,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import org.example.view.templates.StateButton; // Adjust import if needed
+import org.example.logging.AppLog;
 
 public class FilterBar extends HBox {
 
@@ -22,7 +23,8 @@ public class FilterBar extends HBox {
         try {
             this.getStylesheets().add(getClass().getResource("/styles/table.css").toExternalForm());
         } catch (Exception e) {
-            System.err.println("Warning: Could not load styles for FilterBar.");
+            var logger = AppLog.getLogger(FilterBar.class);
+            logger.warn("Could not load styles for FilterBar: {}", e.getMessage());
         }
 
         // Card Container

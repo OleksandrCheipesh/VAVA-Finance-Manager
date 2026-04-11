@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.example.SessionManager;
+import org.example.logging.AppLog;
 import org.example.model.database.entity.Employee;
 import org.example.model.validation.EmpValExept;
 import org.example.model.validation.EmployeeValidator;
@@ -164,7 +165,8 @@ public class AddEmployeeDialog {
                             EmployeeValidator.validate(newEmp);
                         }catch (EmpValExept iae){
                             saveBtn.setLoading(false);
-                            System.err.println("Unexpected error saving emploes: " + iae.getMessage());
+                            var logger = AppLog.getLogger(AddEmployeeDialog.class);
+                            logger.warn("Unexpected error saving employee: {}", iae.getMessage(), iae);
                             String errorStyle = "-fx-background-color: " + Themes.BG_FIELD_LARGE + ";" +
                                     "-fx-border-color: " + Themes.TEXT_ERROR + ";" +
                                     "-fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 10;" +
