@@ -2,7 +2,7 @@ package org.example;
 
 
 import org.example.model.database.entity.User;
-import java.util.Objects;
+import org.example.logging.AppLog;
 
 
 public final class SessionManager {
@@ -29,17 +29,26 @@ public final class SessionManager {
 
 
     public synchronized void login(User user) {
+        var logger = AppLog.getLogger(SessionManager.class);
         if (user == null) {
+            logger.warn("Cannot login with null user");
             throw new IllegalArgumentException("Cannot login with null user");
         }
         this.currentUser = user;
+        logger.info("User login: id={} email={}", user.getId(), user.getEmail());
+        AppLog.pushSession(getStatus());
     }
 
     /**
      * Terminate the current session.
      */
     public synchronized void logout() {
+        var logger = AppLog.getLogger(SessionManager.class);
+        if (this.currentUser != null) {
+            logger.info("User logout: id={} email={}", this.currentUser.getId(), this.currentUser.getEmail());
+        }
         this.currentUser = null;
+        AppLog.clearSession();
     }
 
     /**
