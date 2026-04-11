@@ -40,7 +40,7 @@ public class BudgetView extends BaseView {
         HBox topBar = new HBox(20);
 
         topBar.setAlignment(Pos.BOTTOM_LEFT);
-        topBar.setStyle("-fx-background-color: white; -fx-padding: 0 40; -fx-border-color: #E5E7EB; -fx-border-width: 0 0 1 0;");
+        topBar.setStyle("-fx-background-color: white; -fx-padding: 0 40; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-width: 0 0 1 0;");
         topBar.setMinHeight(85);
 
         VBox titleBox = new VBox(2);
@@ -54,7 +54,7 @@ public class BudgetView extends BaseView {
 
         titleBox.getChildren().addAll(title, subtitle);
 
-        HBox.setMargin(titleBox, new Insets(0, 0, 20, 0));
+        HBox.setMargin(titleBox, new Insets(0, 0, 15, 0));
 
         Region spacer1 = new Region();
         HBox.setHgrow(spacer1, Priority.ALWAYS);
@@ -103,7 +103,7 @@ public class BudgetView extends BaseView {
         Region barBg = new Region();
 
         barBg.setMinSize(120, 8); barBg.setMaxSize(120, 8);
-        barBg.setStyle("-fx-background-color: #E2E8F0; -fx-background-radius: 10;");
+        barBg.setStyle("-fx-background-color: " + Themes.BORDER_LIGHT + "; -fx-background-radius: 10;");
 
         Region barFill = new Region();
 
@@ -159,7 +159,7 @@ public class BudgetView extends BaseView {
         searchContainer.setMinHeight(44);
         searchContainer.setPrefHeight(44);
         searchContainer.setMaxHeight(44);
-        searchContainer.setStyle("-fx-background-color: white; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 0 12;");
+        searchContainer.setStyle("-fx-background-color: white; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 0 12;");
 
         SVGPath searchIcon = new SVGPath();
         searchIcon.setContent("M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z");
@@ -198,7 +198,7 @@ public class BudgetView extends BaseView {
     @Override
     protected void setStyle() {
         contentArea.setPadding(new Insets(30, 40, 40, 40));
-        contentArea.setStyle("-fx-background-color: #F8FAFC;");
+        contentArea.setStyle("-fx-background-color: " + Themes.BG_DASHBOARD + ";");
     }
 
     @Override
@@ -246,12 +246,12 @@ public class BudgetView extends BaseView {
 
             iconCircle.setMinSize(80, 80);
             iconCircle.setMaxSize(80, 80);
-            iconCircle.setStyle("-fx-background-color: #F1F5F9; -fx-background-radius: 40;");
+            iconCircle.setStyle("-fx-background-color: " + Themes.BORDER_LIGHT + "88; -fx-background-radius: 40;");
 
             SVGPath emptyIcon = new SVGPath();
 
             emptyIcon.setContent("M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z");
-            emptyIcon.setFill(Color.web("#94A3B8"));
+            emptyIcon.setFill(Color.web(Themes.TEXT_MUTED));
             emptyIcon.setScaleX(2.0);
             emptyIcon.setScaleY(2.0);
 
@@ -281,7 +281,7 @@ public class BudgetView extends BaseView {
 
         card.setStyle(
                 "-fx-background-color: white;" +
-                        "-fx-border-color: #F1F5F9;" +
+                        "-fx-border-color: " + Themes.BORDER_LIGHT + ";" +
                         "-fx-border-radius: 16; -fx-background-radius: 16;" +
                         "-fx-padding: 24;" +
                         "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 10, 0, 0, 4);"
@@ -293,7 +293,7 @@ public class BudgetView extends BaseView {
         StackPane iconBox = new StackPane();
 
         iconBox.setPrefSize(42, 42);
-        iconBox.setStyle("-fx-background-color: #CCFBF1; -fx-background-radius: 10;");
+        iconBox.setStyle("-fx-background-color: " + Themes.PRIMARY + "22; -fx-background-radius: 10;");
 
         SVGPath icon = new SVGPath();
 
@@ -343,7 +343,7 @@ public class BudgetView extends BaseView {
         Region barBg = new Region();
 
         barBg.setMinHeight(6); barBg.setMaxHeight(6);
-        barBg.setStyle("-fx-background-color: #E2E8F0; -fx-background-radius: 10;");
+        barBg.setStyle("-fx-background-color: " + Themes.BORDER_LIGHT + "; -fx-background-radius: 10;");
 
         Region barFill = new Region();
 
@@ -385,7 +385,7 @@ public class BudgetView extends BaseView {
         card.minWidthProperty().bind(widthBinding);
 
         String bgColor = isDark ? Themes.DARK_TEXT : "white";
-        String border = isDark ? "" : "-fx-border-color: #F1F5F9; ";
+        String border = isDark ? "" : "-fx-border-color: " + Themes.BORDER_LIGHT + "; ";
 
         card.setStyle(
                 "-fx-background-color: " + bgColor + ";" + border +
