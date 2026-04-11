@@ -64,24 +64,31 @@ public class TransactionsViewModel {
                 projectNameMap.put(p.getId(), p.getName());
             }
         } catch (Exception e) {
-            // Non-fatal: project names will be blank
-            System.err.println("Could not load projects: " + e.getMessage());
+            var logger = org.example.logging.AppLog.getLogger(TransactionsViewModel.class);
+            logger.warn("Could not load projects for session/company: {}", e.getMessage());
         }
     }
 
     public void loadTransactions() {
+        var logger = org.example.logging.AppLog.getLogger(TransactionsViewModel.class);
+        logger.info("Loading transactions for current session");
         try {
             int companyId = SessionManager.getInstance().getCurrentCompanyId();
             List<Transaction> list = transactionService.getTransactionsByCompanyId(companyId);
             transactions.setAll(list); // setAll replaces content atomically — no need to clear() first
+            logger.info("Loaded {} transactions for companyId={}", list.size(), companyId);
         } catch (IllegalStateException e) {
             message.set("Error: No active session. Please log in.");
+            logger.warn("Failed to load transactions: no active session");
         } catch (Exception e) {
             message.set("Error: Failed to load transactions — " + e.getMessage());
+            logger.error("Failed to load transactions", e);
         }
     }
 
     public void addTransaction(Transaction t) {
+        var logger = org.example.logging.AppLog.getLogger(TransactionsViewModel.class);
+        logger.info("User triggered addTransaction: type={} amount={} projectId={}", t.getType(), t.getAmount(), t.getProjectId());
         message.set(""); // Reset first so the same result triggers the listener every time
         try {
             int companyId = SessionManager.getInstance().getCurrentCompanyId();
@@ -89,16 +96,22 @@ public class TransactionsViewModel {
             Transaction saved = transactionService.addTransaction(t);
             transactions.add(0, saved);
             message.set("Success: Transaction recorded successfully!");
+            logger.info("addTransaction succeeded: id={} type={} amount={} companyId={}", saved.getId(), saved.getType(), saved.getAmount(), saved.getCompanyId());
         } catch (IllegalArgumentException e) {
             message.set("Error: " + e.getMessage());
+            logger.warn("addTransaction validation failed: {}", e.getMessage());
         } catch (IllegalStateException e) {
             message.set("Error: No active session. Please log in.");
+            logger.warn("addTransaction failed: no active session");
         } catch (Exception e) {
             message.set("Error: Failed to record transaction — " + e.getMessage());
+            logger.error("addTransaction failed", e);
         }
     }
 
     public void updateTransaction(Transaction t) {
+        var logger = org.example.logging.AppLog.getLogger(TransactionsViewModel.class);
+        logger.info("User triggered updateTransaction: id={} type={} amount={}", t.getId(), t.getType(), t.getAmount());
         message.set("");
         try {
             boolean updated = transactionService.updateTransaction(t);
@@ -111,28 +124,37 @@ public class TransactionsViewModel {
                     }
                 }
                 message.set("Success: Transaction updated successfully!");
+                logger.info("updateTransaction succeeded: id={}", t.getId());
             } else {
                 message.set("Error: Transaction not found.");
+                logger.warn("updateTransaction not found: id={}", t.getId());
             }
         } catch (IllegalArgumentException e) {
             message.set("Error: " + e.getMessage());
+            logger.warn("updateTransaction validation failed: {}", e.getMessage());
         } catch (Exception e) {
             message.set("Error: Failed to update transaction — " + e.getMessage());
+            logger.error("updateTransaction failed: id={}", t.getId(), e);
         }
     }
 
     public void deleteTransaction(Transaction t) {
+        var logger = org.example.logging.AppLog.getLogger(TransactionsViewModel.class);
+        logger.info("User triggered deleteTransaction: id={}", t.getId());
         message.set("");
         try {
             boolean deleted = transactionService.deleteTransaction(t.getId());
             if (deleted) {
                 transactions.removeIf(tx -> tx.getId() == t.getId());
                 message.set("Success: Transaction deleted successfully!");
+                logger.info("deleteTransaction succeeded: id={}", t.getId());
             } else {
                 message.set("Error: Transaction not found.");
+                logger.warn("deleteTransaction not found: id={}", t.getId());
             }
         } catch (Exception e) {
             message.set("Error: Failed to delete transaction — " + e.getMessage());
+            logger.error("deleteTransaction failed: id={}", t.getId(), e);
         }
     }
 
