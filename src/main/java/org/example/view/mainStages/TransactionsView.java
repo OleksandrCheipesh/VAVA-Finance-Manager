@@ -11,6 +11,7 @@ import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import org.example.model.database.entity.Project;
+import org.example.logging.AppLog;
 import org.example.model.database.entity.Transaction;
 import org.example.view.templates.*;
 import org.example.viewModel.TransactionsViewModel;
@@ -327,8 +328,9 @@ public class TransactionsView extends BaseView {
             scene.getStylesheets().add(getClass().getResource("/styles/table.css").toExternalForm());
             scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());
         } catch (Exception e) {
-            System.err.println("Warning: Could not load CSS files. Ensure they exist in src/main/resources/");
-            e.printStackTrace();
+            var logger = AppLog.getLogger(TransactionsView.class);
+            logger.warn("Could not load CSS files for TransactionsView: {}", e.getMessage());
+            logger.debug("CSS load exception", e);
         }
 
         stage.setTitle("Admin - Transactions");

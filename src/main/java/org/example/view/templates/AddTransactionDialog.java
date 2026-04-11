@@ -19,6 +19,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.example.model.database.entity.Project;
+import org.example.logging.AppLog;
 import org.example.model.database.entity.Transaction;
 
 import java.math.BigDecimal;
@@ -232,7 +233,8 @@ public class AddTransactionDialog {
                     } catch (Exception ex) {
                         // Catch-all: prevent any uncaught exception from crashing the FX thread
                         saveBtn.setLoading(false);
-                        System.err.println("Unexpected error saving transaction: " + ex.getMessage());
+                        var logger = AppLog.getLogger(AddTransactionDialog.class);
+                        logger.error("Unexpected error saving transaction: {}", ex.getMessage(), ex);
                     }
                 });
             }).start();
@@ -246,7 +248,8 @@ public class AddTransactionDialog {
         try {
             scene.getStylesheets().add(AddTransactionDialog.class.getResource("/styles/global.css").toExternalForm());
         } catch (Exception e) {
-            System.err.println("Warning: Could not load global.css for AddTransactionDialog.");
+            var logger = AppLog.getLogger(AddTransactionDialog.class);
+            logger.warn("Could not load global.css for AddTransactionDialog: {}", e.getMessage());
         }
 
         modal.setScene(scene);

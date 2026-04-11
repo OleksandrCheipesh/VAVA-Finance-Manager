@@ -3,11 +3,11 @@ package org.example;
 import javafx.application.Application;
 
 import javafx.stage.Stage;
+import org.example.logging.AppLog;
 import org.example.view.authentication.RegistrationView;
 import org.example.model.database.ConnectionProvider;
 import org.example.model.database.DatabaseConfig;
 import org.example.model.database.Migrations;
-import org.example.view.templates.ComponentTestView;
 
 // точка входу — окремий клас, більше нічого не робить
 public class Main extends Application {
@@ -17,8 +17,21 @@ public class Main extends Application {
     }
 
     public static void main(String[] args) {
+        var logger = AppLog.getLogger(Main.class);
+
+        // Global uncaught exception handler for any thread
+        Thread.setDefaultUncaughtExceptionHandler((thread, ex) -> {
+            logger.error("Unhandled exception in thread {}", thread.getName(), ex);
+        });
+
         DatabaseConfig config = DatabaseConfig.fromClasspath("application.properties");
-        Migrations.migrate(config);
+        try {
+            Migrations.migrate(config);
+        } catch (Exception e) {
+            logger.error("Application startup aborted due to migration failure", e);
+            System.exit(1);
+        }
+
         ConnectionProvider.init(config);
         launch();
     }

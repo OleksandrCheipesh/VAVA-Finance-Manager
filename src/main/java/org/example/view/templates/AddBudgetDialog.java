@@ -306,7 +306,8 @@ public class AddBudgetDialog {
         try {
             scene.getStylesheets().add(AddBudgetDialog.class.getResource("/styles/global.css").toExternalForm());
         } catch (Exception e) {
-            System.err.println("Warning: Could not load global.css for AddBudgetDialog.");
+            var logger = org.example.logging.AppLog.getLogger(AddBudgetDialog.class);
+            logger.warn("Could not load global.css for AddBudgetDialog: {}", e.getMessage());
         }
 
         modal.setScene(scene);

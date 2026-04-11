@@ -33,8 +33,10 @@ public class ProjectsViewModel {
     }
 
     public void loadProjects() {
+        var logger = org.example.logging.AppLog.getLogger(ProjectsViewModel.class);
 
         int companyId = SessionManager.getInstance().getCurrentCompanyId();
+        logger.info("Loading projects for companyId={}", companyId);
 
         try {
             List<Project> dbProjects = db.getProjectsByCompanyId(companyId);
@@ -43,9 +45,11 @@ public class ProjectsViewModel {
             projects.addAll(dbProjects);
 
             message.set("Success: Projects loaded successfully!");
+            logger.info("Loaded {} projects for companyId={}", dbProjects.size(), companyId);
 
         } catch (Exception e) {
             message.set("Error: Failed to load projects. " + e.getMessage());
+            logger.error("Failed to load projects for companyId={}", companyId, e);
         }
         finally {
             activeProject.set(projects.stream()

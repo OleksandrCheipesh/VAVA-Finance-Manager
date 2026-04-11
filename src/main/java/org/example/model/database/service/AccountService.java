@@ -11,36 +11,44 @@ import java.util.Optional;
 public class AccountService {
 
     public Account addAccount(Account account) throws SQLException {
+        var logger = org.example.logging.AppLog.getLogger(AccountService.class);
         String sql = "INSERT INTO accounts (company_id, account_name, current_balance, currency, limit_amount, category, cycle) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id, created_at";
+        logger.info("Adding account: name={} companyId={} balance={} currency={}", account.getAccountName(), account.getCompanyId(), account.getCurrentBalance(), account.getCurrency());
+        try {
+            try (Connection connection = ConnectionProvider.getConnection();
+                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setInt(1, account.getCompanyId());
+                preparedStatement.setString(2, account.getAccountName());
+                preparedStatement.setBigDecimal(3, account.getCurrentBalance());
+                preparedStatement.setString(4, account.getCurrency());
 
-        try (Connection connection = ConnectionProvider.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, account.getCompanyId());
-            preparedStatement.setString(2, account.getAccountName());
-            preparedStatement.setBigDecimal(3, account.getCurrentBalance());
-            preparedStatement.setString(4, account.getCurrency());
+                if (account.getLimitAmount() != null) {
+                    preparedStatement.setInt(5, account.getLimitAmount());
+                } else {
+                    preparedStatement.setNull(5, Types.INTEGER);
+                }
 
-            if (account.getLimitAmount() != null) {
-                preparedStatement.setInt(5, account.getLimitAmount());
-            } else {
-                preparedStatement.setNull(5, Types.INTEGER);
-            }
+                preparedStatement.setString(6, account.getCategory() != null ? account.getCategory().name() : "OTHER");
+                preparedStatement.setString(7, account.getCycle() != null ? account.getCycle().name() : "MONTHLY");
 
-            preparedStatement.setString(6, account.getCategory() != null ? account.getCategory().name() : "OTHER");
-            preparedStatement.setString(7, account.getCycle() != null ? account.getCycle().name() : "MONTHLY");
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    account.setId(resultSet.getInt("id"));
-                    account.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        account.setId(resultSet.getInt("id"));
+                        account.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+                    }
                 }
             }
+            logger.info("Account created: id={} name={} companyId={}", account.getId(), account.getAccountName(), account.getCompanyId());
+            return account;
+        } catch (SQLException e) {
+            logger.error("Failed to create account name={} companyId={}", account.getAccountName(), account.getCompanyId(), e);
+            throw e;
         }
-        return account;
     }
 
     public List<Account> getAllAccounts() throws SQLException {
+        var logger = org.example.logging.AppLog.getLogger(AccountService.class);
         String sql = "SELECT * FROM accounts ORDER BY id";
         List<Account> list = new ArrayList<>();
 
@@ -50,11 +58,15 @@ public class AccountService {
             while (resultSet.next()) {
                 list.add(mapRow(resultSet));
             }
+        } catch (SQLException e) {
+            logger.error("Failed to load all accounts", e);
+            throw e;
         }
         return list;
     }
 
     public Optional<Account> getAccountById(int id) throws SQLException {
+        var logger = org.example.logging.AppLog.getLogger(AccountService.class);
         String sql = "SELECT * FROM accounts WHERE id = ?";
 
         try (Connection connection = ConnectionProvider.getConnection();
@@ -67,11 +79,15 @@ public class AccountService {
                     return Optional.of(mapRow(resultSet));
                 }
             }
+        } catch (SQLException e) {
+            logger.error("Failed to load account by id={}", id, e);
+            throw e;
         }
         return Optional.empty();
     }
 
     public List<Account> getAccountsByCompanyId(int companyId) throws SQLException {
+        var logger = org.example.logging.AppLog.getLogger(AccountService.class);
         String sql = "SELECT * FROM accounts WHERE company_id = ? ORDER BY id";
         List<Account> list = new ArrayList<>();
 
@@ -84,11 +100,16 @@ public class AccountService {
                     list.add(mapRow(resultSet));
                 }
             }
+        } catch (SQLException e) {
+            logger.error("Failed to load accounts for companyId={}", companyId, e);
+            throw e;
         }
         return list;
     }
 
     public boolean updateAccount(Account account) throws SQLException {
+        var logger = org.example.logging.AppLog.getLogger(AccountService.class);
+        Account before = getAccountById(account.getId()).orElse(null);
         String sql = "UPDATE accounts SET company_id = ?, account_name = ?, " +
                 "current_balance = ?, currency = ?, limit_amount = ?, category = ?, cycle = ? WHERE id = ?";
 
@@ -107,17 +128,42 @@ public class AccountService {
             preparedStatement.setString(6, account.getCategory() != null ? account.getCategory().name() : "OTHER");
             preparedStatement.setString(7, account.getCycle() != null ? account.getCycle().name() : "MONTHLY");
             preparedStatement.setInt(8, account.getId());
-            return preparedStatement.executeUpdate() > 0;
+            boolean updated = preparedStatement.executeUpdate() > 0;
+            if (updated && before != null) {
+                StringBuilder changes = new StringBuilder();
+                if (!java.util.Objects.equals(before.getAccountName(), account.getAccountName())) changes.append(String.format("account_name: %s->%s; ", before.getAccountName(), account.getAccountName()));
+                if (before.getCurrentBalance() == null || account.getCurrentBalance() == null || before.getCurrentBalance().compareTo(account.getCurrentBalance()) != 0)
+                    changes.append(String.format("current_balance: %s->%s; ", before.getCurrentBalance(), account.getCurrentBalance()));
+                if (!java.util.Objects.equals(before.getCurrency(), account.getCurrency())) changes.append(String.format("currency: %s->%s; ", before.getCurrency(), account.getCurrency()));
+                if (!java.util.Objects.equals(before.getLimitAmount(), account.getLimitAmount())) changes.append(String.format("limit_amount: %s->%s; ", before.getLimitAmount(), account.getLimitAmount()));
+                if (!java.util.Objects.equals(before.getCategory(), account.getCategory())) changes.append(String.format("category: %s->%s; ", before.getCategory(), account.getCategory()));
+                if (!java.util.Objects.equals(before.getCycle(), account.getCycle())) changes.append(String.format("cycle: %s->%s; ", before.getCycle(), account.getCycle()));
+                logger.info("Account updated: id={} changes={}", account.getId(), changes.toString());
+            }
+            return updated;
+        } catch (SQLException e) {
+            logger.error("Failed to update account id={}", account.getId(), e);
+            throw e;
         }
     }
 
     public boolean deleteAccount(int id) throws SQLException {
+        var logger = org.example.logging.AppLog.getLogger(AccountService.class);
+        Account before = getAccountById(id).orElse(null);
         String sql = "DELETE FROM accounts WHERE id = ?";
 
         try (Connection connection = ConnectionProvider.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, id);
-            return preparedStatement.executeUpdate() > 0;
+            boolean deleted = preparedStatement.executeUpdate() > 0;
+            if (deleted) {
+                if (before != null) logger.info("Account deleted: id={} name={} companyId={}", before.getId(), before.getAccountName(), before.getCompanyId());
+                else logger.info("Account deleted: id={}", id);
+            }
+            return deleted;
+        } catch (SQLException e) {
+            logger.error("Failed to delete account id={}", id, e);
+            throw e;
         }
     }
 
