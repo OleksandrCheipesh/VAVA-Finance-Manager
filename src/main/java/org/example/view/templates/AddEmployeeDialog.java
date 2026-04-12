@@ -134,7 +134,8 @@ public class AddEmployeeDialog {
             new Thread(() -> {
                 try { Thread.sleep(600); } catch (InterruptedException ex) {}
                 javafx.application.Platform.runLater(() -> {
-                    Employee emp = isEditMode ? employeeToEdit : new Employee(1, "", "", "", 0, BigDecimal.ZERO, "", OffsetDateTime.now());
+                    Employee emp = isEditMode ? employeeToEdit : new Employee();
+                    if (!isEditMode) emp.setCompanyId(SessionManager.getInstance().getCurrentCompanyId());
                     emp.setName(nameField.getText());
                     emp.setSurname(surnameField.getText());
                     emp.setEmail(emailField.getText());

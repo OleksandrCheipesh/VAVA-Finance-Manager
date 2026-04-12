@@ -228,9 +228,7 @@ public class EmployeeService {
         employee.setHiredAt(resultSet.getObject("hired_at", java.time.OffsetDateTime.class));
         String status = resultSet.getString("status");
         if (status != null) {
-            try {
-                employee.setStatus(org.example.model.database.entity.EmployeeStatus.valueOf(status));
-            } catch (IllegalArgumentException _) {}
+            employee.setStatus(status);
         }
         return employee;
     }

@@ -11,7 +11,7 @@ public class Employee extends Person {
     private BigDecimal salary;
     private String position;
     private OffsetDateTime hiredAt;
-    private String status = "Active";
+    private String status = "ACTIVE";
     private String department = "";
 
     public Employee() {}
