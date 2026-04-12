@@ -199,7 +199,7 @@ public class ProjectDetailsDialog {
 
         // Use setGraphic to inject the white SVG icon into the button!
         StateButton editBtn = new StateButton("Edit Budget", StateButton.ButtonType.PRIMARY);
-        editBtn.setGraphic(IconFactory.getIcon("square-pen", "#ffffff", 16));
+        editBtn.setGraphic(IconFactory.getWhiteIcon("square-pen", 16));
 
         editBtn.setMaxWidth(Double.MAX_VALUE);
         editBtn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-padding: 12; -fx-background-radius: 12; -fx-cursor: hand;");
@@ -208,7 +208,7 @@ public class ProjectDetailsDialog {
 
         // Use setGraphic to inject the red SVG trash icon!
         Button deleteBtn = new Button();
-        deleteBtn.setGraphic(IconFactory.getIcon("trash", "#EF4444", 20));
+        deleteBtn.setGraphic(IconFactory.getIcon("trash", 20));
 
         deleteBtn.setStyle("-fx-background-color: #FEE2E2; -fx-background-radius: 12; -fx-padding: 8 18; -fx-cursor: hand;");
         deleteBtn.setOnAction(e -> System.out.println("Delete Project clicked"));

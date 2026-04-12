@@ -4,6 +4,7 @@ import javafx.animation.PauseTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
@@ -40,8 +41,7 @@ public class ToastManager {
                     "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 15, 0, 0, 4);"
     );
 
-    // NEW: Load the SVG Icon using our factory!
-    SVGPath icon = IconFactory.getIcon(iconName, colorHex, 24);
+    ImageView icon = IconFactory.getIcon(iconName, 24);
 
     VBox textBox = new VBox(5);
     Label title = new Label(titleText);

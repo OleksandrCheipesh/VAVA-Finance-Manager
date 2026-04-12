@@ -11,6 +11,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.GaussianBlur;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -74,7 +75,7 @@ public class TransactionDetailDialog {
         iconCircle.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-background-radius: 12;");
 
         // NEW: Load receipt icon from factory
-        iconCircle.getChildren().add(IconFactory.getIcon("receipt", "#ffffff", 24));
+        iconCircle.getChildren().add(IconFactory.getWhiteIcon("receipt", 24));
 
         VBox titleBox = new VBox(2);
         Label title = new Label("TRANSACTION DETAIL");
@@ -159,7 +160,7 @@ public class TransactionDetailDialog {
         HBox.setHgrow(editBtn, Priority.ALWAYS);
 
         // NEW: Load edit icon from factory
-        editBtn.setGraphic(IconFactory.getIcon("square-pen", "#ffffff", 18));
+        editBtn.setGraphic(IconFactory.getWhiteIcon("square-pen", 18));
         editBtn.setOnAction(e -> {
             closeWithAnimation(modal, shadowWrapper, () -> {
                 if (onEdit != null) onEdit.run();
@@ -171,7 +172,7 @@ public class TransactionDetailDialog {
         delBtn.setMinSize(55, 45); delBtn.setMaxSize(55, 45);
 
         // NEW: Load trash icon from factory
-        delBtn.setGraphic(IconFactory.getIcon("trash", "#DC2626", 20));
+        delBtn.setGraphic(IconFactory.getIcon("trash", 20));
         delBtn.setOnAction(e -> {
             closeWithAnimation(modal, shadowWrapper, () -> {
                 if (onDelete != null) onDelete.run();
@@ -207,8 +208,7 @@ public class TransactionDetailDialog {
         HBox valBox = new HBox(8);
         valBox.setAlignment(Pos.CENTER_LEFT);
 
-        // NEW: Load item icon from factory
-        SVGPath icon = IconFactory.getIcon(iconName, Themes.PRIMARY, 16);
+        ImageView icon = IconFactory.getIcon(iconName, 16);
 
         Label value = new Label(valueText);
         value.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0F172A;");

@@ -13,6 +13,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.GaussianBlur;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -74,7 +75,7 @@ public class BudgetDetailDialog {
         iconBox.setStyle("-fx-background-color: " + Themes.PRIMARY_TEAL + "; -fx-background-radius: 10;");
 
         // NEW: Load header wallet icon from factory
-        iconBox.getChildren().add(IconFactory.getIcon("wallet", Themes.DARK_TEXT, 20));
+        iconBox.getChildren().add(IconFactory.getIcon("wallet", 20));
 
         Label topLabel = new Label("BUDGET DETAIL");
         topLabel.setStyle("-fx-font-weight: 900; -fx-font-size: 12px; -fx-text-fill: #64748B; -fx-letter-spacing: 1.5px;");
@@ -127,8 +128,8 @@ public class BudgetDetailDialog {
         HBox limitValBox = new HBox(6);
         limitValBox.setAlignment(Pos.CENTER_LEFT);
 
-        // NEW: Load limit icon from factory (Using wallet as a proxy for the flag)
-        SVGPath limitIcon = IconFactory.getIcon("wallet", Themes.PRIMARY_TEAL, 18);
+        // Load limit icon from factory (Using wallet as a proxy for the flag)
+        ImageView limitIcon = IconFactory.getIcon("wallet", 18);
 
         Label limitVal = new Label(String.format(Locale.US, "$%,.2f", budget.getLimit()));
         limitVal.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
@@ -143,8 +144,8 @@ public class BudgetDetailDialog {
         HBox statusValBox = new HBox(6);
         statusValBox.setAlignment(Pos.CENTER_LEFT);
 
-        // NEW: Load status icon from factory
-        SVGPath statusIcon = IconFactory.getIcon("circle-check", Themes.PRIMARY_TEAL, 18);
+        // Load status icon from factory
+        ImageView statusIcon = IconFactory.getIcon("circle-check", 18);
 
         Label statusVal = new Label("Active");
         statusVal.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
@@ -208,7 +209,7 @@ public class BudgetDetailDialog {
         Button editBtn = new Button("Edit Budget");
 
         // NEW: Load edit icon from factory
-        editBtn.setGraphic(IconFactory.getIcon("square-pen", "#ffffff", 18));
+        editBtn.setGraphic(IconFactory.getWhiteIcon("square-pen", 18));
 
         editBtn.setMinHeight(52);
         editBtn.setMaxWidth(Double.MAX_VALUE);
@@ -228,7 +229,7 @@ public class BudgetDetailDialog {
         Button deleteBtn = new Button();
 
         // NEW: Load trash icon from factory
-        deleteBtn.setGraphic(IconFactory.getIcon("trash", "#EF4444", 24));
+        deleteBtn.setGraphic(IconFactory.getIcon("trash", 24));
 
         deleteBtn.setMinSize(52, 52);
         deleteBtn.setStyle(

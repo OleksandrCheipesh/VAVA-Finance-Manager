@@ -47,26 +47,37 @@ public class EmployeeDetailsDialog {
         modalContainer.setStyle("-fx-background-color: transparent;");
         modalContainer.setPadding(new Insets(60));
 
+        // INCREASED SIZE & PADDING
         VBox root = new VBox(25);
-        root.setPadding(new Insets(30));
+        root.setPadding(new Insets(25, 40, 40, 40));
         root.setStyle("-fx-background-color: white; -fx-background-radius: 24; -fx-border-radius: 24; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.20), 40, 0, 0, 15);");
-        root.setPrefWidth(500);
-        root.setMaxWidth(500);
+        root.setPrefWidth(600); // Wider window per requirements
+        root.setMaxWidth(600);
 
         modalContainer.getChildren().add(root);
         StackPane.setAlignment(root, Pos.CENTER);
         modalContainer.setOnMouseClicked(e -> { if (e.getTarget() == modalContainer) closeWithAnimation(modal, root); });
 
+        // --- NEW: Top Right Close Button ---
+        HBox closeBox = new HBox();
+        closeBox.setAlignment(Pos.TOP_RIGHT);
+        Button closeBtn = new Button("✕");
+        closeBtn.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: #9CA3AF; -fx-padding: 0;");
+        closeBtn.setOnAction(e -> closeWithAnimation(modal, root));
+        closeBox.getChildren().add(closeBtn);
+
         // --- Top Section: Avatar & Name ---
         HBox topSection = new HBox(20);
         topSection.setAlignment(Pos.CENTER_LEFT);
 
-        // Avatar Box
+        // Avatar Box (Using the ready-made PNG user icon)
         StackPane avatarBox = new StackPane();
         avatarBox.setPrefSize(80, 80);
-        avatarBox.setStyle("-fx-background-color: #E2E8F0; -fx-background-radius: 16;");
-        Label personIcon = new Label("👤");
-        personIcon.setStyle("-fx-font-size: 36px; -fx-text-fill: #9CA3AF;");
+        avatarBox.setStyle("-fx-background-color: #F8FAFC; -fx-background-radius: 16; -fx-border-color: #E2E8F0; -fx-border-radius: 16;");
+
+        // Load the user-round icon from our factory!
+        javafx.scene.image.ImageView personIcon = IconFactory.getIcon("user-round", 40);
+        personIcon.setOpacity(0.5); // Soften it slightly to look like a placeholder
 
         // Active dot logic
         boolean isActive = "Active".equalsIgnoreCase(employee.getStatus());
@@ -80,10 +91,10 @@ public class EmployeeDetailsDialog {
         // Name & Role
         VBox nameBox = new VBox(5);
         Label nameLbl = new Label(employee.getName() + " " + employee.getSurname());
-        nameLbl.setStyle("-fx-font-size: 24px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+        nameLbl.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
         Label roleLbl = new Label(employee.getPosition());
-        roleLbl.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + Themes.PRIMARY_DARK + ";");
+        roleLbl.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: " + Themes.PRIMARY_DARK + ";");
 
         Label statusPill = new Label(employee.getStatus().toUpperCase());
         String pillBg, pillTxt;
@@ -94,18 +105,17 @@ public class EmployeeDetailsDialog {
 
         nameBox.getChildren().addAll(nameLbl, roleLbl, statusPill);
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        Button closeBtn = new Button("X");
-        closeBtn.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 16px;");
-        closeBtn.setOnAction(e -> closeWithAnimation(modal, root));
+        topSection.getChildren().addAll(avatarBox, nameBox);
 
-        topSection.getChildren().addAll(avatarBox, nameBox, spacer, closeBtn);
-
-        // --- Grid Details Section ---
+        // --- Grid Details Section (Styled like beautiful disabled input fields) ---
         GridPane grid = new GridPane();
-        grid.setHgap(30);
+        grid.setHgap(20);
         grid.setVgap(20);
+
+        // Setting columns to exactly 50% width so fields align perfectly
+        ColumnConstraints col1 = new ColumnConstraints(); col1.setPercentWidth(50);
+        ColumnConstraints col2 = new ColumnConstraints(); col2.setPercentWidth(50);
+        grid.getColumnConstraints().addAll(col1, col2);
 
         grid.add(createDetailItem("NAME", employee.getName() + " " + employee.getSurname()), 0, 0);
         grid.add(createDetailItem("E-MAIL", employee.getEmail()), 1, 0);
@@ -114,14 +124,17 @@ public class EmployeeDetailsDialog {
 
         // --- Bottom Action Buttons ---
         HBox actionBox = new HBox(15);
+        actionBox.setPadding(new Insets(10, 0, 0, 0));
 
-        StateButton editBtn = new StateButton("✏ Edit Profile", StateButton.ButtonType.PRIMARY);
+        StateButton editBtn = new StateButton("Edit Profile", StateButton.ButtonType.PRIMARY);
+        editBtn.setGraphic(IconFactory.getWhiteIcon("square-pen", 16)); // PNG Icon
         HBox.setHgrow(editBtn, Priority.ALWAYS);
         editBtn.setMaxWidth(Double.MAX_VALUE);
-        editBtn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 12; -fx-background-radius: 10; -fx-cursor: hand;");
+        editBtn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-padding: 12; -fx-background-radius: 10; -fx-cursor: hand; -fx-icon-text-gap: 8px;");
 
-        Button delBtn = new Button("🗑");
-        delBtn.setStyle("-fx-background-color: #FEE2E2; -fx-text-fill: #EF4444; -fx-font-size: 16px; -fx-background-radius: 10; -fx-padding: 10 16; -fx-cursor: hand;");
+        Button delBtn = new Button();
+        delBtn.setGraphic(IconFactory.getIcon("trash", 20)); // PNG Icon
+        delBtn.setStyle("-fx-background-color: #FEE2E2; -fx-background-radius: 10; -fx-padding: 10 16; -fx-cursor: hand;");
 
         // Button Logic
         editBtn.setOnAction(e -> {
@@ -144,7 +157,9 @@ public class EmployeeDetailsDialog {
 
         actionBox.getChildren().addAll(editBtn, delBtn);
 
-        root.getChildren().addAll(topSection, grid, actionBox);
+        // Add all elements to root
+        root.getChildren().addAll(closeBox, topSection, grid, actionBox);
+
         Scene scene = new Scene(modalContainer);
         scene.setFill(Color.TRANSPARENT);
         modal.setScene(scene);
@@ -163,18 +178,23 @@ public class EmployeeDetailsDialog {
         modal.show();
     }
 
+    // UPDATED: Styled to look like clean, modern "input fields"
     private static VBox createDetailItem(String labelTxt, String valueTxt) {
         VBox box = new VBox(5);
+        // Gives the read-only data a beautiful input-field container appearance
+        box.setStyle("-fx-background-color: #F8FAFC; -fx-padding: 12 16; -fx-background-radius: 8; -fx-border-color: #E2E8F0; -fx-border-radius: 8;");
+
         Label lbl = new Label(labelTxt);
         lbl.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+
         Label val = new Label(valueTxt == null || valueTxt.isEmpty() ? "N/A" : valueTxt);
         val.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+
         box.getChildren().addAll(lbl, val);
         return box;
     }
 
     private static void closeWithAnimation(Stage modal, Node animatedNode) {
-        // --- FIX: Normal instantiation instead of double-braces ---
         FadeTransition fadeOut = new FadeTransition(Duration.millis(200), animatedNode);
         fadeOut.setToValue(0);
 
