@@ -12,11 +12,20 @@ public class RegistrationModel {
     private final UserService userService = new UserService();
 
     public void register(String name, String surname, String email, String passwordHash) throws SQLException {
-        // Run the validator first!
-        RegisterValidator.validate(name, surname, email, passwordHash);
-
-        User user = new User(name, surname, email, passwordHash, Position.Director, null);
-        userService.addUser(user);
-        SessionManager.getInstance().login(user);
+        var logger = org.example.logging.AppLog.getLogger(RegistrationModel.class);
+        logger.info("Registration attempt for email={}", email);
+        try {
+            RegisterValidator.validate(name, surname, email, passwordHash);
+            User user = new User(name, surname, email, passwordHash, Position.Director, null);
+            userService.addUser(user);
+            SessionManager.getInstance().login(user);
+            logger.info("Registration successful: id={} email={}", user.getId(), user.getEmail());
+        } catch (SQLException e) {
+            logger.error("Registration failed for email={}", email, e);
+            throw e;
+        } catch (RuntimeException e) {
+            logger.warn("Registration validation failed for email={}: {}", email, e.getMessage());
+            throw e;
+        }
     }
 }

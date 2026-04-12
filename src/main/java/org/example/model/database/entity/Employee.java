@@ -1,7 +1,5 @@
 package org.example.model.database.entity;
 
-import org.example.model.database.entity.Person;
-
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 

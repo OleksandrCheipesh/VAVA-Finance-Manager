@@ -17,6 +17,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.example.SessionManager;
+import org.example.logging.AppLog;
 import org.example.model.database.entity.Employee;
 import org.example.model.validation.EmpValExept;
 import org.example.model.validation.EmployeeValidator;
