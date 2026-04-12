@@ -11,8 +11,8 @@ public class Employee extends Person {
     private BigDecimal salary;
     private String position;
     private OffsetDateTime hiredAt;
-    private EmployeeStatus status;
-    private String email;
+    private String status = "Active";
+    private String department = "";
 
     public Employee() {}
 
@@ -100,12 +100,10 @@ public class Employee extends Person {
         this.hiredAt = hiredAt;
     }
 
-    public EmployeeStatus getStatus() {
-        return status;
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
-    public void setStatus(EmployeeStatus status) {
-        this.status = status;
-    }
+    public String getDepartment() { return department; }
+    public void setDepartment(String department) { this.department = department; }
 }
 

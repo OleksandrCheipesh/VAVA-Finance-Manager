@@ -33,7 +33,7 @@ public class EmployeesView extends BaseView {
 
         VBox mainContainer = new VBox();
 
-        // --- 1. Top Bar (Matching TransactionsView) ---
+        // --- 1. Top Bar ---
         HBox topBar = new HBox(20);
         topBar.setAlignment(Pos.BOTTOM_LEFT);
         topBar.setStyle("-fx-background-color: " + Themes.BG_CARD + "; -fx-padding: 0 40; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-width: 0 0 1 0;");
@@ -43,14 +43,13 @@ public class EmployeesView extends BaseView {
         title.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
         HBox.setMargin(title, new Insets(0, 0, 25, 0));
 
-        // Visual divider
         Region sep = new Region();
         sep.setPrefSize(2, 30);
         sep.setMaxSize(2, 30);
         sep.setStyle("-fx-background-color: " + Themes.BORDER_LIGHT + ";");
         HBox.setMargin(sep, new Insets(0, 10, 25, 10));
 
-        // Tabs
+        // New Figma Tabs
         HBox tabs = new HBox(30);
         tabs.setAlignment(Pos.BOTTOM_LEFT);
 
@@ -58,34 +57,22 @@ public class EmployeesView extends BaseView {
         String inactiveTab = "-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-padding: 0 0 20 0; -fx-cursor: hand;";
 
         Label tabAll = new Label("All Staff");
+        Label tabActive = new Label("Active");
+        Label tabInactive = new Label("Inactive");
         Label tabContractors = new Label("Contractors");
-        Label tabTeams = new Label("Teams");
 
         tabAll.setStyle(activeTab);
+        tabActive.setStyle(inactiveTab);
+        tabInactive.setStyle(inactiveTab);
         tabContractors.setStyle(inactiveTab);
-        tabTeams.setStyle(inactiveTab);
 
-        // Tab click events
-        tabAll.setOnMouseClicked(e -> {
-            tabAll.setStyle(activeTab);
-            tabContractors.setStyle(inactiveTab);
-            tabTeams.setStyle(inactiveTab);
-            // viewModel.filterByType("ALL");
-        });
-        tabContractors.setOnMouseClicked(e -> {
-            tabContractors.setStyle(activeTab);
-            tabAll.setStyle(inactiveTab);
-            tabTeams.setStyle(inactiveTab);
-            // viewModel.filterByType("CONTRACTORS");
-        });
-        tabTeams.setOnMouseClicked(e -> {
-            tabTeams.setStyle(activeTab);
-            tabAll.setStyle(inactiveTab);
-            tabContractors.setStyle(inactiveTab);
-            // viewModel.filterByType("TEAMS");
-        });
+        // UI Tabs Logic (Backend filtering to be handled by ViewModel)
+        tabAll.setOnMouseClicked(e -> { tabAll.setStyle(activeTab); tabActive.setStyle(inactiveTab); tabInactive.setStyle(inactiveTab); tabContractors.setStyle(inactiveTab); });
+        tabActive.setOnMouseClicked(e -> { tabActive.setStyle(activeTab); tabAll.setStyle(inactiveTab); tabInactive.setStyle(inactiveTab); tabContractors.setStyle(inactiveTab); });
+        tabInactive.setOnMouseClicked(e -> { tabInactive.setStyle(activeTab); tabAll.setStyle(inactiveTab); tabActive.setStyle(inactiveTab); tabContractors.setStyle(inactiveTab); });
+        tabContractors.setOnMouseClicked(e -> { tabContractors.setStyle(activeTab); tabAll.setStyle(inactiveTab); tabActive.setStyle(inactiveTab); tabInactive.setStyle(inactiveTab); });
 
-        tabs.getChildren().addAll(tabAll, tabContractors, tabTeams);
+        tabs.getChildren().addAll(tabAll, tabActive, tabInactive, tabContractors);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -136,14 +123,14 @@ public class EmployeesView extends BaseView {
         TableColumn<Employee, String> roleCol = new TableColumn<>("ROLE");
         roleCol.setCellValueFactory(new PropertyValueFactory<>("position"));
 
+        TableColumn<Employee, String> deptCol = new TableColumn<>("DEPARTMENT");
+        deptCol.setCellValueFactory(new PropertyValueFactory<>("department"));
+
         TableColumn<Employee, String> emailCol = new TableColumn<>("EMAIL");
         emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
 
-        TableColumn<Employee, BigDecimal> salaryCol = new TableColumn<>("SALARY");
-        salaryCol.setCellValueFactory(new PropertyValueFactory<>("salary"));
-
         TableColumn<Employee, String> statusCol = new TableColumn<>("STATUS");
-        statusCol.setCellValueFactory(cellData -> new SimpleStringProperty("Active"));
+        statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
         statusCol.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -152,7 +139,12 @@ public class EmployeesView extends BaseView {
                     setGraphic(null);
                 } else {
                     Label statusLabel = new Label(item);
-                    statusLabel.setStyle("-fx-background-color: #D1FAE5; -fx-text-fill: " + Themes.TEXT_SUCCESS + ";" +
+                    String pillBg, pillTxt;
+                    if ("Active".equalsIgnoreCase(item)) { pillBg = "#D1FAE5"; pillTxt = "#10B981"; }
+                    else if ("Contractor".equalsIgnoreCase(item)) { pillBg = "#FEF3C7"; pillTxt = "#D97706"; }
+                    else { pillBg = "#F1F5F9"; pillTxt = "#64748B"; } // Inactive/Other
+
+                    statusLabel.setStyle("-fx-background-color: " + pillBg + "; -fx-text-fill: " + pillTxt + ";" +
                             "-fx-padding: 4 12; -fx-background-radius: 12; -fx-border-radius: 12;" +
                             "-fx-font-size: 12px; -fx-font-weight: bold;");
                     setGraphic(statusLabel);
@@ -165,7 +157,7 @@ public class EmployeesView extends BaseView {
             private final Button actionBtn = new Button("⋮");
             {
                 actionBtn.setStyle("-fx-background-color: transparent; -fx-font-size: 24px; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-cursor: hand; -fx-padding: 0;");
-                actionBtn.setOnAction(e -> System.out.println("Action clicked"));
+                actionBtn.setOnAction(e -> openDetailsModal(getTableView().getItems().get(getIndex())));
             }
             @Override
             protected void updateItem(Void item, boolean empty) {
@@ -174,14 +166,21 @@ public class EmployeesView extends BaseView {
             }
         });
 
-        nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.20));
-        roleCol.prefWidthProperty().bind(table.widthProperty().multiply(0.20));
+        // Also open modal when a row is clicked
+        table.setOnMouseClicked(e -> {
+            if (table.getSelectionModel().getSelectedItem() != null) {
+                openDetailsModal(table.getSelectionModel().getSelectedItem());
+            }
+        });
+
+        nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.18));
+        roleCol.prefWidthProperty().bind(table.widthProperty().multiply(0.18));
+        deptCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
         emailCol.prefWidthProperty().bind(table.widthProperty().multiply(0.25));
-        salaryCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
-        statusCol.prefWidthProperty().bind(table.widthProperty().multiply(0.10));
+        statusCol.prefWidthProperty().bind(table.widthProperty().multiply(0.12));
         actionCol.prefWidthProperty().bind(table.widthProperty().multiply(0.10));
 
-        table.getColumns().addAll(nameCol, roleCol, emailCol, salaryCol, statusCol, actionCol);
+        table.getColumns().addAll(nameCol, roleCol, deptCol, emailCol, statusCol, actionCol);
 
         contentArea.getChildren().addAll(filterBar, summaryContainer, table);
         mainContainer.getChildren().addAll(topBar, contentArea);
@@ -189,6 +188,19 @@ public class EmployeesView extends BaseView {
 
         scene = new Scene(root);
         stage.setTitle("Admin - Employees");
+    }
+
+    private void openDetailsModal(Employee emp) {
+        EmployeeDetailsDialog.show(stage, emp,
+                updatedEmp -> {
+                    table.refresh(); // Refreshes table after edit
+                    ToastManager.showSuccess(stage, "Employee profile updated!");
+                },
+                deletedEmp -> {
+                    viewModel.getEmployees().remove(deletedEmp);
+                    ToastManager.showSuccess(stage, "Employee deleted.");
+                }
+        );
     }
 
     @Override
@@ -199,7 +211,8 @@ public class EmployeesView extends BaseView {
 
     @Override
     protected void setLogic() {
-        addBtn.setOnAction(e -> AddEmployeeDialog.show(stage, newEmployee -> viewModel.addEmployee(newEmployee)));
+        // Pass null to indicate a NEW employee is being created
+        addBtn.setOnAction(e -> AddEmployeeDialog.show(stage, null, newEmployee -> viewModel.addEmployee(newEmployee)));
 
         viewModel.messageProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && newVal.startsWith("Success:")) {

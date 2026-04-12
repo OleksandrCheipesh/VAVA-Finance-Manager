@@ -5,6 +5,9 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
+import javafx.scene.shape.SVGPath;
+import javafx.scene.paint.Color;
+import javafx.geometry.Insets;
 import org.example.view.templates.StateButton; // Adjust import if needed
 import org.example.logging.AppLog;
 
@@ -74,17 +77,33 @@ public class FilterBar extends HBox {
         StackPane stack = new StackPane();
         stack.setAlignment(Pos.CENTER_LEFT);
 
-        Label prompt = new Label(promptText);
-        prompt.setStyle("-fx-text-fill: #9CA3AF; -fx-padding: 0 0 0 12; -fx-font-size: 14px;");
-        prompt.setMouseTransparent(true);
+        HBox promptBox = new HBox(8);
+        promptBox.setAlignment(Pos.CENTER_LEFT);
+        promptBox.setPadding(new Insets(0, 0, 0, 12));
+        promptBox.setMouseTransparent(true);
 
-        if (control instanceof TextField tf) {
-            tf.textProperty().addListener((obs, old, val) -> prompt.setVisible(val.isEmpty()));
-        } else if (control instanceof DatePicker dp) {
-            dp.getEditor().textProperty().addListener((obs, old, val) -> prompt.setVisible(val.isEmpty()));
+        // Draw the professional SVG magnifying glass (No emojis!)
+        if (promptText.contains("Search")) {
+            SVGPath searchIcon = new SVGPath();
+            searchIcon.setContent("M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z");
+            searchIcon.setFill(Color.web(Themes.TEXT_MUTED));
+            searchIcon.setScaleX(0.8);
+            searchIcon.setScaleY(0.8);
+            promptBox.getChildren().add(searchIcon);
+            promptText = promptText.replace("\uD83D\uDD0D ", ""); // Strip out the old emoji if passed
         }
 
-        stack.getChildren().addAll(control, prompt);
+        Label prompt = new Label(promptText);
+        prompt.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 14px;");
+        promptBox.getChildren().add(prompt);
+
+        if (control instanceof TextField tf) {
+            tf.textProperty().addListener((obs, old, val) -> promptBox.setVisible(val.isEmpty()));
+        } else if (control instanceof DatePicker dp) {
+            dp.getEditor().textProperty().addListener((obs, old, val) -> promptBox.setVisible(val.isEmpty()));
+        }
+
+        stack.getChildren().addAll(control, promptBox);
         return stack;
     }
 
