@@ -3,6 +3,12 @@ package org.example.viewModel;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import org.example.SessionManager;
+import org.example.model.database.entity.User;
+import org.example.model.models.SettingsModel;
+import org.example.model.database.entity.Position;
+
+import java.sql.SQLException;
 
 public class SettingsViewModel {
 
@@ -14,10 +20,16 @@ public class SettingsViewModel {
     private final StringProperty language = new SimpleStringProperty("English");
     private final StringProperty dateFormat = new SimpleStringProperty("DD/MM/YYYY");
 
-    private final ObservableList<UserUI> users = FXCollections.observableArrayList();
+    private final ObservableList<User> users = FXCollections.observableArrayList();
+
+    private SettingsModel settingsModel = new SettingsModel();
 
     public SettingsViewModel() {
-        loadInitialData();
+        try {
+            loadInitialData();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void loadInitialData() {
@@ -26,12 +38,12 @@ public class SettingsViewModel {
         currency.set("EUR (€)");
         industry.set("Financial Services");
 
-        // Dummy data
-        users.addAll(
-                new UserUI("Marcus", "Thorne", "m.thorne@mintmgmt.com", "Director"),
-                new UserUI("Elena", "Varga", "e.varga@mintmgmt.com", "Manager"),
-                new UserUI("Jakub", "Kolar", "j.kolar@mintmgmt.com", "Analyst")
-        );
+        try {
+            int companyId = SessionManager.getInstance().getCurrentCompanyId();
+            users.addAll(settingsModel.getUsersByCompanyId(companyId));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void saveCompanyProfile() {
@@ -42,12 +54,14 @@ public class SettingsViewModel {
         System.out.println("Applying preferences...");
     }
 
-    public void addUser(UserUI user) {
-        users.add(user);
+    public void addUser(User user) throws SQLException {
+        user.setCompanyId(SessionManager.getInstance().getCurrentCompanyId());
+        users.add(this.settingsModel.addUser(user));
     }
 
-    public void deleteUser(UserUI user) {
-        users.remove(user);
+    public void deleteUser(int userId) throws SQLException {
+        this.settingsModel.deleteUser(userId);
+        users.removeIf(u -> u.getId() == userId);
     }
 
     public void changePassword(String currentPw, String newPw, String confirmPw) {
@@ -61,5 +75,5 @@ public class SettingsViewModel {
     public StringProperty languageProperty() { return language; }
     public StringProperty dateFormatProperty() { return dateFormat; }
 
-    public ObservableList<UserUI> getUsers() { return users; }
+    public ObservableList<User> getUsers() { return users; }
 }

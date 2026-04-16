@@ -2,25 +2,26 @@ package org.example.view.mainStages;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.SVGPath;
+import org.example.model.database.entity.Position;
+import org.example.model.database.entity.User;
 import org.example.view.templates.BaseView;
 import org.example.view.templates.Themes;
 import org.example.view.templates.AddUserDialog;
 import org.example.view.templates.DeleteConfirmationDialog;
 import org.example.viewModel.SettingsViewModel;
-import org.example.viewModel.UserUI;
+import org.kordamp.ikonli.javafx.FontIcon;
+
+import java.sql.SQLException;
 
 public class SettingsView extends BaseView {
 
     private final SettingsViewModel viewModel = new SettingsViewModel();
 
-    // Components
     private VBox contentArea;
     private TextField companyNameField;
     private ComboBox<String> countryBox;
@@ -33,7 +34,7 @@ public class SettingsView extends BaseView {
     private ComboBox<String> dateBox;
     private Button applyPrefsBtn;
 
-    private TableView<UserUI> table;
+    private TableView<User> table;
     private Button addUserBtn;
 
     private PasswordField currentPassField;
@@ -48,9 +49,7 @@ public class SettingsView extends BaseView {
 
         VBox mainContainer = new VBox();
 
-        // Header
         HBox topBar = new HBox();
-
         topBar.setAlignment(Pos.BOTTOM_LEFT);
         topBar.setStyle("-fx-background-color: white; -fx-padding: 0 40; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-width: 0 0 1 0;");
         topBar.setMinHeight(85);
@@ -66,21 +65,16 @@ public class SettingsView extends BaseView {
 
         titleBox.getChildren().addAll(title, subtitle);
         HBox.setMargin(titleBox, new Insets(0, 0, 15, 0));
-
         topBar.getChildren().add(titleBox);
 
-        // Content
         contentArea = new VBox(25);
         VBox.setVgrow(contentArea, Priority.ALWAYS);
 
         HBox topRow = new HBox(25);
         VBox companyProfile = buildCompanyProfile();
-
         HBox.setHgrow(companyProfile, Priority.ALWAYS);
         VBox preferences = buildPreferences();
-
         preferences.setMinWidth(300);
-
         topRow.getChildren().addAll(companyProfile, preferences);
 
         VBox userManagement = buildUserManagement();
@@ -89,7 +83,6 @@ public class SettingsView extends BaseView {
         contentArea.getChildren().addAll(topRow, userManagement, security);
 
         ScrollPane scrollPane = new ScrollPane(contentArea);
-
         scrollPane.setFitToWidth(true);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
@@ -147,7 +140,13 @@ public class SettingsView extends BaseView {
 
         saveCompanyBtn.setOnAction(e -> viewModel.saveCompanyProfile());
         applyPrefsBtn.setOnAction(e -> viewModel.applyPreferences());
-        addUserBtn.setOnAction(e -> AddUserDialog.show(stage, newUser -> viewModel.addUser(newUser)));
+        addUserBtn.setOnAction(e -> AddUserDialog.show(stage, viewModel.getUsers(), (User newUser) -> {
+            try {
+                viewModel.addUser(newUser);
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        }));
 
         savePassBtn.setOnAction(e -> {
             viewModel.changePassword(currentPassField.getText(), newPassField.getText(), confirmPassField.getText());
@@ -155,21 +154,18 @@ public class SettingsView extends BaseView {
         });
     }
 
-    // Card building
-
     private VBox buildCompanyProfile() {
         VBox card = createCard();
 
         HBox header = new HBox(15);
         header.setAlignment(Pos.CENTER_LEFT);
 
-        StackPane icon = createSvgIcon("M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4", Themes.PRIMARY, Themes.PRIMARY + "22");
+        StackPane icon = createIcon("fas-building", Themes.PRIMARY, Themes.PRIMARY + "22");
 
         Label title = new Label("Company Profile");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #111827;");
 
         Region spacer = new Region();
-
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         saveCompanyBtn = new Button("Save Changes");
@@ -190,11 +186,9 @@ public class SettingsView extends BaseView {
 
         ColumnConstraints col1 = new ColumnConstraints(); col1.setPercentWidth(50);
         ColumnConstraints col2 = new ColumnConstraints(); col2.setPercentWidth(50);
-
         grid.getColumnConstraints().addAll(col1, col2);
 
         card.getChildren().addAll(header, grid);
-
         return card;
     }
 
@@ -204,22 +198,19 @@ public class SettingsView extends BaseView {
         HBox header = new HBox(15);
         header.setAlignment(Pos.CENTER_LEFT);
 
-        StackPane icon = createSvgIcon("M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4", Themes.TEXT_MUTED, "#F3F4F6");
+        StackPane icon = createIcon("fas-sliders-h", Themes.TEXT_MUTED, "#F3F4F6");
 
         Label title = new Label("Preferences");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #111827;");
-
         header.getChildren().addAll(icon, title);
 
         Label langLabel = new Label("LANGUAGE");
         langLabel.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
         HBox langToggle = new HBox();
-
         langToggle.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 20; -fx-padding: 4;");
         enBtn = new Button("English"); skBtn = new Button("Slovak");
         enBtn.setMaxWidth(Double.MAX_VALUE); skBtn.setMaxWidth(Double.MAX_VALUE);
-
         HBox.setHgrow(enBtn, Priority.ALWAYS); HBox.setHgrow(skBtn, Priority.ALWAYS);
         langToggle.getChildren().addAll(enBtn, skBtn);
 
@@ -231,7 +222,6 @@ public class SettingsView extends BaseView {
         applyPrefsBtn.setStyle("-fx-background-color: #E5E7EB; -fx-text-fill: #374151; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-insets: 0;");
 
         card.getChildren().addAll(header, langLabel, langToggle, createField("DATE FORMAT", dateBox), applyPrefsBtn);
-
         return card;
     }
 
@@ -241,7 +231,7 @@ public class SettingsView extends BaseView {
         HBox header = new HBox(15);
         header.setAlignment(Pos.CENTER_LEFT);
 
-        StackPane icon = createSvgIcon("M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z", Themes.PRIMARY, Themes.PRIMARY + "22");
+        StackPane icon = createIcon("fas-users", Themes.PRIMARY, Themes.PRIMARY + "22");
 
         Label title = new Label("User Management");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #111827;");
@@ -260,81 +250,71 @@ public class SettingsView extends BaseView {
 
         String headerStyle = "-fx-font-weight: bold; -fx-alignment: center-left; -fx-padding: 0 0 0 10;";
 
-        TableColumn<UserUI, String> nameCol = new TableColumn<>("NAME");
+        TableColumn<User, String> nameCol = new TableColumn<>("NAME");
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         nameCol.setStyle(headerStyle + " -fx-text-fill: #111827;");
 
-        TableColumn<UserUI, String> surnameCol = new TableColumn<>("SURNAME");
+        TableColumn<User, String> surnameCol = new TableColumn<>("SURNAME");
         surnameCol.setCellValueFactory(new PropertyValueFactory<>("surname"));
         surnameCol.setStyle(headerStyle + " -fx-text-fill: #111827;");
 
-        TableColumn<UserUI, String> emailCol = new TableColumn<>("EMAIL");
+        TableColumn<User, String> emailCol = new TableColumn<>("EMAIL");
         emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
         emailCol.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-alignment: center-left; -fx-padding: 0 0 0 10;");
 
-        TableColumn<UserUI, String> roleCol = new TableColumn<>("ROLE");
-
-        roleCol.setCellValueFactory(new PropertyValueFactory<>("role"));
+        TableColumn<User, Position> roleCol = new TableColumn<>("POSITION");
+        roleCol.setCellValueFactory(new PropertyValueFactory<>("position"));
         roleCol.setStyle("-fx-alignment: center-left; -fx-padding: 0 0 0 10;");
-        roleCol.setCellFactory(col -> new TableCell<>() {
-            @Override protected void updateItem(String role, boolean empty) {
-                super.updateItem(role, empty);
-                if (empty || role == null) setGraphic(null);
-                else {
-                    Label pill = new Label(role);
-
-                    String bgColor = role.equalsIgnoreCase("Director") ? Themes.PRIMARY + "33" : "#F3F4F6";
-                    String textColor = role.equalsIgnoreCase("Director") ? Themes.PRIMARY : "#374151";
-
-                    pill.setStyle("-fx-background-color: " + bgColor + "; -fx-text-fill: " + textColor + "; -fx-padding: 4 12; -fx-background-radius: 12; -fx-font-size: 12px; -fx-font-weight: bold;");
-
-                    setGraphic(pill);
-                }
+        roleCol.setCellFactory(col -> new TableCell<User, Position>() {
+            @Override protected void updateItem(Position position, boolean empty) {
+                super.updateItem(position, empty);
+                if (empty || position == null) { setGraphic(null); return; }
+                Label pill = new Label(position.name());
+                String bgColor = position == Position.Director ? Themes.PRIMARY + "33" : "#F3F4F6";
+                String textColor = position == Position.Director ? Themes.PRIMARY : "#374151";
+                pill.setStyle("-fx-background-color: " + bgColor + "; -fx-text-fill: " + textColor + "; -fx-padding: 4 12; -fx-background-radius: 12; -fx-font-size: 12px; -fx-font-weight: bold;");
+                setGraphic(pill);
             }
         });
 
-        TableColumn<UserUI, Void> actionCol = new TableColumn<>("ACTION");
-
+        TableColumn<User, Void> actionCol = new TableColumn<>("ACTION");
         actionCol.setStyle("-fx-alignment: center-left; -fx-padding: 0 0 0 10;");
-        actionCol.setCellFactory(col -> new TableCell<>() {
+        actionCol.setCellFactory(col -> new TableCell<User, Void>() {
             @Override protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
+                if (empty) { setGraphic(null); return; }
+
+                User rowUser = getTableView().getItems().get(getIndex());
+                HBox actionContainer = new HBox();
+                actionContainer.setAlignment(Pos.CENTER_LEFT);
+
+                if (rowUser.getPosition() == Position.Director) {
+                    Label protectedLbl = new Label("Protected");
+                    protectedLbl.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 12px;");
+                    actionContainer.getChildren().add(protectedLbl);
                 } else {
-                    UserUI user = getTableView().getItems().get(getIndex());
+                    FontIcon trashIcon = new FontIcon("fas-trash");
+                    trashIcon.setIconSize(14);
+                    trashIcon.setIconColor(Color.web(Themes.TEXT_ERROR));
 
-                    HBox actionContainer = new HBox();
-
-                    actionContainer.setAlignment(Pos.CENTER_LEFT);
-
-                    if ("Director".equalsIgnoreCase(user.getRole())) {
-                        Label protectedLbl = new Label("Protected");
-
-                        protectedLbl.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 12px; -fx-padding: 0;");
-                        actionContainer.getChildren().add(protectedLbl);
-                    } else {
-                        SVGPath trash = new SVGPath();
-
-                        trash.setContent("M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16");
-                        trash.setFill(Color.TRANSPARENT);
-                        trash.setStroke(Color.web(Themes.TEXT_ERROR));
-                        trash.setStrokeWidth(1.5);
-                        trash.setTranslateX(-4);
-
-                        Group trashGroup = new Group(trash);
-
-                        StackPane trashWrapper = new StackPane(trashGroup);
-
-                        trashWrapper.setAlignment(Pos.CENTER_LEFT);
-                        trashWrapper.setStyle("-fx-cursor: hand; -fx-padding: 0 0 0 14;");
-                        trashWrapper.setOnMouseClicked(e -> DeleteConfirmationDialog.show(stage, user.getName(), () -> viewModel.deleteUser(user)));
-
-                        actionContainer.getChildren().add(trashWrapper);
-                    }
-                    setGraphic(actionContainer);
-                    setAlignment(Pos.CENTER_LEFT);
+                    StackPane trashWrapper = new StackPane(trashIcon);
+                    trashWrapper.setAlignment(Pos.CENTER_LEFT);
+                    trashWrapper.setStyle("-fx-cursor: hand; -fx-padding: 0 0 0 14;");
+                    trashWrapper.setOnMouseClicked(e -> DeleteConfirmationDialog.show(
+                            stage,
+                            "Are you sure you want to delete " + rowUser.getName() + " " + rowUser.getSurname() + "?",
+                            () -> {
+                                try {
+                                    viewModel.deleteUser(rowUser.getId());
+                                } catch (SQLException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                            }
+                    ));                    actionContainer.getChildren().add(trashWrapper);
                 }
+
+                setGraphic(actionContainer);
+                setAlignment(Pos.CENTER_LEFT);
             }
         });
 
@@ -342,7 +322,6 @@ public class SettingsView extends BaseView {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         card.getChildren().addAll(header, table);
-
         return card;
     }
 
@@ -352,11 +331,10 @@ public class SettingsView extends BaseView {
         HBox header = new HBox(15);
         header.setAlignment(Pos.CENTER_LEFT);
 
-        StackPane icon = createSvgIcon("M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z", Themes.TEXT_ERROR, Themes.TEXT_ERROR + "22");
+        StackPane icon = createIcon("fas-shield-alt", Themes.TEXT_ERROR, Themes.TEXT_ERROR + "22");
 
         Label title = new Label("Security");
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #111827;");
-
         header.getChildren().addAll(icon, title);
 
         currentPassField = new PasswordField();
@@ -367,7 +345,6 @@ public class SettingsView extends BaseView {
 
         VBox newPass = createSecurePasswordFieldWrapper("NEW PASSWORD", "Min. 8 chars", newPassField);
         VBox confPass = createSecurePasswordFieldWrapper("CONFIRM PASSWORD", "Re-enter password", confirmPassField);
-
         HBox.setHgrow(newPass, Priority.ALWAYS); HBox.setHgrow(confPass, Priority.ALWAYS);
         newPassRow.getChildren().addAll(newPass, confPass);
 
@@ -377,76 +354,58 @@ public class SettingsView extends BaseView {
         HBox btnContainer = new HBox(savePassBtn);
         btnContainer.setAlignment(Pos.CENTER);
         card.getChildren().addAll(header, createSecurePasswordFieldWrapper("CURRENT PASSWORD", "••••••••••••", currentPassField), newPassRow, btnContainer);
-
         return card;
     }
 
     private VBox createCard() {
         VBox card = new VBox(25);
-
         card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 30; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-width: 1;");
         card.setEffect(new javafx.scene.effect.DropShadow(10, Color.rgb(0, 0, 0, 0.05)));
-
         return card;
     }
 
-    private StackPane createSvgIcon(String svgPathData, String colorHex, String bgColorHex) {
+    private StackPane createIcon(String iconCode, String colorHex, String bgColorHex) {
         StackPane pane = new StackPane();
         pane.setMinSize(40, 40); pane.setMaxSize(40, 40);
         pane.setStyle("-fx-background-color: " + bgColorHex + "; -fx-background-radius: 12;");
 
-        SVGPath svg = new SVGPath();
-        svg.setContent(svgPathData);
+        FontIcon icon = new FontIcon(iconCode);
+        icon.setIconSize(16);
+        icon.setIconColor(Color.web(colorHex));
 
-        if (colorHex.equals(Themes.PRIMARY) || colorHex.equals(Themes.TEXT_ERROR) || colorHex.equals(Themes.TEXT_MUTED)) {
-            svg.setFill(Color.TRANSPARENT); svg.setStroke(Color.web(colorHex)); svg.setStrokeWidth(2.0);
-        } else {
-            svg.setFill(Color.web(colorHex));
-        }
-
-        pane.getChildren().add(svg);
-
+        pane.getChildren().add(icon);
         return pane;
     }
 
     private VBox createField(String labelText, Control inputControl) {
         VBox box = new VBox(8);
-
         Label label = new Label(labelText);
         label.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
-
         inputControl.setMaxWidth(Double.MAX_VALUE);
-
         box.getChildren().addAll(label, inputControl);
-
         return box;
     }
 
     private TextField createTextField(String prompt) {
         TextField tf = new TextField();
-
         tf.setPromptText(prompt);
         tf.setMinHeight(44); tf.setPrefHeight(44); tf.setMaxHeight(44);
         tf.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 15; -fx-border-width: 0;");
-
         return tf;
     }
 
     private ComboBox<String> createComboBox(String prompt, String... items) {
         ComboBox<String> cb = new ComboBox<>();
-
         cb.getItems().addAll(items);
         cb.setPromptText(prompt);
         cb.setMinHeight(44); cb.setPrefHeight(44); cb.setMaxHeight(44);
         cb.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 15; -fx-border-width: 0;");
         cb.setMaxWidth(Double.MAX_VALUE);
-
         return cb;
     }
 
     private VBox createSecurePasswordFieldWrapper(String labelText, String prompt, PasswordField pf) {
         VBox box = new VBox(8);
-
         Label label = new Label(labelText);
         label.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
@@ -458,36 +417,35 @@ public class SettingsView extends BaseView {
         pf.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 45 0 15; -fx-border-width: 0;");
 
         TextField tf = new TextField();
-
         tf.setPromptText(prompt);
         tf.setMinHeight(44); tf.setPrefHeight(44); tf.setMaxHeight(44);
         tf.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 45 0 15; -fx-border-width: 0;");
         tf.setManaged(false); tf.setVisible(false);
         tf.textProperty().bindBidirectional(pf.textProperty());
 
-        SVGPath eyeIcon = new SVGPath();
-
-        eyeIcon.setContent("M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z");
-        eyeIcon.setFill(Color.TRANSPARENT); eyeIcon.setStroke(Color.web(Themes.TEXT_MUTED)); eyeIcon.setStrokeWidth(1.5);
+        FontIcon eyeIcon = new FontIcon("fas-eye");
+        eyeIcon.setIconSize(14);
+        eyeIcon.setIconColor(Color.web(Themes.TEXT_MUTED));
 
         StackPane eyePane = new StackPane(eyeIcon);
         eyePane.setPadding(new Insets(0, 15, 0, 0));
         eyePane.setStyle("-fx-cursor: hand;");
-
         eyePane.setMaxWidth(45);
         eyePane.setAlignment(Pos.CENTER_RIGHT);
 
         eyePane.setOnMousePressed(e -> {
-            pf.setVisible(false); pf.setManaged(false); tf.setVisible(true); tf.setManaged(true); eyeIcon.setStroke(Color.web(Themes.PRIMARY));
+            pf.setVisible(false); pf.setManaged(false);
+            tf.setVisible(true); tf.setManaged(true);
+            eyeIcon.setIconColor(Color.web(Themes.PRIMARY));
         });
         eyePane.setOnMouseReleased(e -> {
-            tf.setVisible(false); tf.setManaged(false); pf.setVisible(true); pf.setManaged(true); eyeIcon.setStroke(Color.web(Themes.TEXT_MUTED));
+            tf.setVisible(false); tf.setManaged(false);
+            pf.setVisible(true); pf.setManaged(true);
+            eyeIcon.setIconColor(Color.web(Themes.TEXT_MUTED));
         });
 
         pane.getChildren().addAll(pf, tf, eyePane);
-
         box.getChildren().addAll(label, pane);
-
         return box;
     }
 }
