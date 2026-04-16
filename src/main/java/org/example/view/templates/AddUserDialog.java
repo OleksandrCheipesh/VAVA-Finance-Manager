@@ -20,6 +20,7 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.example.model.database.entity.Position;
 import org.example.model.database.entity.User;
+import org.example.model.validation.RegisterValidator;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Arrays;
@@ -31,7 +32,6 @@ public class AddUserDialog {
 
     public static void show(Stage owner, ObservableList<User> users, Consumer<User> onSuccess) {
         Stage modal = new Stage();
-
         modal.initOwner(owner);
         modal.initModality(Modality.APPLICATION_MODAL);
         modal.initStyle(StageStyle.TRANSPARENT);
@@ -119,7 +119,6 @@ public class AddUserDialog {
         VBox passwordBox = createSecurePasswordFieldWrapper("PASSWORD", "••••••••••••", passField);
 
         boolean hasDirector = users.stream().anyMatch(u -> u.getPosition() == Position.Director);
-
         ComboBox<Position> roleCombo = new ComboBox<>();
         roleCombo.getItems().addAll(
                 Arrays.stream(Position.values())
@@ -133,6 +132,13 @@ public class AddUserDialog {
         VBox roleBox = createLabeledField("ACCESS ROLE", roleCombo);
 
         form.getChildren().addAll(nameGrid, emailBox, passwordBox, roleBox);
+
+        // Error label
+        Label errorLabel = new Label();
+        errorLabel.setStyle("-fx-text-fill: " + Themes.TEXT_ERROR + "; -fx-font-size: 12px;");
+        errorLabel.setVisible(false);
+        errorLabel.setManaged(false);
+        errorLabel.visibleProperty().addListener((obs, oldVal, newVal) -> errorLabel.setManaged(newVal));
 
         // Footer
         HBox actionBox = new HBox(15);
@@ -157,21 +163,33 @@ public class AddUserDialog {
         saveBtn.setOnMouseExited(e -> saveBtn.setStyle(normalStyle));
 
         saveBtn.setOnAction(e -> {
-            Position selectedPosition = roleCombo.getValue() != null ? roleCombo.getValue() : Position.Analyst;
-            User newUser = new User(
-                    nameField.getText().trim().isEmpty() ? "Julian" : nameField.getText().trim(),
-                    surnameField.getText().trim().isEmpty() ? "Sterling" : surnameField.getText().trim(),
-                    emailField.getText().trim().isEmpty() ? "julian.s@mintmanagement.com" : emailField.getText().trim(),
-                    passField.getText().trim().isEmpty() ? "" : passField.getText().trim(),
-                    selectedPosition,
-                    null
-            );
+            String name = nameField.getText().trim();
+            String surname = surnameField.getText().trim();
+            String email = emailField.getText().trim();
+            String password = passField.getText().trim();
+            Position selectedPosition = roleCombo.getValue();
+
+            if (selectedPosition == null) {
+                errorLabel.setText("Please select a role.");
+                errorLabel.setVisible(true);
+                return;
+            }
+
+            try {
+                RegisterValidator.validate(name, surname, email, password);
+            } catch (IllegalArgumentException ex) {
+                errorLabel.setText(ex.getMessage());
+                errorLabel.setVisible(true);
+                return;
+            }
+
+            User newUser = new User(name, surname, email, password, selectedPosition, null);
             onSuccess.accept(newUser);
             closeWithAnimation(modal, shadowWrapper);
         });
 
         actionBox.getChildren().addAll(cancelBtn, saveBtn);
-        root.getChildren().addAll(header, form, actionBox);
+        root.getChildren().addAll(header, form, errorLabel, actionBox);
 
         Scene scene = new Scene(shadowWrapper);
         scene.setFill(null);

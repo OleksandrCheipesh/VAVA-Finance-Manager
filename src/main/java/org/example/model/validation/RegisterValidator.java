@@ -33,3 +33,4 @@ public class RegisterValidator {
                 && !domain.endsWith(".") && !email.contains("..");
     }
 }
+// схуя ви ублюдки приватизували мою розроботку ?
