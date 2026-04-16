@@ -315,7 +315,7 @@ public class SettingsView extends BaseView {
                     trashWrapper.setStyle("-fx-cursor: hand; -fx-padding: 0 0 0 14;");
                     trashWrapper.setOnMouseClicked(e -> DeleteConfirmationDialog.show(
                             stage,
-                            "Are you sure you want to delete " + rowUser.getName() + " " + rowUser.getSurname() + "?",
+                            rowUser.getName() + " " + rowUser.getSurname(),
                             () -> {
                                 try {
                                     viewModel.deleteUser(rowUser.getId());

@@ -84,7 +84,7 @@ public final class SessionManager {
     }
 
     public synchronized Position getPosition() {
-        return currentUser.getPosition();
+        return getCurrentUser().getPosition();
     }
 
     public synchronized void verifyCompanyAccess(int companyId) {

@@ -6,7 +6,6 @@ import javafx.collections.ObservableList;
 import org.example.SessionManager;
 import org.example.model.database.entity.User;
 import org.example.model.models.SettingsModel;
-import org.example.model.database.entity.Position;
 
 import java.sql.SQLException;
 

@@ -14,23 +14,23 @@ public class SettingsModel {
     private UserService userService = new UserService();
     private User currentUser = SessionManager.getInstance().getCurrentUser();
 
-    public User addUser(User user) throws SQLException {
-        if (currentUser.getPosition() == Position.Director ) {
-            this.userService.addUser(user);
+    private void requireDirector() {
+        if (currentUser == null || currentUser.getPosition() != Position.Director) {
+            throw new SecurityException("Only Directors can manage users.");
         }
+    }
+    public User addUser(User user) throws SQLException {
+        requireDirector();
+        this.userService.addUser(user);
         return user;
     }
-
     public void deleteUser(int userId) throws SQLException {
-        if (currentUser.getPosition() == Position.Director ) {
-            this.userService.deleteUser(userId);
-        }
+        requireDirector();
+        this.userService.deleteUser(userId);
     }
-
     public void editUser(User user) throws SQLException {
-        if (currentUser.getPosition() == Position.Director) {
-            this.userService.updateUser(user);
-        }
+        requireDirector();
+        this.userService.updateUser(user);
     }
 
     public List<User> getUsersByCompanyId(int companyId) throws SQLException {
