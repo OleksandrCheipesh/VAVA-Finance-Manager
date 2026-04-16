@@ -64,6 +64,11 @@ public class SettingsViewModel {
         users.removeIf(u -> u.getId() == userId);
     }
 
+    public void editUser(User user) throws SQLException {
+        this.settingsModel.editUser(user);
+        users.replaceAll(u -> u.getId() == user.getId() ? user : u);
+    }
+
     public void changePassword(String currentPw, String newPw, String confirmPw) {
         System.out.println("Password logic here...");
     }

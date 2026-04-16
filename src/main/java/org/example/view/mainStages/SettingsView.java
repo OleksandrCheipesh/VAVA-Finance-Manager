@@ -9,10 +9,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import org.example.model.database.entity.Position;
 import org.example.model.database.entity.User;
-import org.example.view.templates.BaseView;
-import org.example.view.templates.Themes;
-import org.example.view.templates.AddUserDialog;
-import org.example.view.templates.DeleteConfirmationDialog;
+import org.example.view.templates.*;
 import org.example.viewModel.SettingsViewModel;
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -140,6 +137,7 @@ public class SettingsView extends BaseView {
 
         saveCompanyBtn.setOnAction(e -> viewModel.saveCompanyProfile());
         applyPrefsBtn.setOnAction(e -> viewModel.applyPreferences());
+
         addUserBtn.setOnAction(e -> AddUserDialog.show(stage, viewModel.getUsers(), (User newUser) -> {
             try {
                 viewModel.addUser(newUser);
@@ -285,7 +283,7 @@ public class SettingsView extends BaseView {
                 if (empty) { setGraphic(null); return; }
 
                 User rowUser = getTableView().getItems().get(getIndex());
-                HBox actionContainer = new HBox();
+                HBox actionContainer = new HBox(8);
                 actionContainer.setAlignment(Pos.CENTER_LEFT);
 
                 if (rowUser.getPosition() == Position.Director) {
@@ -293,6 +291,21 @@ public class SettingsView extends BaseView {
                     protectedLbl.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 12px;");
                     actionContainer.getChildren().add(protectedLbl);
                 } else {
+                    FontIcon editIcon = new FontIcon("fas-pen");
+                    editIcon.setIconSize(14);
+                    editIcon.setIconColor(Color.web(Themes.PRIMARY));
+
+                    StackPane editWrapper = new StackPane(editIcon);
+                    editWrapper.setAlignment(Pos.CENTER_LEFT);
+                    editWrapper.setStyle("-fx-cursor: hand; -fx-padding: 0 0 0 14;");
+                    editWrapper.setOnMouseClicked(e -> EditUserDialog.show(stage, rowUser, viewModel.getUsers(), updatedUser -> {
+                        try {
+                            viewModel.editUser(updatedUser);
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }));
+
                     FontIcon trashIcon = new FontIcon("fas-trash");
                     trashIcon.setIconSize(14);
                     trashIcon.setIconColor(Color.web(Themes.TEXT_ERROR));
@@ -310,7 +323,9 @@ public class SettingsView extends BaseView {
                                     throw new RuntimeException(ex);
                                 }
                             }
-                    ));                    actionContainer.getChildren().add(trashWrapper);
+                    ));
+
+                    actionContainer.getChildren().addAll(editWrapper, trashWrapper);
                 }
 
                 setGraphic(actionContainer);
