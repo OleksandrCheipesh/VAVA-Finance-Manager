@@ -1,6 +1,7 @@
 package org.example;
 
 
+import org.example.model.database.entity.Position;
 import org.example.model.database.entity.User;
 import org.example.logging.AppLog;
 
@@ -80,6 +81,10 @@ public final class SessionManager {
                 currentUser != null ? currentUser.getEmail() : null,
                 currentUser != null ? currentUser.getCompanyId() : null
         );
+    }
+
+    public synchronized Position getPosition() {
+        return getCurrentUser().getPosition();
     }
 
     public synchronized void verifyCompanyAccess(int companyId) {

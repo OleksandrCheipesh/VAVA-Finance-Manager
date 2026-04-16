@@ -20,17 +20,15 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.example.model.database.entity.Position;
 import org.example.model.database.entity.User;
-import org.example.model.validation.RegisterValidator;
-import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-public class AddUserDialog {
+public class EditUserDialog {
 
     private static final double FIELD_HEIGHT = 44.0;
 
-    public static void show(Stage owner, ObservableList<User> users, Consumer<User> onSuccess) {
+    public static void show(Stage owner, User user, ObservableList<User> users, Consumer<User> onSuccess) {
         Stage modal = new Stage();
         modal.initOwner(owner);
         modal.initModality(Modality.APPLICATION_MODAL);
@@ -71,9 +69,9 @@ public class AddUserDialog {
         header.setAlignment(Pos.CENTER_LEFT);
 
         VBox titleBox = new VBox(4);
-        Label title = new Label("Add User");
+        Label title = new Label("Edit User");
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
-        Label subtitle = new Label("Grant access permissions for a new team member");
+        Label subtitle = new Label("Update information for " + user.getName() + " " + user.getSurname());
         subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
         titleBox.getChildren().addAll(title, subtitle);
 
@@ -98,10 +96,10 @@ public class AddUserDialog {
         VBox form = new VBox(18);
         VBox.setMargin(form, new Insets(10, 0, 0, 0));
 
-        TextField nameField = createTextField("e.g. Julian");
+        TextField nameField = createTextField(user.getName());
         VBox nameBox = createLabeledField("NAME", nameField);
 
-        TextField surnameField = createTextField("e.g. Sterling");
+        TextField surnameField = createTextField(user.getSurname());
         VBox surnameBox = createLabeledField("SURNAME", surnameField);
 
         GridPane nameGrid = new GridPane();
@@ -112,33 +110,29 @@ public class AddUserDialog {
         nameGrid.add(nameBox, 0, 0);
         nameGrid.add(surnameBox, 1, 0);
 
-        TextField emailField = createTextField("julian.s@mintmanagement.com");
+        TextField emailField = createTextField(user.getEmail());
         VBox emailBox = createLabeledField("EMAIL ADDRESS", emailField);
 
-        PasswordField passField = new PasswordField();
-        VBox passwordBox = createSecurePasswordFieldWrapper("PASSWORD", "••••••••••••", passField);
-
-        boolean hasDirector = users.stream().anyMatch(u -> u.getPosition() == Position.Director);
         ComboBox<Position> roleCombo = new ComboBox<>();
-        roleCombo.getItems().addAll(
-                Arrays.stream(Position.values())
-                        .filter(p -> p != Position.Director || !hasDirector)
-                        .toList()
-        );
-        roleCombo.setPromptText("Select organization role");
+
+        if (user.getPosition() == Position.Director) {
+            roleCombo.getItems().add(Position.Director);
+            roleCombo.setDisable(true);
+        } else {
+            roleCombo.getItems().addAll(
+                    Arrays.stream(Position.values())
+                            .filter(p -> p != Position.Director)
+                            .toList()
+            );
+        }
+
+        roleCombo.setValue(user.getPosition());
         roleCombo.setMinHeight(FIELD_HEIGHT); roleCombo.setPrefHeight(FIELD_HEIGHT); roleCombo.setMaxHeight(FIELD_HEIGHT);
         roleCombo.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 15; -fx-border-width: 0; -fx-font-size: 14px;");
         roleCombo.setMaxWidth(Double.MAX_VALUE);
         VBox roleBox = createLabeledField("ACCESS ROLE", roleCombo);
 
-        form.getChildren().addAll(nameGrid, emailBox, passwordBox, roleBox);
-
-        // Error label
-        Label errorLabel = new Label();
-        errorLabel.setStyle("-fx-text-fill: " + Themes.TEXT_ERROR + "; -fx-font-size: 12px;");
-        errorLabel.setVisible(false);
-        errorLabel.setManaged(false);
-        errorLabel.visibleProperty().addListener((obs, oldVal, newVal) -> errorLabel.setManaged(newVal));
+        form.getChildren().addAll(nameGrid, emailBox, roleBox);
 
         // Footer
         HBox actionBox = new HBox(15);
@@ -150,7 +144,7 @@ public class AddUserDialog {
         cancelBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-weight: bold; -fx-font-size: 16px; -fx-cursor: hand; -fx-background-insets: 0; -fx-padding: 10 15 10 0;");
         cancelBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
 
-        Button saveBtn = new Button("Save User");
+        Button saveBtn = new Button("Save Changes");
         saveBtn.setMinHeight(48);
         saveBtn.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(saveBtn, Priority.ALWAYS);
@@ -162,29 +156,34 @@ public class AddUserDialog {
         saveBtn.setOnMouseEntered(e -> saveBtn.setStyle(hoverStyle));
         saveBtn.setOnMouseExited(e -> saveBtn.setStyle(normalStyle));
 
+        Label errorLabel = new Label();
+        errorLabel.setStyle("-fx-text-fill: " + Themes.TEXT_ERROR + "; -fx-font-size: 12px;");
+        errorLabel.setVisible(false);
+
         saveBtn.setOnAction(e -> {
             String name = nameField.getText().trim();
             String surname = surnameField.getText().trim();
             String email = emailField.getText().trim();
-            String password = passField.getText().trim();
-            Position selectedPosition = roleCombo.getValue();
+            Position position = roleCombo.getValue();
 
-            if (selectedPosition == null) {
-                errorLabel.setText("Please select a role.");
+            if (name.isEmpty() || surname.isEmpty() || email.isEmpty() || position == null) {
+                errorLabel.setText("All fields are required.");
                 errorLabel.setVisible(true);
                 return;
             }
 
-            try {
-                RegisterValidator.validate(name, surname, email, password);
-            } catch (IllegalArgumentException ex) {
-                errorLabel.setText(ex.getMessage());
+            if (!email.contains("@") || !email.contains(".")) {
+                errorLabel.setText("Please enter a valid email address.");
                 errorLabel.setVisible(true);
                 return;
             }
 
-            User newUser = new User(name, surname, email, password, selectedPosition, null);
-            onSuccess.accept(newUser);
+            user.setName(name);
+            user.setSurname(surname);
+            user.setEmail(email);
+            user.setPosition(position);
+
+            onSuccess.accept(user);
             closeWithAnimation(modal, shadowWrapper);
         });
 
@@ -195,9 +194,9 @@ public class AddUserDialog {
         scene.setFill(null);
 
         try {
-            scene.getStylesheets().add(AddUserDialog.class.getResource("/styles/global.css").toExternalForm());
+            scene.getStylesheets().add(EditUserDialog.class.getResource("/styles/global.css").toExternalForm());
         } catch (Exception e) {
-            System.err.println("Warning: Could not load global.css for AddUserDialog.");
+            System.err.println("Warning: Could not load global.css for EditUserDialog.");
         }
 
         modal.setScene(scene);
@@ -215,9 +214,8 @@ public class AddUserDialog {
         entranceAnimation.play();
     }
 
-    private static TextField createTextField(String prompt) {
-        TextField tf = new TextField();
-        tf.setPromptText(prompt);
+    private static TextField createTextField(String value) {
+        TextField tf = new TextField(value);
         tf.setMinHeight(FIELD_HEIGHT); tf.setPrefHeight(FIELD_HEIGHT); tf.setMaxHeight(FIELD_HEIGHT);
         tf.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 15; -fx-border-width: 0; -fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_DARK + ";");
         return tf;
@@ -228,51 +226,6 @@ public class AddUserDialog {
         label.setStyle("-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 11px; -fx-letter-spacing: 0.5px;");
         VBox box = new VBox(6, label, field);
         box.setMaxWidth(Double.MAX_VALUE);
-        return box;
-    }
-
-    private static VBox createSecurePasswordFieldWrapper(String labelText, String prompt, PasswordField pf) {
-        VBox box = new VBox(6);
-        Label label = new Label(labelText);
-        label.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-letter-spacing: 0.5px;");
-
-        StackPane pane = new StackPane();
-        pane.setAlignment(Pos.CENTER_RIGHT);
-
-        pf.setPromptText(prompt);
-        pf.setMinHeight(FIELD_HEIGHT); pf.setPrefHeight(FIELD_HEIGHT); pf.setMaxHeight(FIELD_HEIGHT);
-        pf.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 45 0 15; -fx-border-width: 0; -fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_DARK + ";");
-
-        TextField tf = new TextField();
-        tf.setPromptText(prompt);
-        tf.setMinHeight(FIELD_HEIGHT); tf.setPrefHeight(FIELD_HEIGHT); tf.setMaxHeight(FIELD_HEIGHT);
-        tf.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 45 0 15; -fx-border-width: 0; -fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_DARK + ";");
-        tf.setManaged(false); tf.setVisible(false);
-        tf.textProperty().bindBidirectional(pf.textProperty());
-
-        FontIcon eyeIcon = new FontIcon("fas-eye");
-        eyeIcon.setIconSize(14);
-        eyeIcon.setIconColor(Color.web(Themes.TEXT_MUTED));
-
-        StackPane eyePane = new StackPane(eyeIcon);
-        eyePane.setPadding(new Insets(0, 15, 0, 0));
-        eyePane.setStyle("-fx-cursor: hand;");
-        eyePane.setMaxWidth(45);
-        eyePane.setAlignment(Pos.CENTER_RIGHT);
-
-        eyePane.setOnMousePressed(e -> {
-            pf.setVisible(false); pf.setManaged(false);
-            tf.setVisible(true); tf.setManaged(true);
-            eyeIcon.setIconColor(Color.web(Themes.PRIMARY));
-        });
-        eyePane.setOnMouseReleased(e -> {
-            tf.setVisible(false); tf.setManaged(false);
-            pf.setVisible(true); pf.setManaged(true);
-            eyeIcon.setIconColor(Color.web(Themes.TEXT_MUTED));
-        });
-
-        pane.getChildren().addAll(pf, tf, eyePane);
-        box.getChildren().addAll(label, pane);
         return box;
     }
 

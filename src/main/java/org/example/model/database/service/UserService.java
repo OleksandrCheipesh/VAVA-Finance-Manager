@@ -8,6 +8,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class UserService {
 
@@ -15,40 +16,39 @@ public class UserService {
     public User addUser(User user) throws SQLException {
         var logger = org.example.logging.AppLog.getLogger(UserService.class);
         try {
-        String sql = "INSERT INTO users (name, surname, email, password_hash, position, company_id) " +
-                "VALUES (?, ?, ?, ?, ?, ?) RETURNING id, created_at";
+            user.setPasswordHash(BCrypt.hashpw(user.getPasswordHash(), BCrypt.gensalt()));
 
-        try (Connection connection = ConnectionProvider.getConnection();
-             // prepares a statement with the SQL query, allowing to set parameters and execute it
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+            String sql = "INSERT INTO users (name, surname, email, password_hash, position, company_id) " +
+                    "VALUES (?, ?, ?, ?, ?, ?) RETURNING id, created_at";
 
-            statement.setString(1, user.getName());
-            statement.setString(2, user.getSurname());
-            statement.setString(3, user.getEmail());
-            statement.setString(4, user.getPasswordHash());
-            statement.setObject(5, user.getPosition().name(), Types.OTHER);
+            try (Connection connection = ConnectionProvider.getConnection();
+                 PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            if (user.getCompanyId() != null)
-                statement.setInt(6, user.getCompanyId());
-            else
-                statement.setNull(6, Types.INTEGER);
+                statement.setString(1, user.getName());
+                statement.setString(2, user.getSurname());
+                statement.setString(3, user.getEmail());
+                statement.setString(4, user.getPasswordHash());
+                statement.setObject(5, user.getPosition().name(), Types.OTHER);
 
-            try (ResultSet resultSet = statement.executeQuery()) {
-                // checks if the result set has a row (the insert was successful and returned generated keys)
-                if (resultSet.next()) {
-                    user.setId(resultSet.getInt("id"));
-                    user.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+                if (user.getCompanyId() != null)
+                    statement.setInt(6, user.getCompanyId());
+                else
+                    statement.setNull(6, Types.INTEGER);
+
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        user.setId(resultSet.getInt("id"));
+                        user.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+                    }
                 }
             }
-        }
-        logger.info("User created: id={} email={}", user.getId(), user.getEmail());
-        return user;
+            logger.info("User created: id={} email={}", user.getId(), user.getEmail());
+            return user;
         } catch (SQLException e) {
             logger.error("Failed to create user {}", user == null ? "<null>" : user.getEmail(), e);
             throw e;
         }
     }
-
     // get all users
     public List<User> getAllUsers() throws SQLException {
         String sql = "SELECT * FROM users ORDER BY id";

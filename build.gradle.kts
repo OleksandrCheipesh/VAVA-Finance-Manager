@@ -31,6 +31,10 @@ dependencies {
     implementation("org.apache.poi:poi-ooxml:5.2.3")
     implementation("org.slf4j:slf4j-api:2.0.7")
     implementation("ch.qos.logback:logback-classic:1.4.11")
+    implementation ("org.kordamp.ikonli:ikonli-javafx:12.3.1")
+    implementation ("org.kordamp.ikonli:ikonli-fontawesome5-pack:12.3.1")
+    implementation("org.mindrot:jbcrypt:0.4")
+
 }
 
 tasks.test {

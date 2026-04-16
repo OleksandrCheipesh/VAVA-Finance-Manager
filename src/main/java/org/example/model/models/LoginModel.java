@@ -3,7 +3,7 @@ package org.example.model.models;
 import org.example.SessionManager;
 import org.example.model.database.entity.User;
 import org.example.model.database.service.UserService;
-
+import org.mindrot.jbcrypt.BCrypt;
 import java.sql.SQLException;
 import java.util.Optional;
 
@@ -41,7 +41,7 @@ public class LoginModel {
             logger.debug("Password verification skipped: no user present for verification");
             return false;
         }
-        boolean ok = password.equals(this.user.getPasswordHash());
+        boolean ok = BCrypt.checkpw(password, this.user.getPasswordHash());
         if (ok) logger.debug("Password verification passed for user id={} email={}", this.user.getId(), this.user.getEmail());
         else logger.debug("Password verification failed for user id={} email={}", this.user.getId(), this.user.getEmail());
         return ok;
