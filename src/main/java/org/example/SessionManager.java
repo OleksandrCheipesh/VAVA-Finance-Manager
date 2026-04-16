@@ -83,7 +83,7 @@ public final class SessionManager {
         );
     }
 
-    public synchronized Position getPosistion() {
+    public synchronized Position getPosition() {
         return currentUser.getPosition();
     }
 
