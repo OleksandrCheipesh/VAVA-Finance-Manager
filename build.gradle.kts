@@ -23,6 +23,7 @@ javafx {
 }
 
 dependencies {
+    implementation("org.mindrot:jbcrypt:0.4")
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     implementation("org.postgresql:postgresql:42.7.7")

@@ -5,6 +5,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.example.SessionManager;
 import org.example.model.database.entity.User;
+import org.example.model.PasswordUtil;
+import org.example.model.database.service.UserService;
+import org.example.model.database.entity.Position;
 import org.example.model.models.SettingsModel;
 
 import java.sql.SQLException;
@@ -21,7 +24,7 @@ public class SettingsViewModel {
 
     private final ObservableList<User> users = FXCollections.observableArrayList();
 
-    private SettingsModel settingsModel = new SettingsModel();
+    private final SettingsModel settingsModel = new SettingsModel();
 
     public SettingsViewModel() {
         try {
@@ -37,12 +40,12 @@ public class SettingsViewModel {
         currency.set("EUR (€)");
         industry.set("Financial Services");
 
-        try {
-            int companyId = SessionManager.getInstance().getCurrentCompanyId();
-            users.addAll(settingsModel.getUsersByCompanyId(companyId));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        // Dummy data
+        users.addAll(
+                new User("Marcus", "Thorne", "m.thorne@mintmgmt.com", PasswordUtil.hash("password"), Position.Director, null),
+                new User("Elena", "Varga", "e.varga@mintmgmt.com", PasswordUtil.hash("password"), Position.Accountant, null),
+                new User("Jakub", "Kolar", "j.kolar@mintmgmt.com", PasswordUtil.hash("password"), Position.Analyst, null)
+        );
     }
 
     public void saveCompanyProfile() {
@@ -53,9 +56,13 @@ public class SettingsViewModel {
         System.out.println("Applying preferences...");
     }
 
-    public void addUser(User user) throws SQLException {
-        user.setCompanyId(SessionManager.getInstance().getCurrentCompanyId());
-        users.add(this.settingsModel.addUser(user));
+    public void addUser(User user) {
+        try {
+            settingsModel.addUser(user);
+            users.add(user);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void deleteUser(int userId) throws SQLException {
@@ -68,8 +75,21 @@ public class SettingsViewModel {
         users.replaceAll(u -> u.getId() == user.getId() ? user : u);
     }
 
-    public void changePassword(String currentPw, String newPw, String confirmPw) {
-        System.out.println("Password logic here...");
+    public void changePassword(String currentPw, String newPw, String confirmPw) throws Exception {
+        User currentUser = SessionManager.getInstance().getCurrentUser();
+        if (currentUser == null) throw new Exception("No user logged in.");
+
+        if (!PasswordUtil.verify(currentPw, currentUser.getPasswordHash())) {
+            throw new Exception("Incorrect current password.");
+        }
+
+        if (!newPw.equals(confirmPw)) {
+            throw new Exception("Password confirmation doesn't match.");
+        }
+
+        currentUser.setPasswordHash(PasswordUtil.hash(newPw));
+        UserService userService = new UserService();
+        userService.updateUser(currentUser);
     }
 
     public StringProperty companyNameProperty() { return companyName; }
