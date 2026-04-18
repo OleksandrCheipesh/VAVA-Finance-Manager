@@ -18,6 +18,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
+import org.example.model.database.entity.Account;
 import org.example.model.database.entity.Project;
 import org.example.logging.AppLog;
 import org.example.model.database.entity.Transaction;
@@ -31,7 +32,7 @@ public class AddTransactionDialog {
 
     private static String selectedType = "SALE";
 
-    public static void show(Stage owner, ObservableList<Project> projects, Consumer<Transaction> onSuccess) {
+    public static void show(Stage owner, ObservableList<Account> accounts, ObservableList<Project> projects, Consumer<Transaction> onSuccess) {
         Stage modal = new Stage();
         modal.initOwner(owner);
         modal.initModality(Modality.APPLICATION_MODAL);
@@ -39,7 +40,7 @@ public class AddTransactionDialog {
 
         Scene ownerScene = owner.getScene();
         Paint originalFill = ownerScene.getFill();
-        ownerScene.setFill(Color.web(Themes.TEXT_DARK)); // Cleaned
+        ownerScene.setFill(Color.web(Themes.TEXT_DARK));
 
         Node backgroundRoot = ownerScene.getRoot();
 
@@ -73,16 +74,16 @@ public class AddTransactionDialog {
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER_LEFT);
         Label title = new Label("New Transaction");
-        title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";"); // Cleaned
+        title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
         Button closeBtn = new Button("X");
         closeBtn.setMinSize(32, 32);
         closeBtn.setMaxSize(32, 32);
         closeBtn.setStyle(
-                "-fx-background-color: " + Themes.BG_FIELD + ";" + // Cleaned
+                "-fx-background-color: " + Themes.BG_FIELD + ";" +
                         "-fx-background-radius: 8;" +
                         "-fx-cursor: hand;" +
-                        "-fx-text-fill: " + Themes.TEXT_MUTED + ";" + // Cleaned
+                        "-fx-text-fill: " + Themes.TEXT_MUTED + ";" +
                         "-fx-font-weight: bold;" +
                         "-fx-font-size: 14px;" +
                         "-fx-padding: 0;"
@@ -131,9 +132,31 @@ public class AddTransactionDialog {
         TextField descField = UIFactory.inputField("Enter description");
         VBox descBox = createLabeledField("Description", descField);
 
-        ComboBox<String> clientCombo = UIFactory.inputComboBox("Select Client");
-        clientCombo.getItems().addAll("TechCorp", "Adobe", "Microsoft");
-        VBox clientBox = createLabeledField("Client", clientCombo);
+        // Account selector
+        boolean hasAccounts = !accounts.isEmpty();
+        String accountPrompt = hasAccounts ? "Select Account" : "No accounts found";
+        ComboBox<Account> accountCombo = UIFactory.inputComboBox(accountPrompt);
+        accountCombo.setItems(accounts);
+        accountCombo.setDisable(!hasAccounts);
+        accountCombo.setCellFactory(lv -> new ListCell<>() {
+            @Override protected void updateItem(Account item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getAccountName());
+            }
+        });
+        accountCombo.setButtonCell(new ListCell<>() {
+            @Override protected void updateItem(Account item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item != null) {
+                    setText(item.getAccountName());
+                    setStyle("-fx-text-fill: " + Themes.TEXT_DARK + ";");
+                } else {
+                    setText(accountPrompt);
+                    setStyle("-fx-text-fill: " + Themes.TEXT_DARK + ";");
+                }
+            }
+        });
+        VBox accountBox = createLabeledField("Account", accountCombo);
 
         // Projects supplied by the ViewModel — no service call needed here
         Map<String, Integer> projectNameToId = new HashMap<>();
@@ -145,16 +168,13 @@ public class AddTransactionDialog {
         VBox projectBox = createLabeledField("Project", projectCombo);
 
         HBox splitBox = new HBox(15);
-        HBox.setHgrow(clientBox, Priority.ALWAYS);
+        HBox.setHgrow(accountBox, Priority.ALWAYS);
         HBox.setHgrow(projectBox, Priority.ALWAYS);
-        splitBox.getChildren().addAll(clientBox, projectBox);
+        splitBox.getChildren().addAll(accountBox, projectBox);
 
         DatePicker datePicker = UIFactory.inputDatePicker("Select date");
         datePicker.setValue(java.time.LocalDate.now());
 
-        // When the editor loses focus, re-sync its displayed text to the actual committed value.
-        // Without this, typing "hello" leaves the field showing garbage while getValue() silently
-        // returns the old pre-filled date — the user would never know the input was rejected.
         datePicker.getEditor().focusedProperty().addListener((obs, wasFocused, isFocused) -> {
             if (!isFocused) {
                 java.time.LocalDate val = datePicker.getValue();
@@ -172,22 +192,19 @@ public class AddTransactionDialog {
         StateButton saveBtn = new StateButton("Save", StateButton.ButtonType.PRIMARY);
         saveBtn.setMaxWidth(Double.MAX_VALUE);
 
-        // Capture original styles before any error styling is applied.
-        // Restoring these are safer than regex-stripping specific properties,
-        // which would also remove the original border-color and border-radius.
         final String origAmountStyle = amountField.getStyle();
         final String origDescStyle = descField.getStyle();
         final String origDateStyle = datePicker.getStyle();
+        final String origAccountStyle = accountCombo.getStyle();
 
         String errorBorder = "-fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-width: 1.5; -fx-border-radius: 6;";
 
         saveBtn.setOnAction(e -> {
-            // Restore original styles to clear any previous error borders
             amountField.setStyle(origAmountStyle);
             descField.setStyle(origDescStyle);
             datePicker.setStyle(origDateStyle);
+            accountCombo.setStyle(origAccountStyle);
 
-            // Validate before starting the loading thread
             boolean valid = true;
             if (amountField.getText().isBlank()) {
                 amountField.setStyle(amountField.getStyle() + errorBorder);
@@ -201,7 +218,16 @@ public class AddTransactionDialog {
                 datePicker.setStyle(datePicker.getStyle() + errorBorder);
                 valid = false;
             }
-            if (!valid) return;
+            if (accountCombo.getValue() == null) {
+                accountCombo.setStyle(accountCombo.getStyle() + errorBorder);
+                valid = false;
+            }
+            if (!valid) {
+                ToastManager.showError(owner, accounts.isEmpty()
+                        ? "No accounts found. Please create an account first."
+                        : "Please fill in all required fields correctly.");
+                return;
+            }
 
             saveBtn.setLoading(true);
             new Thread(() -> {
@@ -217,9 +243,9 @@ public class AddTransactionDialog {
 
                         String desc = descField.getText().trim();
                         java.time.LocalDate date = datePicker.getValue();
-                        Integer clientId = null; // TODO: replace with real client selection
+                        Integer clientId = null;
                         Integer projectId = projectNameToId.get(projectCombo.getValue());
-                        int accountId = 1; // TODO: replace with real account selection
+                        int accountId = accountCombo.getValue().getId();
 
                         // companyId is intentionally not set here — TransactionsViewModel.addTransaction()
                         // sets it from SessionManager, keeping session access out of the View layer
@@ -231,7 +257,6 @@ public class AddTransactionDialog {
                         saveBtn.setLoading(false);
                         amountField.setStyle(amountField.getStyle() + errorBorder);
                     } catch (Exception ex) {
-                        // Catch-all: prevent any uncaught exception from crashing the FX thread
                         saveBtn.setLoading(false);
                         var logger = AppLog.getLogger(AddTransactionDialog.class);
                         logger.error("Unexpected error saving transaction: {}", ex.getMessage(), ex);
@@ -254,7 +279,6 @@ public class AddTransactionDialog {
 
         modal.setScene(scene);
 
-        // Animation
         shadowWrapper.setOpacity(0);
         shadowWrapper.setTranslateY(30);
 
@@ -272,7 +296,7 @@ public class AddTransactionDialog {
 
     private static VBox createLabeledField(String labelText, Node field) {
         Label label = new Label(labelText);
-        label.setStyle("-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-size: 13px;"); // Cleaned
+        label.setStyle("-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-size: 13px;");
         return new VBox(5, label, field);
     }
 

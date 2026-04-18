@@ -291,7 +291,7 @@ public class TransactionsView extends BaseView {
                                 stage,
                                 tx,
                                 () -> {
-                                    EditTransactionDialog.show(stage, tx, viewModel.getProjects(), updatedTx -> {
+                                    EditTransactionDialog.show(stage, tx, viewModel.getAccounts(), viewModel.getProjects(), updatedTx -> {
                                         viewModel.updateTransaction(updatedTx);
                                     });
                                 },
@@ -345,7 +345,7 @@ public class TransactionsView extends BaseView {
     @Override
     protected void setLogic() {
         addBtn.setOnAction(e -> {
-            AddTransactionDialog.show(stage, viewModel.getProjects(), newTx -> {
+            AddTransactionDialog.show(stage, viewModel.getAccounts(), viewModel.getProjects(), newTx -> {
                 viewModel.addTransaction(newTx);
             });
         });

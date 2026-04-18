@@ -18,6 +18,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
+import org.example.model.database.entity.Account;
 import org.example.model.database.entity.Project;
 import org.example.logging.AppLog;
 import org.example.model.database.entity.Transaction;
@@ -31,7 +32,7 @@ public class EditTransactionDialog {
 
     private static String selectedType = "SALE";
 
-    public static void show(Stage owner, Transaction existingTx, ObservableList<Project> projects, Consumer<Transaction> onSuccess) {
+    public static void show(Stage owner, Transaction existingTx, ObservableList<Account> accounts, ObservableList<Project> projects, Consumer<Transaction> onSuccess) {
         Stage modal = new Stage();
         modal.initOwner(owner);
         modal.initModality(Modality.APPLICATION_MODAL);
@@ -74,7 +75,6 @@ public class EditTransactionDialog {
         Label title = new Label("Edit Transaction");
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
-
         Button closeBtn = new Button("X");
         closeBtn.setMinSize(32, 32);
         closeBtn.setMaxSize(32, 32);
@@ -93,7 +93,6 @@ public class EditTransactionDialog {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         header.getChildren().addAll(title, spacer, closeBtn);
-
 
         HBox toggleBox = new HBox();
         toggleBox.setStyle("-fx-background-color: " + Themes.BG_FIELD + "; -fx-background-radius: 8; -fx-padding: 4;");
@@ -129,7 +128,7 @@ public class EditTransactionDialog {
         });
         toggleBox.getChildren().addAll(saleBtn, purchaseBtn);
 
-        // fields
+        // Fields
         String initialAmount = existingTx != null && existingTx.getAmount() != null ? existingTx.getAmount().toString() : "";
         VBox form = new VBox(15);
         TextField amountField = UIFactory.inputField("0.00");
@@ -141,9 +140,41 @@ public class EditTransactionDialog {
         if (!initialDesc.isEmpty()) descField.setText(initialDesc);
         VBox descBox = createLabeledField("Description", descField);
 
-        ComboBox<String> clientCombo = UIFactory.inputComboBox("Select Client");
-        clientCombo.getItems().addAll("TechCorp", "Adobe", "Microsoft");
-        VBox clientBox = createLabeledField("Client", clientCombo);
+        // Account selector — pre-select account matching existingTx.accountId
+        boolean hasAccounts = !accounts.isEmpty();
+        String accountPrompt = hasAccounts ? "Select Account" : "No accounts found";
+        ComboBox<Account> accountCombo = UIFactory.inputComboBox(accountPrompt);
+        accountCombo.setMaxWidth(Double.MAX_VALUE);
+        accountCombo.setItems(accounts);
+        accountCombo.setDisable(!hasAccounts);
+        accountCombo.setCellFactory(lv -> new ListCell<>() {
+            @Override protected void updateItem(Account item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getAccountName());
+            }
+        });
+        accountCombo.setButtonCell(new ListCell<>() {
+            @Override protected void updateItem(Account item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item != null) {
+                    setText(item.getAccountName());
+                    setStyle("-fx-text-fill: " + Themes.TEXT_DARK + ";");
+                } else {
+                    setText(accountPrompt);
+                    setStyle("-fx-text-fill: " + Themes.TEXT_DARK + ";");
+                }
+            }
+        });
+
+        if (existingTx != null) {
+            for (Account a : accounts) {
+                if (a.getId() == existingTx.getAccountId()) {
+                    accountCombo.setValue(a);
+                    break;
+                }
+            }
+        }
+        VBox accountBox = createLabeledField("Account", accountCombo);
 
         Map<String, Integer> projectNameToId = new HashMap<>();
         ComboBox<String> projectCombo = UIFactory.inputComboBox("Select Project");
@@ -161,9 +192,9 @@ public class EditTransactionDialog {
         VBox projectBox = createLabeledField("Project", projectCombo);
 
         HBox splitBox = new HBox(15);
-        HBox.setHgrow(clientBox, Priority.ALWAYS);
+        HBox.setHgrow(accountBox, Priority.ALWAYS);
         HBox.setHgrow(projectBox, Priority.ALWAYS);
-        splitBox.getChildren().addAll(clientBox, projectBox);
+        splitBox.getChildren().addAll(accountBox, projectBox);
 
         DatePicker datePicker = UIFactory.inputDatePicker("Select date");
         java.time.LocalDate initialDate = existingTx != null && existingTx.getDate() != null ? existingTx.getDate() : java.time.LocalDate.now();
@@ -188,14 +219,15 @@ public class EditTransactionDialog {
         final String origAmountStyle = amountField.getStyle();
         final String origDescStyle = descField.getStyle();
         final String origDateStyle = datePicker.getStyle();
+        final String origAccountStyle = accountCombo.getStyle();
 
         String errorBorder = "-fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-width: 1.5; -fx-border-radius: 6;";
 
         saveBtn.setOnAction(e -> {
-            // Restore original styles to clear any previous error borders
             amountField.setStyle(origAmountStyle);
             descField.setStyle(origDescStyle);
             datePicker.setStyle(origDateStyle);
+            accountCombo.setStyle(origAccountStyle);
 
             boolean valid = true;
             if (amountField.getText().isBlank()) {
@@ -210,7 +242,16 @@ public class EditTransactionDialog {
                 datePicker.setStyle(datePicker.getStyle() + errorBorder);
                 valid = false;
             }
-            if (!valid) return;
+            if (accountCombo.getValue() == null) {
+                accountCombo.setStyle(accountCombo.getStyle() + errorBorder);
+                valid = false;
+            }
+            if (!valid) {
+                ToastManager.showError(owner, accounts.isEmpty()
+                        ? "No accounts found. Please create an account first."
+                        : "Please fill in all required fields correctly.");
+                return;
+            }
 
             saveBtn.setLoading(true);
             new Thread(() -> {
@@ -226,9 +267,9 @@ public class EditTransactionDialog {
 
                         String desc = descField.getText().trim();
                         java.time.LocalDate date = datePicker.getValue();
-                        Integer clientId = null; // TODO: replace with real client selection
+                        Integer clientId = null;
                         Integer projectId = projectNameToId.get(projectCombo.getValue());
-                        int accountId = 1; // TODO: replace with real account selection
+                        int accountId = accountCombo.getValue().getId();
 
                         int txId = existingTx != null ? existingTx.getId() : 0;
                         int txCompanyId = existingTx != null ? existingTx.getCompanyId() : 0;
@@ -263,7 +304,6 @@ public class EditTransactionDialog {
 
         modal.setScene(scene);
 
-        // animation
         shadowWrapper.setOpacity(0);
         shadowWrapper.setTranslateY(30);
 

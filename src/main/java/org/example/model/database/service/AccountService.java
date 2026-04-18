@@ -12,25 +12,24 @@ public class AccountService {
 
     public Account addAccount(Account account) throws SQLException {
         var logger = org.example.logging.AppLog.getLogger(AccountService.class);
-        String sql = "INSERT INTO accounts (company_id, account_name, current_balance, currency, limit_amount, category, cycle) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id, created_at";
-        logger.info("Adding account: name={} companyId={} balance={} currency={}", account.getAccountName(), account.getCompanyId(), account.getCurrentBalance(), account.getCurrency());
+        String sql = "INSERT INTO accounts (company_id, account_name, currency, limit_amount, category, cycle) " +
+                     "VALUES (?, ?, ?, ?, ?::account_category, ?::account_cycle) RETURNING id, created_at";
+        logger.info("Adding account: name={} companyId={} currency={}", account.getAccountName(), account.getCompanyId(), account.getCurrency());
         try {
             try (Connection connection = ConnectionProvider.getConnection();
                  PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setInt(1, account.getCompanyId());
                 preparedStatement.setString(2, account.getAccountName());
-                preparedStatement.setBigDecimal(3, account.getCurrentBalance());
-                preparedStatement.setString(4, account.getCurrency());
+                preparedStatement.setString(3, account.getCurrency());
 
                 if (account.getLimitAmount() != null) {
-                    preparedStatement.setInt(5, account.getLimitAmount());
+                    preparedStatement.setInt(4, account.getLimitAmount());
                 } else {
-                    preparedStatement.setNull(5, Types.INTEGER);
+                    preparedStatement.setNull(4, Types.INTEGER);
                 }
 
-                preparedStatement.setString(6, account.getCategory() != null ? account.getCategory().name() : "OTHER");
-                preparedStatement.setString(7, account.getCycle() != null ? account.getCycle().name() : "MONTHLY");
+                preparedStatement.setString(5, account.getCategory() != null ? account.getCategory().name() : "OTHER");
+                preparedStatement.setString(6, account.getCycle() != null ? account.getCycle().name() : "MONTHLY");
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
@@ -111,23 +110,22 @@ public class AccountService {
         var logger = org.example.logging.AppLog.getLogger(AccountService.class);
         Account before = getAccountById(account.getId()).orElse(null);
         String sql = "UPDATE accounts SET company_id = ?, account_name = ?, " +
-                "current_balance = ?, currency = ?, limit_amount = ?, category = ?, cycle = ? WHERE id = ?";
+                "currency = ?, limit_amount = ?, category = ?::account_category, cycle = ?::account_cycle WHERE id = ?";
 
         try (Connection connection = ConnectionProvider.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, account.getCompanyId());
             preparedStatement.setString(2, account.getAccountName());
-            preparedStatement.setBigDecimal(3, account.getCurrentBalance());
-            preparedStatement.setString(4, account.getCurrency());
+            preparedStatement.setString(3, account.getCurrency());
 
             if (account.getLimitAmount() != null) {
-                preparedStatement.setInt(5, account.getLimitAmount());
+                preparedStatement.setInt(4, account.getLimitAmount());
             } else {
-                preparedStatement.setNull(5, Types.INTEGER);
+                preparedStatement.setNull(4, Types.INTEGER);
             }
-            preparedStatement.setString(6, account.getCategory() != null ? account.getCategory().name() : "OTHER");
-            preparedStatement.setString(7, account.getCycle() != null ? account.getCycle().name() : "MONTHLY");
-            preparedStatement.setInt(8, account.getId());
+            preparedStatement.setString(5, account.getCategory() != null ? account.getCategory().name() : "OTHER");
+            preparedStatement.setString(6, account.getCycle() != null ? account.getCycle().name() : "MONTHLY");
+            preparedStatement.setInt(7, account.getId());
             boolean updated = preparedStatement.executeUpdate() > 0;
             if (updated && before != null) {
                 StringBuilder changes = new StringBuilder();
@@ -172,7 +170,6 @@ public class AccountService {
         account.setId(resultSet.getInt("id"));
         account.setCompanyId(resultSet.getInt("company_id"));
         account.setAccountName(resultSet.getString("account_name"));
-        account.setCurrentBalance(resultSet.getBigDecimal("current_balance"));
         account.setCurrency(resultSet.getString("currency"));
         account.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
         int lim = resultSet.getInt("limit_amount");

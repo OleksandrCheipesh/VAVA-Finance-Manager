@@ -3,6 +3,7 @@ package org.example.view.templates;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -17,8 +18,11 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
-import org.example.viewModel.BudgetViewModel;
+import org.example.model.database.entity.Account;
+import org.example.model.database.entity.AccountCategory;
+import org.example.model.database.entity.AccountCycle;
 
+import java.math.BigDecimal;
 import java.util.function.Consumer;
 
 public class AddBudgetDialog {
@@ -26,7 +30,18 @@ public class AddBudgetDialog {
     private static String selectedFreq = "MONTHLY";
     private static final double FIELD_HEIGHT = 44.0;
 
-    public static void show(Stage owner, Consumer<BudgetViewModel.Budget> onSuccess) {
+    private static String formatCategory(AccountCategory cat) {
+        return switch (cat) {
+            case BANK_ACCOUNT -> "Bank Account";
+            case CASH -> "Cash";
+            case CREDIT_LINE -> "Credit Line";
+            case SAVINGS -> "Savings";
+            case INVESTMENT -> "Investment";
+            case OTHER -> "Other";
+        };
+    }
+
+    public static void show(Stage owner, Consumer<Account> onSuccess) {
         Stage modal = new Stage();
 
         modal.initOwner(owner);
@@ -75,10 +90,10 @@ public class AddBudgetDialog {
         header.setAlignment(Pos.CENTER_LEFT);
 
         VBox titleBox = new VBox(2);
-        Label title = new Label("New Budget");
+        Label title = new Label("New Account");
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
-        Label subtitle = new Label("Define the parameters for your next financial sprint.");
+        Label subtitle = new Label("Define the parameters for your new financial account.");
         subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
         titleBox.getChildren().addAll(title, subtitle);
 
@@ -109,22 +124,24 @@ public class AddBudgetDialog {
         VBox form = new VBox(15);
 
         // 1. Name Field
-        TextField nameField = UIFactory.inputField("e.g., Q3 Marketing Operations");
+        TextField nameField = UIFactory.inputField("e.g., Main Operating Account");
 
         nameField.setMinHeight(FIELD_HEIGHT); nameField.setPrefHeight(FIELD_HEIGHT); nameField.setMaxHeight(FIELD_HEIGHT);
 
-        VBox nameBox = createLabeledField("BUDGET NAME", nameField);
+        VBox nameBox = createLabeledField("ACCOUNT NAME", nameField);
 
         // 2. Category and Limit
         ComboBox<String> catCombo = UIFactory.inputComboBox("Select Category");
 
-        catCombo.getItems().addAll("BANK ACCOUNT • CORPORATE", "LIQUID ASSETS • INTERNAL", "CREDIT LINE • EXTERNAL", "OTHER");
+        for (AccountCategory cat : AccountCategory.values()) {
+            catCombo.getItems().add(formatCategory(cat));
+        }
         catCombo.setMaxWidth(Double.MAX_VALUE);
         catCombo.setMinHeight(FIELD_HEIGHT); catCombo.setPrefHeight(FIELD_HEIGHT); catCombo.setMaxHeight(FIELD_HEIGHT);
 
         VBox catBox = createLabeledField("CATEGORY", catCombo);
 
-        TextField limitField = UIFactory.inputField("$ 0.00");
+        TextField limitField = UIFactory.inputField("0.00 (optional)");
 
         limitField.setMaxWidth(Double.MAX_VALUE);
         limitField.setMinHeight(FIELD_HEIGHT); limitField.setPrefHeight(FIELD_HEIGHT); limitField.setMaxHeight(FIELD_HEIGHT);
@@ -142,7 +159,34 @@ public class AddBudgetDialog {
         row1Grid.add(catBox, 0, 0);
         row1Grid.add(limitBox, 1, 0);
 
-        // 3. Frequency and Date
+        // 3. Current Balance and Currency
+        TextField balanceField = UIFactory.inputField("0.00");
+
+        balanceField.setMaxWidth(Double.MAX_VALUE);
+        balanceField.setMinHeight(FIELD_HEIGHT); balanceField.setPrefHeight(FIELD_HEIGHT); balanceField.setMaxHeight(FIELD_HEIGHT);
+
+        VBox balanceBox = createLabeledField("INITIAL BALANCE", balanceField);
+
+        ComboBox<String> currencyCombo = UIFactory.inputComboBox("Select Currency");
+
+        currencyCombo.setItems(FXCollections.observableArrayList("CZK", "EUR", "GBP", "USD"));
+        currencyCombo.setMaxWidth(Double.MAX_VALUE);
+        currencyCombo.setMinHeight(FIELD_HEIGHT); currencyCombo.setPrefHeight(FIELD_HEIGHT); currencyCombo.setMaxHeight(FIELD_HEIGHT);
+
+        VBox currencyBox = createLabeledField("CURRENCY", currencyCombo);
+
+        GridPane row2Grid = new GridPane();
+
+        row2Grid.setHgap(15);
+
+        ColumnConstraints r2c1 = new ColumnConstraints(); r2c1.setPercentWidth(50);
+        ColumnConstraints r2c2 = new ColumnConstraints(); r2c2.setPercentWidth(50);
+
+        row2Grid.getColumnConstraints().addAll(r2c1, r2c2);
+        row2Grid.add(balanceBox, 0, 0);
+        row2Grid.add(currencyBox, 1, 0);
+
+        // 4. Frequency
         VBox freqBoxMain = new VBox(5);
 
         Label freqLabel = new Label("FREQUENCY CYCLE");
@@ -186,25 +230,7 @@ public class AddBudgetDialog {
         freqBoxMain.getChildren().addAll(freqLabel, toggleBox);
         freqBoxMain.setMaxWidth(Double.MAX_VALUE);
 
-        DatePicker datePicker = UIFactory.inputDatePicker("Select date");
-
-        datePicker.setMaxWidth(Double.MAX_VALUE);
-        datePicker.setMinHeight(FIELD_HEIGHT); datePicker.setPrefHeight(FIELD_HEIGHT); datePicker.setMaxHeight(FIELD_HEIGHT);
-
-        VBox dateBox = createLabeledField("ACTIVATION DATE", datePicker);
-
-        GridPane row2Grid = new GridPane();
-
-        row2Grid.setHgap(15);
-
-        ColumnConstraints r2c1 = new ColumnConstraints(); r2c1.setPercentWidth(50);
-        ColumnConstraints r2c2 = new ColumnConstraints(); r2c2.setPercentWidth(50);
-
-        row2Grid.getColumnConstraints().addAll(r2c1, r2c2);
-        row2Grid.add(freqBoxMain, 0, 0);
-        row2Grid.add(dateBox, 1, 0);
-
-        form.getChildren().addAll(nameBox, row1Grid, row2Grid);
+        form.getChildren().addAll(nameBox, row1Grid, row2Grid, freqBoxMain);
 
         // Buttons part
         HBox actionBox = new HBox(20);
@@ -218,7 +244,7 @@ public class AddBudgetDialog {
         cancelBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-padding: 10 20;");
         cancelBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
 
-        StateButton saveBtn = new StateButton("Save Framework", StateButton.ButtonType.PRIMARY);
+        StateButton saveBtn = new StateButton("Save Account", StateButton.ButtonType.PRIMARY);
 
         saveBtn.setMinHeight(50);
         saveBtn.setPrefWidth(340);
@@ -243,36 +269,47 @@ public class AddBudgetDialog {
         saveBtn.setOnMouseExited(e -> saveBtn.setStyle(normalStyle));
 
         saveBtn.setOnAction(e -> {
+            // Reset error styles
+            nameField.setStyle(nameField.getStyle().replace("-fx-border-color: " + Themes.TEXT_ERROR + ";", ""));
+            balanceField.setStyle(balanceField.getStyle().replace("-fx-border-color: " + Themes.TEXT_ERROR + ";", ""));
+            limitField.setStyle(limitField.getStyle().replace("-fx-border-color: " + Themes.TEXT_ERROR + ";", ""));
+            currencyCombo.setStyle(currencyCombo.getStyle().replace("-fx-border-color: " + Themes.TEXT_ERROR + ";", ""));
+
             boolean isValid = true;
 
-            nameField.setStyle(nameField.getStyle().replace("-fx-border-color: " + Themes.TEXT_ERROR + ";", ""));
-            limitField.setStyle(limitField.getStyle().replace("-fx-border-color: " + Themes.TEXT_ERROR + ";", ""));
-
-            // Validate name
             if (nameField.getText().trim().isEmpty()) {
                 nameField.setStyle(nameField.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";");
-
                 isValid = false;
             }
 
-            // Validate limit
-            double limitParsed = 0.0;
-
-            if (limitField.getText().trim().isEmpty()) {
-                limitField.setStyle(limitField.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";");
-
-                isValid = false;
-            } else {
+            BigDecimal balanceParsed = BigDecimal.ZERO;
+            if (!balanceField.getText().trim().isEmpty()) {
                 try {
-                    limitParsed = Double.parseDouble(limitField.getText().replace("$", "").replace(",", "").trim());
+                    balanceParsed = new BigDecimal(balanceField.getText().replace(",", "").trim());
+                    if (balanceParsed.compareTo(BigDecimal.ZERO) < 0) throw new NumberFormatException();
                 } catch (NumberFormatException ex) {
-                    limitField.setStyle(limitField.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";");
-
+                    balanceField.setStyle(balanceField.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";");
                     isValid = false;
                 }
             }
 
-            // Toast error
+            Integer limitParsed = null;
+            if (!limitField.getText().trim().isEmpty()) {
+                try {
+                    double raw = Double.parseDouble(limitField.getText().replace(",", "").trim());
+                    if (raw < 0) throw new NumberFormatException();
+                    limitParsed = (int) raw;
+                } catch (NumberFormatException ex) {
+                    limitField.setStyle(limitField.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";");
+                    isValid = false;
+                }
+            }
+
+            if (currencyCombo.getValue() == null) {
+                currencyCombo.setStyle(currencyCombo.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";");
+                isValid = false;
+            }
+
             if (!isValid) {
                 ToastManager.showError(owner, "Please fill in all required fields correctly.");
                 return;
@@ -280,17 +317,29 @@ public class AddBudgetDialog {
 
             saveBtn.setLoading(true);
 
-            final double finalLimit = limitParsed;
+            final BigDecimal finalBalance = balanceParsed;
+            final Integer finalLimit = limitParsed;
 
             new Thread(() -> {
                 try { Thread.sleep(800); } catch (InterruptedException ex) {}
                 javafx.application.Platform.runLater(() -> {
-                    String name = nameField.getText().trim();
-                    String category = catCombo.getValue() != null ? catCombo.getValue() : "Uncategorized";
+                    Account account = new Account();
+                    account.setAccountName(nameField.getText().trim());
+                    account.setCurrentBalance(finalBalance);
+                    account.setCurrency(currencyCombo.getValue());
+                    account.setLimitAmount(finalLimit);
 
-                    BudgetViewModel.Budget newBudget = new BudgetViewModel.Budget(name, category, 0.0, finalLimit, 0.0);
+                    String selectedCatLabel = catCombo.getValue();
+                    AccountCategory cat = AccountCategory.OTHER;
+                    if (selectedCatLabel != null) {
+                        for (AccountCategory c : AccountCategory.values()) {
+                            if (formatCategory(c).equals(selectedCatLabel)) { cat = c; break; }
+                        }
+                    }
+                    account.setCategory(cat);
+                    account.setCycle(selectedFreq.equals("WEEKLY") ? AccountCycle.WEEKLY : AccountCycle.MONTHLY);
 
-                    onSuccess.accept(newBudget);
+                    onSuccess.accept(account);
                     closeWithAnimation(modal, shadowWrapper);
                 });
             }).start();

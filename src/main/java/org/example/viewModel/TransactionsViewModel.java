@@ -7,8 +7,10 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import org.example.SessionManager;
+import org.example.model.database.entity.Account;
 import org.example.model.database.entity.Project;
 import org.example.model.database.entity.Transaction;
+import org.example.model.database.service.AccountService;
 import org.example.model.database.service.ProjectService;
 import org.example.model.database.service.TransactionService;
 
@@ -26,10 +28,12 @@ public class TransactionsViewModel {
 
     private final TransactionService transactionService = new TransactionService();
     private final ProjectService projectService = new ProjectService();
+    private final AccountService accountService = new AccountService();
 
     private final ObservableList<Transaction> transactions = FXCollections.observableArrayList();
     private final FilteredList<Transaction> filteredTransactions = new FilteredList<>(transactions, p -> true);
     private final ObservableList<Project> projects = FXCollections.observableArrayList();
+    private final ObservableList<Account> accounts = FXCollections.observableArrayList();
     private final Map<Integer, String> projectNameMap = new HashMap<>();
     private final StringProperty message = new SimpleStringProperty("");
 
@@ -51,7 +55,18 @@ public class TransactionsViewModel {
     public TransactionsViewModel() {
         transactions.addListener((ListChangeListener<Transaction>) change -> recomputeStats());
         loadProjects();
+        loadAccounts();
         loadTransactions();
+    }
+
+    public void loadAccounts() {
+        var logger = org.example.logging.AppLog.getLogger(TransactionsViewModel.class);
+        try {
+            int companyId = SessionManager.getInstance().getCurrentCompanyId();
+            accounts.setAll(accountService.getAccountsByCompanyId(companyId));
+        } catch (Exception e) {
+            logger.warn("Could not load accounts: {}", e.getMessage());
+        }
     }
 
     public void loadProjects() {
@@ -259,6 +274,7 @@ public class TransactionsViewModel {
         expensesSubtext.set(purchaseCount + " purchases");
     }
 
+    public ObservableList<Account> getAccounts() { return accounts; }
     public ObservableList<Project> getProjects() { return projects; }
     public FilteredList<Transaction> getFilteredTransactions() { return filteredTransactions; }
     public StringProperty messageProperty() { return message; }
