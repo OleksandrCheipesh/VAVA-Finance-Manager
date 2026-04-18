@@ -1,0 +1,38 @@
+private VBox buildProfileCard() {
+        VBox profileCard = new VBox(15);
+        profileCard.setStyle("-fx-background-color: " + Themes.SIDEBAR_PROFILE_BG + "; -fx-background-radius: 12; -fx-padding: 16;");
+
+        VBox textContainer = new VBox(2);
+
+        User user = SessionManager.getInstance().getCurrentUser();
+        String fullName = (user != null)
+                ? user.getName() + " " + user.getSurname()
+                : "Unknown User";
+
+        String roleText = (user != null && user.getPosition() != null)
+                ? user.getPosition().name()
+                : "No Role";
+
+        Label name = new Label(fullName);
+        name.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: white;");
+        Label role = new Label(roleText);
+        role.setStyle("-fx-font-size: 13px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+
+        textContainer.getChildren().addAll(name, role);
+
+        Button logoutBtn = new Button("Logout");
+        logoutBtn.setMaxWidth(Double.MAX_VALUE);
+        logoutBtn.setStyle("-fx-background-color: " + Themes.SIDEBAR_LOGOUT_BG + "; -fx-text-fill: #D1D5DB; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;");
+        logoutBtn.setOnMouseEntered(e -> logoutBtn.setStyle("-fx-background-color: " + Themes.SIDEBAR_LOGOUT_HOVER + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;"));
+        logoutBtn.setOnMouseExited(e -> logoutBtn.setStyle("-fx-background-color: " + Themes.SIDEBAR_LOGOUT_BG + "; -fx-text-fill: #D1D5DB; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;"));
+        logoutBtn.setOnMouseClicked(e -> {
+            SessionManager.getInstance().logout();
+
+            BaseView loginView = new LoginView();
+            loginView.show(stage);
+        });
+
+
+        profileCard.getChildren().addAll(textContainer, logoutBtn);
+        return profileCard;
+    }
