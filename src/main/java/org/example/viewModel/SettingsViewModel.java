@@ -58,6 +58,9 @@ public class SettingsViewModel {
 
     public void addUser(User user) {
         try {
+            if (user.getCompanyId() == null) {
+                user.setCompanyId(SessionManager.getInstance().getCurrentCompanyId());
+            }
             settingsModel.addUser(user);
             users.add(user);
         } catch (Exception e) {

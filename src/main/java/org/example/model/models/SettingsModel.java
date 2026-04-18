@@ -12,9 +12,9 @@ import java.util.List;
 public class SettingsModel {
 
     private UserService userService = new UserService();
-    private User currentUser = SessionManager.getInstance().getCurrentUser();
 
     private void requireDirector() {
+        User currentUser = SessionManager.getInstance().getCurrentUser();
         if (currentUser == null || currentUser.getPosition() != Position.Director) {
             throw new SecurityException("Only Directors can manage users.");
         }

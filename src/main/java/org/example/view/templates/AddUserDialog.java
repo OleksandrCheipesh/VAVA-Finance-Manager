@@ -191,7 +191,8 @@ public class AddUserDialog {
                 return;
             }
 
-            User newUser = new User(name, surname, email, password, selectedPosition, null);
+            String hashedPassword = PasswordUtil.hash(password);
+            User newUser = new User(name, surname, email, hashedPassword, selectedPosition, null);
             onSuccess.accept(newUser);
             closeWithAnimation(modal, shadowWrapper);
         });
