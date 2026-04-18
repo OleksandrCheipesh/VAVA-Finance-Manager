@@ -40,12 +40,12 @@ public class SettingsViewModel {
         currency.set("EUR (€)");
         industry.set("Financial Services");
 
-        // Dummy data
-        users.addAll(
-                new User("Marcus", "Thorne", "m.thorne@mintmgmt.com", PasswordUtil.hash("password"), Position.Director, null),
-                new User("Elena", "Varga", "e.varga@mintmgmt.com", PasswordUtil.hash("password"), Position.Accountant, null),
-                new User("Jakub", "Kolar", "j.kolar@mintmgmt.com", PasswordUtil.hash("password"), Position.Analyst, null)
-        );
+        try {
+            int companyId = SessionManager.getInstance().getCurrentUser().getCompanyId();
+            users.addAll(settingsModel.getUsersByCompanyId(companyId));
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
     }
 
     public void saveCompanyProfile() {

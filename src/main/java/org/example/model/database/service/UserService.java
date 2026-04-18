@@ -16,8 +16,6 @@ public class UserService {
     public User addUser(User user) throws SQLException {
         var logger = org.example.logging.AppLog.getLogger(UserService.class);
         try {
-            user.setPasswordHash(BCrypt.hashpw(user.getPasswordHash(), BCrypt.gensalt()));
-
             String sql = "INSERT INTO users (name, surname, email, password_hash, position, company_id) " +
                     "VALUES (?, ?, ?, ?, ?, ?) RETURNING id, created_at";
 
