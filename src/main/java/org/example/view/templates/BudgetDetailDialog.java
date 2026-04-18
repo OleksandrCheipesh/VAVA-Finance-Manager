@@ -7,9 +7,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.GaussianBlur;
@@ -17,18 +15,29 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import javafx.scene.shape.SVGPath;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
-import org.example.viewModel.BudgetViewModel;
+import org.example.model.database.entity.Account;
 
 import java.util.Locale;
 
 public class BudgetDetailDialog {
 
-    public static void show(Stage owner, BudgetViewModel.Budget budget, Runnable onEdit, Runnable onDelete) {
+    private static String formatCategory(org.example.model.database.entity.AccountCategory cat) {
+        if (cat == null) return "Other";
+        return switch (cat) {
+            case BANK_ACCOUNT -> "Bank Account";
+            case CASH -> "Cash";
+            case CREDIT_LINE -> "Credit Line";
+            case SAVINGS -> "Savings";
+            case INVESTMENT -> "Investment";
+            case OTHER -> "Other";
+        };
+    }
+
+    public static void show(Stage owner, Account account, Runnable onEdit, Runnable onDelete) {
         Stage modal = new Stage();
         modal.initOwner(owner);
         modal.initModality(Modality.APPLICATION_MODAL);
@@ -73,11 +82,9 @@ public class BudgetDetailDialog {
         StackPane iconBox = new StackPane();
         iconBox.setPrefSize(40, 40);
         iconBox.setStyle("-fx-background-color: " + Themes.PRIMARY_TEAL + "; -fx-background-radius: 10;");
-
-        // NEW: Load header wallet icon from factory
         iconBox.getChildren().add(IconFactory.getIcon("wallet", 20));
 
-        Label topLabel = new Label("BUDGET DETAIL");
+        Label topLabel = new Label("ACCOUNT DETAIL");
         topLabel.setStyle("-fx-font-weight: 900; -fx-font-size: 12px; -fx-text-fill: #64748B; -fx-letter-spacing: 1.5px;");
 
         Region topSpacer = new Region();
@@ -94,13 +101,13 @@ public class BudgetDetailDialog {
         headerBox.setAlignment(Pos.CENTER);
         headerBox.setPadding(new Insets(5, 0, 10, 0));
 
-        Label title = new Label(budget.getName());
-        title.setStyle("-fx-font-size: 32px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
+        Label titleLabel = new Label(account.getAccountName());
+        titleLabel.setStyle("-fx-font-size: 32px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
 
-        Label categoryPill = new Label(budget.getCategory().toUpperCase());
+        Label categoryPill = new Label(formatCategory(account.getCategory()).toUpperCase());
         categoryPill.setStyle("-fx-background-color: #CCFBF1; -fx-text-fill: #0F766E; -fx-font-weight: 900; -fx-font-size: 10px; -fx-padding: 6 14; -fx-background-radius: 20; -fx-letter-spacing: 1px;");
 
-        headerBox.getChildren().addAll(title, categoryPill);
+        headerBox.getChildren().addAll(titleLabel, categoryPill);
 
         // Info grid
         GridPane infoGrid = new GridPane();
@@ -114,24 +121,27 @@ public class BudgetDetailDialog {
         Label balanceLabel = new Label("Current Balance");
         balanceLabel.setStyle("-fx-font-weight: 900; -fx-font-size: 14px; -fx-text-fill: " + Themes.DARK_TEXT + ";");
 
-        Label balanceValue = new Label(String.format(Locale.US, "$%,.2f", budget.getBalance()));
-        balanceValue.setStyle("-fx-font-size: 38px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_GREEN + ";");
+        double balance = account.getCurrentBalance() != null ? account.getCurrentBalance().doubleValue() : 0.0;
+        String currency = account.getCurrency() != null ? account.getCurrency() : "USD";
+        Label balanceValue = new Label(String.format(Locale.US, "%s %,.2f", currency, balance));
+        balanceValue.setStyle("-fx-font-size: 34px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_GREEN + ";");
 
         infoGrid.add(balanceLabel, 0, 0); infoGrid.add(balanceValue, 1, 0);
         GridPane.setValignment(balanceLabel, javafx.geometry.VPos.CENTER);
         GridPane.setValignment(balanceValue, javafx.geometry.VPos.CENTER);
 
         VBox limitBox = new VBox(8);
-        Label limitLbl = new Label("BUDGET LIMIT");
+        Label limitLbl = new Label("ACCOUNT LIMIT");
         limitLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: #64748B; -fx-letter-spacing: 1px;");
 
         HBox limitValBox = new HBox(6);
         limitValBox.setAlignment(Pos.CENTER_LEFT);
 
-        // Load limit icon from factory (Using wallet as a proxy for the flag)
         ImageView limitIcon = IconFactory.getIcon("wallet", 18);
-
-        Label limitVal = new Label(String.format(Locale.US, "$%,.2f", budget.getLimit()));
+        String limitText = account.getLimitAmount() != null
+                ? String.format(Locale.US, "%s %,.2f", currency, account.getLimitAmount().doubleValue())
+                : "No limit set";
+        Label limitVal = new Label(limitText);
         limitVal.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
 
         limitValBox.getChildren().addAll(limitIcon, limitVal);
@@ -144,9 +154,7 @@ public class BudgetDetailDialog {
         HBox statusValBox = new HBox(6);
         statusValBox.setAlignment(Pos.CENTER_LEFT);
 
-        // Load status icon from factory
         ImageView statusIcon = IconFactory.getIcon("circle-check", 18);
-
         Label statusVal = new Label("Active");
         statusVal.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
 
@@ -162,6 +170,12 @@ public class BudgetDetailDialog {
         VBox.setMargin(separator, new Insets(5, 0, 5, 0));
 
         // Utilization progress
+        double utilization = 0.0;
+        if (account.getLimitAmount() != null && account.getLimitAmount() > 0) {
+            utilization = Math.min((balance / account.getLimitAmount()) * 100.0, 100.0);
+        }
+        double remaining = account.getLimitAmount() != null ? account.getLimitAmount() - balance : 0.0;
+
         VBox utilBox = new VBox(8);
         GridPane utilGrid = new GridPane();
         utilGrid.setMaxWidth(Double.MAX_VALUE);
@@ -177,11 +191,12 @@ public class BudgetDetailDialog {
         Label remLbl = new Label("REMAINING CAPACITY");
         remLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: #64748B; -fx-letter-spacing: 1px;");
 
-        Label utilVal = new Label((int)budget.getUtilization() + "%");
+        Label utilVal = new Label((int) utilization + "%");
         utilVal.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
 
-        double remaining = budget.getLimit() - budget.getBalance();
-        Label remVal = new Label(String.format(Locale.US, "$%,.2f", remaining));
+        Label remVal = new Label(account.getLimitAmount() != null
+                ? String.format(Locale.US, "%s %,.2f", currency, remaining)
+                : "N/A");
         remVal.setStyle("-fx-font-size: 22px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_GREEN + ";");
 
         utilGrid.add(utilLbl, 0, 0); utilGrid.add(remLbl, 1, 0);
@@ -195,8 +210,9 @@ public class BudgetDetailDialog {
         Region barBg = new Region(); barBg.setMinHeight(8); barBg.setMaxHeight(8); barBg.setStyle("-fx-background-color: #E2E8F0; -fx-background-radius: 10;");
         Region barFill = new Region(); barFill.setMinHeight(8); barFill.setMaxHeight(8);
 
-        barFill.prefWidthProperty().bind(barBg.widthProperty().multiply(budget.getUtilization() / 100.0));
-        barFill.maxWidthProperty().bind(barBg.widthProperty().multiply(budget.getUtilization() / 100.0));
+        final double finalUtil = utilization;
+        barFill.prefWidthProperty().bind(barBg.widthProperty().multiply(finalUtil / 100.0));
+        barFill.maxWidthProperty().bind(barBg.widthProperty().multiply(finalUtil / 100.0));
         barFill.setStyle("-fx-background-color: " + Themes.DARK_GREEN + "; -fx-background-radius: 10;");
 
         barContainer.getChildren().addAll(barBg, barFill);
@@ -206,11 +222,8 @@ public class BudgetDetailDialog {
         HBox footer = new HBox(15);
         footer.setPadding(new Insets(15, 0, 0, 0));
 
-        Button editBtn = new Button("Edit Budget");
-
-        // NEW: Load edit icon from factory
+        Button editBtn = new Button("Edit Account");
         editBtn.setGraphic(IconFactory.getWhiteIcon("square-pen", 18));
-
         editBtn.setMinHeight(52);
         editBtn.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(editBtn, Priority.ALWAYS);
@@ -227,10 +240,7 @@ public class BudgetDetailDialog {
         editBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper, onEdit));
 
         Button deleteBtn = new Button();
-
-        // NEW: Load trash icon from factory
         deleteBtn.setGraphic(IconFactory.getIcon("trash", 24));
-
         deleteBtn.setMinSize(52, 52);
         deleteBtn.setStyle(
                 "-fx-background-color: #FCE8E8; " +
@@ -238,17 +248,7 @@ public class BudgetDetailDialog {
                         "-fx-cursor: hand;"
         );
 
-        deleteBtn.setOnAction(e -> {
-            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this budget?\nThis action cannot be undone.", ButtonType.YES, ButtonType.NO);
-            confirm.setTitle("Delete Budget");
-            confirm.setHeaderText("Confirm Deletion");
-
-            confirm.showAndWait().ifPresent(response -> {
-                if (response == ButtonType.YES) {
-                    closeWithAnimation(modal, shadowWrapper, onDelete);
-                }
-            });
-        });
+        deleteBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper, onDelete));
 
         footer.getChildren().addAll(editBtn, deleteBtn);
 
@@ -277,9 +277,7 @@ public class BudgetDetailDialog {
         ParallelTransition exitAnimation = new ParallelTransition(fadeOut, slideDown);
         exitAnimation.setOnFinished(e -> {
             modal.close();
-            if (onFinishedCallback != null) {
-                onFinishedCallback.run();
-            }
+            if (onFinishedCallback != null) onFinishedCallback.run();
         });
         exitAnimation.play();
     }

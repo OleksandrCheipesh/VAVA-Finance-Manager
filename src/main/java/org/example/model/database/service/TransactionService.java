@@ -260,6 +260,77 @@ public class TransactionService {
         }
     }
 
+    public java.util.Map<Integer, BigDecimal> getBalancesByCompanyId(int companyId) throws SQLException {
+        var logger = org.example.logging.AppLog.getLogger(TransactionService.class);
+        String sql = "SELECT account_id, COALESCE(SUM(CASE WHEN type = 'SALE' THEN amount ELSE -amount END), 0) " +
+                     "FROM transactions WHERE company_id = ? GROUP BY account_id";
+        java.util.Map<Integer, BigDecimal> map = new java.util.HashMap<>();
+        try (Connection connection = ConnectionProvider.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, companyId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) map.put(rs.getInt(1), rs.getBigDecimal(2));
+            }
+        } catch (SQLException e) {
+            logger.error("Failed to compute per-account balances for companyId={}", companyId, e);
+            throw e;
+        }
+        return map;
+    }
+
+    public BigDecimal getTotalBalanceByCompanyId(int companyId) throws SQLException {
+        var logger = org.example.logging.AppLog.getLogger(TransactionService.class);
+        String sql = "SELECT COALESCE(SUM(CASE WHEN type = 'SALE' THEN amount ELSE -amount END), 0) " +
+                     "FROM transactions WHERE company_id = ?";
+        try (Connection connection = ConnectionProvider.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, companyId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getBigDecimal(1);
+            }
+        } catch (SQLException e) {
+            logger.error("Failed to compute total balance for companyId={}", companyId, e);
+            throw e;
+        }
+        return BigDecimal.ZERO;
+    }
+
+    public java.util.Optional<BigDecimal> getPrevMonthTotalByCompanyId(int companyId) throws SQLException {
+        var logger = org.example.logging.AppLog.getLogger(TransactionService.class);
+        String sql = "SELECT COALESCE(SUM(CASE WHEN type = 'SALE' THEN amount ELSE -amount END), 0), " +
+                     "COUNT(*) FROM transactions WHERE company_id = ? AND date < DATE_TRUNC('month', CURRENT_DATE)";
+        try (Connection connection = ConnectionProvider.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, companyId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next() && rs.getLong(2) > 0) {
+                    return java.util.Optional.of(rs.getBigDecimal(1));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Failed to compute prev-month total for companyId={}", companyId, e);
+            throw e;
+        }
+        return java.util.Optional.empty();
+    }
+
+    public BigDecimal getCurrentMonthTotalByCompanyId(int companyId) throws SQLException {
+        var logger = org.example.logging.AppLog.getLogger(TransactionService.class);
+        String sql = "SELECT COALESCE(SUM(CASE WHEN type = 'SALE' THEN amount ELSE -amount END), 0) " +
+                     "FROM transactions WHERE company_id = ? AND date >= DATE_TRUNC('month', CURRENT_DATE)";
+        try (Connection connection = ConnectionProvider.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, companyId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getBigDecimal(1);
+            }
+        } catch (SQLException e) {
+            logger.error("Failed to compute current-month total for companyId={}", companyId, e);
+            throw e;
+        }
+        return BigDecimal.ZERO;
+    }
+
     private Transaction mapRow(ResultSet resultSet) throws SQLException {
         Transaction transaction = new Transaction();
         transaction.setId(resultSet.getInt("id"));
