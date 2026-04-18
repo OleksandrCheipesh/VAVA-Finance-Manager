@@ -91,8 +91,10 @@ public class SettingsView extends BaseView {
         scene = new Scene(root, 1200, 800);
 
         try {
-            scene.getStylesheets().add(getClass().getResource("/styles/table.css").toExternalForm());
-            scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());
+            var tableCss = getClass().getResource("/styles/table.css");
+            var globalCss = getClass().getResource("/styles/global.css");
+            if (tableCss != null) scene.getStylesheets().add(tableCss.toExternalForm());
+            if (globalCss != null) scene.getStylesheets().add(globalCss.toExternalForm());
         } catch (Exception e) {
             System.out.println("Warning: CSS files not found.");
         }
@@ -138,17 +140,27 @@ public class SettingsView extends BaseView {
         saveCompanyBtn.setOnAction(e -> viewModel.saveCompanyProfile());
         applyPrefsBtn.setOnAction(e -> viewModel.applyPreferences());
 
-        addUserBtn.setOnAction(e -> AddUserDialog.show(stage, viewModel.getUsers(), (User newUser) -> {
-            try {
-                viewModel.addUser(newUser);
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
-        }));
+        addUserBtn.setOnAction(e -> AddUserDialog.show(stage, viewModel.getUsers(), viewModel::addUser));
 
         savePassBtn.setOnAction(e -> {
-            viewModel.changePassword(currentPassField.getText(), newPassField.getText(), confirmPassField.getText());
-            currentPassField.clear(); newPassField.clear(); confirmPassField.clear();
+            try {
+                viewModel.changePassword(currentPassField.getText(), newPassField.getText(), confirmPassField.getText());
+                currentPassField.clear(); newPassField.clear(); confirmPassField.clear();
+
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Success");
+                alert.setHeaderText(null);
+                alert.setContentText("Password has been changed successfully.");
+                alert.initOwner(stage);
+                alert.showAndWait();
+            } catch (Exception ex) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText("Password Change Failed");
+                alert.setContentText(ex.getMessage());
+                alert.initOwner(stage);
+                alert.showAndWait();
+            }
         });
     }
 

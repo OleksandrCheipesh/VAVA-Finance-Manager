@@ -50,11 +50,14 @@ public class LoginView extends BaseView {
         loginButton  = UIFactory.primaryButton("Log in", Themes.FORM_MAX_WIDTH);
         registerLink = UIFactory.navLink("Switch to Registration");
 
+        Hyperlink forgotPasswordLink = UIFactory.navLink("Forgot Password?");
+        forgotPasswordLink.setOnAction(e -> navigateTo(new ResetPasswordView()));
+
         // Message label for success/error feedback
         messageLabel = UIFactory.messageLabel();
         messageLabel.textProperty().bind(viewModel.messageProperty());
 
-        buttonBox.getChildren().addAll(loginButton, registerLink);
+        buttonBox.getChildren().addAll(loginButton, forgotPasswordLink, registerLink);
         formBox.getChildren().addAll(titleLabel, subtitleLabel, emailField, passwordField, buttonBox, messageLabel);
         rightPanel.getChildren().add(formBox);
         root.getChildren().addAll(leftPanel, rightPanel);

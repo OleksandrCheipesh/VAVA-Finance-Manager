@@ -23,6 +23,7 @@ javafx {
 }
 
 dependencies {
+    implementation("org.mindrot:jbcrypt:0.4")
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     implementation("org.postgresql:postgresql:42.7.7")
@@ -33,8 +34,6 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.4.11")
     implementation ("org.kordamp.ikonli:ikonli-javafx:12.3.1")
     implementation ("org.kordamp.ikonli:ikonli-fontawesome5-pack:12.3.1")
-    implementation("org.mindrot:jbcrypt:0.4")
-
 }
 
 tasks.test {
