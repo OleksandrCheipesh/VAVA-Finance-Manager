@@ -72,10 +72,12 @@ public class AddTransactionDialog {
 
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER_LEFT);
+
         Label title = new Label("New Transaction");
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
         Button closeBtn = new Button("X");
+
         closeBtn.setMinSize(32, 32);
         closeBtn.setMaxSize(32, 32);
         closeBtn.setStyle(
@@ -96,6 +98,7 @@ public class AddTransactionDialog {
 
         HBox toggleBox = new HBox();
         toggleBox.setStyle("-fx-background-color: " + Themes.BG_FIELD + "; -fx-background-radius: 8; -fx-padding: 4;");
+
         Button saleBtn = new Button("+ Sale");
         Button purchaseBtn = new Button("- Purchase");
 
@@ -103,7 +106,9 @@ public class AddTransactionDialog {
         String inactiveStyle = "-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-weight: bold; -fx-cursor: hand;";
 
         saleBtn.setMaxWidth(Double.MAX_VALUE);
+
         purchaseBtn.setMaxWidth(Double.MAX_VALUE);
+
         HBox.setHgrow(saleBtn, Priority.ALWAYS);
         HBox.setHgrow(purchaseBtn, Priority.ALWAYS);
 
@@ -124,18 +129,28 @@ public class AddTransactionDialog {
 
         VBox form = new VBox(15);
         TextField amountField = UIFactory.inputField("0.00");
+
+        amountField.setMinHeight(44);
+        amountField.setPrefHeight(44);
+
         VBox amountBox = createLabeledField("AMOUNT", amountField);
 
         TextField descField = UIFactory.inputField("Enter description");
+
+        descField.setMinHeight(44);
+        descField.setPrefHeight(44);
+
         VBox descBox = createLabeledField("DESCRIPTION", descField);
 
         boolean hasAccounts = !accounts.isEmpty();
         String accountPrompt = hasAccounts ? "Select Account" : "No accounts found";
+
         ComboBox<Account> accountCombo = UIFactory.inputComboBox(accountPrompt);
 
         accountCombo.setMaxWidth(Double.MAX_VALUE);
-        accountCombo.setMaxHeight(Region.USE_PREF_SIZE);
-        accountCombo.setPrefWidth(0);
+        accountCombo.setMinHeight(44);
+        accountCombo.setPrefHeight(44);
+        accountCombo.setMaxHeight(44);
 
         accountCombo.setItems(accounts);
         accountCombo.setDisable(!hasAccounts);
@@ -158,33 +173,41 @@ public class AddTransactionDialog {
             }
         });
 
-        VBox accountBox = createLabeledField("ACCOUNT", accountCombo);
-        accountBox.setPrefWidth(0);
-        accountBox.setMaxWidth(Double.MAX_VALUE);
-
         Map<String, Integer> projectNameToId = new HashMap<>();
+
         ComboBox<String> projectCombo = UIFactory.inputComboBox("Select Project");
 
         projectCombo.setMaxWidth(Double.MAX_VALUE);
-        projectCombo.setMaxHeight(Region.USE_PREF_SIZE);
-        projectCombo.setPrefWidth(0);
+        projectCombo.setMinHeight(44);
+        projectCombo.setPrefHeight(44);
+        projectCombo.setMaxHeight(44);
 
         for (Project p : projects) {
             projectCombo.getItems().add(p.getName());
             projectNameToId.put(p.getName(), p.getId());
         }
 
-        VBox projectBox = createLabeledField("PROJECT", projectCombo);
-        projectBox.setPrefWidth(0);
-        projectBox.setMaxWidth(Double.MAX_VALUE);
+        GridPane splitBox = new GridPane();
+        splitBox.setHgap(15);
 
-        HBox splitBox = new HBox(15);
-        HBox.setHgrow(accountBox, Priority.ALWAYS);
-        HBox.setHgrow(projectBox, Priority.ALWAYS);
-        splitBox.getChildren().addAll(accountBox, projectBox);
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setPercentWidth(50);
+
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setPercentWidth(50);
+
+        splitBox.getColumnConstraints().addAll(col1, col2);
+
+        splitBox.add(createLabeledField("ACCOUNT", accountCombo), 0, 0);
+        splitBox.add(createLabeledField("PROJECT", projectCombo), 1, 0);
 
         DatePicker datePicker = UIFactory.inputDatePicker("Select date");
+
         datePicker.setValue(java.time.LocalDate.now());
+        datePicker.setMaxWidth(Double.MAX_VALUE);
+        datePicker.setMinHeight(44);
+        datePicker.setPrefHeight(44);
+        datePicker.setMaxHeight(44);
 
         datePicker.getEditor().focusedProperty().addListener((obs, wasFocused, isFocused) -> {
             if (!isFocused) {
@@ -305,7 +328,13 @@ public class AddTransactionDialog {
     private static VBox createLabeledField(String labelText, Node field) {
         Label label = new Label(labelText);
         label.setStyle("-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-size: 13px;");
-        return new VBox(5, label, field);
+
+        VBox box = new VBox(5, label, field);
+
+        box.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(box, Priority.ALWAYS);
+
+        return box;
     }
 
     private static void closeWithAnimation(Stage modal, Node animatedNode) {
@@ -316,6 +345,7 @@ public class AddTransactionDialog {
         slideDown.setToY(30);
 
         ParallelTransition exitAnimation = new ParallelTransition(fadeOut, slideDown);
+
         exitAnimation.setOnFinished(e -> modal.close());
         exitAnimation.play();
     }

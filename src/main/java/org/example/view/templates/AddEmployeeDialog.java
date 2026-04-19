@@ -96,7 +96,12 @@ public class AddEmployeeDialog {
         VBox form = new VBox(15);
 
         TextField nameField = UIFactory.inputField("Name");
+        nameField.setMinHeight(44);
+        nameField.setPrefHeight(44);
+
         TextField surnameField = UIFactory.inputField("Surname");
+        surnameField.setMinHeight(44);
+        surnameField.setPrefHeight(44);
 
         HBox splitName = new HBox(15);
         HBox.setHgrow(nameField, Priority.ALWAYS);
@@ -105,9 +110,13 @@ public class AddEmployeeDialog {
         splitName.getChildren().addAll(createLabeledField("NAME", nameField), createLabeledField("SURNAME", surnameField));
 
         TextField emailField = UIFactory.inputField("E-mail");
+        emailField.setMinHeight(44);
+        emailField.setPrefHeight(44);
         VBox emailBox = createLabeledField("E-MAIL", emailField);
 
         TextField roleField = UIFactory.inputField("Industry");
+        roleField.setMinHeight(44);
+        roleField.setPrefHeight(44);
         VBox roleBox = createLabeledField("ROLE", roleField);
 
         TextField deptField = UIFactory.inputField("Department");
@@ -115,7 +124,6 @@ public class AddEmployeeDialog {
         deptField.setPrefHeight(44);
 
         ComboBox<String> statusCombo = UIFactory.inputComboBox("Active");
-
         statusCombo.getItems().addAll("Active", "Inactive", "Contractor");
         statusCombo.setValue("Active");
         statusCombo.setMaxWidth(Double.MAX_VALUE);
@@ -233,6 +241,7 @@ public class AddEmployeeDialog {
 
         ParallelTransition exit = new ParallelTransition(fadeOut, slideDown);
         exit.setOnFinished(e -> modal.close());
+
         exit.play();
     }
 }
