@@ -38,18 +38,10 @@ public abstract class BaseView {
 
     // Base logic for all Views -- DO NOT CHANGE AND OVERWRITE !!!
     private void applyScene() {
+        scene.setFill(javafx.scene.paint.Color.web("#F5F7FA"));
+        stage.setMaximized(true);
         stage.setScene(scene);
         stage.show();
-
-        // get size of screen
-        javafx.geometry.Rectangle2D screenBounds =
-                javafx.stage.Screen.getPrimary().getVisualBounds();
-        stage.setX(screenBounds.getMinX());
-        stage.setY(screenBounds.getMinY());
-        stage.setWidth(screenBounds.getWidth());
-        stage.setHeight(screenBounds.getHeight());
-
-        stage.setMaximized(true);
     }
 
     // View Title
