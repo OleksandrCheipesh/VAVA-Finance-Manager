@@ -39,9 +39,28 @@ public abstract class BaseView {
     // Base logic for all Views -- DO NOT CHANGE AND OVERWRITE !!!
     private void applyScene() {
         scene.setFill(javafx.scene.paint.Color.web("#F5F7FA"));
-        stage.setMaximized(true);
-        stage.setScene(scene);
-        stage.show();
+        if (!stage.isShowing()) {
+            javafx.geometry.Rectangle2D screenBounds =
+                    javafx.stage.Screen.getPrimary().getVisualBounds();
+            stage.setX(screenBounds.getMinX());
+            stage.setY(screenBounds.getMinY());
+            stage.setWidth(screenBounds.getWidth());
+            stage.setHeight(screenBounds.getHeight());
+            stage.setMaximized(true);
+            stage.setScene(scene);
+            stage.show();
+        } else {
+            // Reuse existing scene to avoid white flash from native window repaint.
+            // Just swap the root content and stylesheets.
+            javafx.scene.Scene currentScene = stage.getScene();
+            javafx.scene.Parent newRoot = scene.getRoot();
+            // Detach root from new scene so it can be attached to the current one
+            scene.setRoot(new javafx.scene.layout.Region());
+            currentScene.getStylesheets().setAll(scene.getStylesheets());
+            currentScene.setRoot(newRoot);
+            // Update stage title from the new scene's stage configuration
+            // (title is already set by setContent() before this method is called)
+        }
     }
 
     // View Title
