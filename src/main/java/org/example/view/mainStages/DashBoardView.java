@@ -200,7 +200,7 @@ public class DashBoardView extends BaseView {
         mainContainer.getChildren().addAll(topBar, contentArea);
         root.setCenter(mainContainer);
 
-        scene = new Scene(root, 1200, 800);
+        scene = new Scene(root);
 
         try {
             scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());
