@@ -4,6 +4,7 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.example.SessionManager;
+import org.example.model.database.entity.Company;
 import org.example.model.database.entity.User;
 import org.example.model.PasswordUtil;
 import org.example.model.database.service.UserService;
@@ -35,10 +36,18 @@ public class SettingsViewModel {
     }
 
     private void loadInitialData() {
-        companyName.set("Mint Management");
-        country.set("Slovakia");
-        currency.set("EUR (€)");
-        industry.set("Financial Services");
+        try {
+            Company company = SessionManager.getInstance().getCurrentCompany();
+            companyName.set(company.getName());
+            country.set(company.getCountry());
+            currency.set(company.getCurrency());
+            industry.set(company.getIndustry());
+        } catch (Exception e) {
+            companyName.set("Unknown");
+            country.set("Unknown");
+            currency.set("Unknown");
+            industry.set("Unknown");
+        }
 
         try {
             int companyId = SessionManager.getInstance().getCurrentUser().getCompanyId();
