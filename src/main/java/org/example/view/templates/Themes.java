@@ -75,4 +75,7 @@ public class Themes {
     public static final String PRIMARY_TEAL = PRIMARY;
 
     public static final String TEXT_GRAY = "#64748B";
+
+    // Dashboard
+    public static final String PURPLE_ICON = "#8B5CF6";
 }
