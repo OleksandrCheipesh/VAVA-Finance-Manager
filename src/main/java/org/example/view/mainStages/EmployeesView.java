@@ -33,7 +33,6 @@ public class EmployeesView extends BaseView {
 
         VBox mainContainer = new VBox();
 
-        // --- 1. Top Bar ---
         HBox topBar = new HBox(20);
         topBar.setAlignment(Pos.BOTTOM_LEFT);
         topBar.setStyle("-fx-background-color: " + Themes.BG_CARD + "; -fx-padding: 0 40; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-width: 0 0 1 0;");
@@ -49,7 +48,6 @@ public class EmployeesView extends BaseView {
         sep.setStyle("-fx-background-color: " + Themes.BORDER_LIGHT + ";");
         HBox.setMargin(sep, new Insets(0, 10, 25, 10));
 
-        // New Figma Tabs
         HBox tabs = new HBox(30);
         tabs.setAlignment(Pos.BOTTOM_LEFT);
 
@@ -66,7 +64,6 @@ public class EmployeesView extends BaseView {
         tabInactive.setStyle(inactiveTab);
         tabContractors.setStyle(inactiveTab);
 
-        // UI Tabs Logic (Backend filtering to be handled by ViewModel)
         tabAll.setOnMouseClicked(e -> { tabAll.setStyle(activeTab); tabActive.setStyle(inactiveTab); tabInactive.setStyle(inactiveTab); tabContractors.setStyle(inactiveTab); });
         tabActive.setOnMouseClicked(e -> { tabActive.setStyle(activeTab); tabAll.setStyle(inactiveTab); tabInactive.setStyle(inactiveTab); tabContractors.setStyle(inactiveTab); });
         tabInactive.setOnMouseClicked(e -> { tabInactive.setStyle(activeTab); tabAll.setStyle(inactiveTab); tabActive.setStyle(inactiveTab); tabContractors.setStyle(inactiveTab); });
@@ -82,7 +79,6 @@ public class EmployeesView extends BaseView {
 
         topBar.getChildren().addAll(title, sep, tabs, spacer, addBtn);
 
-        // --- 2. Content Area ---
         contentArea = new VBox(25);
         VBox.setVgrow(contentArea, Priority.ALWAYS);
 
@@ -116,7 +112,6 @@ public class EmployeesView extends BaseView {
         table.setItems(viewModel.getEmployees());
         VBox.setVgrow(table, Priority.ALWAYS);
 
-        // Columns
         TableColumn<Employee, String> nameCol = new TableColumn<>("NAME");
         nameCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getName() + " " + cellData.getValue().getSurname()));
 
@@ -142,7 +137,7 @@ public class EmployeesView extends BaseView {
                     String pillBg, pillTxt;
                     if ("Active".equalsIgnoreCase(item)) { pillBg = "#D1FAE5"; pillTxt = "#10B981"; }
                     else if ("Contractor".equalsIgnoreCase(item)) { pillBg = "#FEF3C7"; pillTxt = "#D97706"; }
-                    else { pillBg = "#F1F5F9"; pillTxt = "#64748B"; } // Inactive/Other
+                    else { pillBg = "#F1F5F9"; pillTxt = "#64748B"; }
 
                     statusLabel.setStyle("-fx-background-color: " + pillBg + "; -fx-text-fill: " + pillTxt + ";" +
                             "-fx-padding: 4 12; -fx-background-radius: 12; -fx-border-radius: 12;" +
@@ -166,7 +161,6 @@ public class EmployeesView extends BaseView {
             }
         });
 
-        // Also open modal when a row is clicked
         table.setOnMouseClicked(e -> {
             if (table.getSelectionModel().getSelectedItem() != null) {
                 openDetailsModal(table.getSelectionModel().getSelectedItem());
@@ -193,7 +187,7 @@ public class EmployeesView extends BaseView {
     private void openDetailsModal(Employee emp) {
         EmployeeDetailsDialog.show(stage, emp,
                 updatedEmp -> {
-                    table.refresh(); // Refreshes table after edit
+                    table.refresh();
                     ToastManager.showSuccess(stage, "Employee profile updated!");
                 },
                 deletedEmp -> {
@@ -211,7 +205,6 @@ public class EmployeesView extends BaseView {
 
     @Override
     protected void setLogic() {
-        // Pass null to indicate a NEW employee is being created
         addBtn.setOnAction(e -> AddEmployeeDialog.show(stage, null, newEmployee -> viewModel.addEmployee(newEmployee)));
 
         viewModel.messageProperty().addListener((obs, oldVal, newVal) -> {
@@ -224,24 +217,22 @@ public class EmployeesView extends BaseView {
     }
 
     private VBox createSummaryCard(String title, Label valueLabel, Label subText, String subTextColor) {
-        VBox card = new VBox(8);
+        VBox card = new VBox(10);
         card.setStyle("-fx-background-color: " + Themes.BG_CARD + "; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 20;");
         HBox.setHgrow(card, Priority.ALWAYS);
 
         Label lblTitle = new Label(title);
         lblTitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 11px; -fx-font-weight: bold;");
 
-        HBox valueBox = new HBox(10);
-        valueBox.setAlignment(Pos.BASELINE_LEFT);
+        VBox valueBox = new VBox(2);
+        valueBox.setAlignment(Pos.CENTER_LEFT);
 
-        Label lblValue = valueLabel;
-        lblValue.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+        valueLabel.setStyle("-fx-font-size: 32px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+        subText.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + subTextColor + ";");
 
-        Label lblSub = subText;
-        lblSub.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + subTextColor + ";");
-
-        valueBox.getChildren().addAll(lblValue, lblSub);
+        valueBox.getChildren().addAll(valueLabel, subText);
         card.getChildren().addAll(lblTitle, valueBox);
+
         return card;
     }
 }

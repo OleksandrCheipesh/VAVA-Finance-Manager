@@ -103,12 +103,12 @@ public class AddBudgetDialog {
         closeBtn.setMaxSize(32, 32);
 
         closeBtn.setStyle(
-                "-fx-background-color: " + Themes.BG_FIELD + ";" +
+                "-fx-background-color: transparent;" +
                         "-fx-background-radius: 8;" +
                         "-fx-cursor: hand;" +
                         "-fx-text-fill: " + Themes.TEXT_MUTED + ";" +
                         "-fx-font-weight: bold;" +
-                        "-fx-font-size: 14px;" +
+                        "-fx-font-size: 16px;" +
                         "-fx-padding: 0;"
         );
 

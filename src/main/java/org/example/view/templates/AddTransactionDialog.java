@@ -70,7 +70,6 @@ public class AddTransactionDialog {
         shadowWrapper.setStyle("-fx-background-color: transparent;");
         shadowWrapper.setPadding(new Insets(30));
 
-        // Header & Close Button
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER_LEFT);
         Label title = new Label("New Transaction");
@@ -80,12 +79,12 @@ public class AddTransactionDialog {
         closeBtn.setMinSize(32, 32);
         closeBtn.setMaxSize(32, 32);
         closeBtn.setStyle(
-                "-fx-background-color: " + Themes.BG_FIELD + ";" +
+                "-fx-background-color: transparent;" +
                         "-fx-background-radius: 8;" +
                         "-fx-cursor: hand;" +
                         "-fx-text-fill: " + Themes.TEXT_MUTED + ";" +
                         "-fx-font-weight: bold;" +
-                        "-fx-font-size: 14px;" +
+                        "-fx-font-size: 16px;" +
                         "-fx-padding: 0;"
         );
 
@@ -95,7 +94,6 @@ public class AddTransactionDialog {
         HBox.setHgrow(spacer, Priority.ALWAYS);
         header.getChildren().addAll(title, spacer, closeBtn);
 
-        // Custom Toggle
         HBox toggleBox = new HBox();
         toggleBox.setStyle("-fx-background-color: " + Themes.BG_FIELD + "; -fx-background-radius: 8; -fx-padding: 4;");
         Button saleBtn = new Button("+ Sale");
@@ -124,18 +122,21 @@ public class AddTransactionDialog {
         });
         toggleBox.getChildren().addAll(saleBtn, purchaseBtn);
 
-        // Fields
         VBox form = new VBox(15);
         TextField amountField = UIFactory.inputField("0.00");
-        VBox amountBox = createLabeledField("Amount", amountField);
+        VBox amountBox = createLabeledField("AMOUNT", amountField);
 
         TextField descField = UIFactory.inputField("Enter description");
-        VBox descBox = createLabeledField("Description", descField);
+        VBox descBox = createLabeledField("DESCRIPTION", descField);
 
-        // Account selector
         boolean hasAccounts = !accounts.isEmpty();
         String accountPrompt = hasAccounts ? "Select Account" : "No accounts found";
         ComboBox<Account> accountCombo = UIFactory.inputComboBox(accountPrompt);
+
+        accountCombo.setMaxWidth(Double.MAX_VALUE);
+        accountCombo.setMaxHeight(Region.USE_PREF_SIZE);
+        accountCombo.setPrefWidth(0);
+
         accountCombo.setItems(accounts);
         accountCombo.setDisable(!hasAccounts);
         accountCombo.setCellFactory(lv -> new ListCell<>() {
@@ -156,16 +157,26 @@ public class AddTransactionDialog {
                 }
             }
         });
-        VBox accountBox = createLabeledField("Account", accountCombo);
 
-        // Projects supplied by the ViewModel — no service call needed here
+        VBox accountBox = createLabeledField("ACCOUNT", accountCombo);
+        accountBox.setPrefWidth(0);
+        accountBox.setMaxWidth(Double.MAX_VALUE);
+
         Map<String, Integer> projectNameToId = new HashMap<>();
         ComboBox<String> projectCombo = UIFactory.inputComboBox("Select Project");
+
+        projectCombo.setMaxWidth(Double.MAX_VALUE);
+        projectCombo.setMaxHeight(Region.USE_PREF_SIZE);
+        projectCombo.setPrefWidth(0);
+
         for (Project p : projects) {
             projectCombo.getItems().add(p.getName());
             projectNameToId.put(p.getName(), p.getId());
         }
-        VBox projectBox = createLabeledField("Project", projectCombo);
+
+        VBox projectBox = createLabeledField("PROJECT", projectCombo);
+        projectBox.setPrefWidth(0);
+        projectBox.setMaxWidth(Double.MAX_VALUE);
 
         HBox splitBox = new HBox(15);
         HBox.setHgrow(accountBox, Priority.ALWAYS);
@@ -184,11 +195,10 @@ public class AddTransactionDialog {
             }
         });
 
-        VBox dateBox = createLabeledField("Date", datePicker);
+        VBox dateBox = createLabeledField("DATE", datePicker);
 
         form.getChildren().addAll(amountBox, descBox, splitBox, dateBox);
 
-        // Save Button
         StateButton saveBtn = new StateButton("Save", StateButton.ButtonType.PRIMARY);
         saveBtn.setMaxWidth(Double.MAX_VALUE);
 
@@ -247,8 +257,6 @@ public class AddTransactionDialog {
                         Integer projectId = projectNameToId.get(projectCombo.getValue());
                         int accountId = accountCombo.getValue().getId();
 
-                        // companyId is intentionally not set here — TransactionsViewModel.addTransaction()
-                        // sets it from SessionManager, keeping session access out of the View layer
                         Transaction newTx = new Transaction(0, accountId, projectId, clientId, selectedType, amount, desc, date);
 
                         onSuccess.accept(newTx);

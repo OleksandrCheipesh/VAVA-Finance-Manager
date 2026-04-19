@@ -411,7 +411,7 @@ public class TransactionsView extends BaseView {
         proj.setButtonCell(new javafx.scene.control.ListCell<>() {
             @Override protected void updateItem(Project item, boolean empty) {
                 super.updateItem(item, empty);
-                setText(empty || item == null ? null : item.getName());
+                setText(empty || item == null ? "Project" : item.getName());
             }
         });
         proj.valueProperty().addListener((obs, old, val) ->
@@ -424,6 +424,14 @@ public class TransactionsView extends BaseView {
         type.setPrefHeight(40);
         type.setPrefWidth(130);
         type.getItems().addAll("ALL", "SALE", "PURCHASE");
+
+        type.setButtonCell(new javafx.scene.control.ListCell<>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? "Type" : item);
+            }
+        });
+
         type.valueProperty().addListener((obs, old, val) ->
                 viewModel.filterByType(val == null ? "ALL" : val));
 
