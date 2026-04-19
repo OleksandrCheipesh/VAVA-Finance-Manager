@@ -5,16 +5,20 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.SVGPath;
+import org.example.logging.AppLog;
 import org.example.model.database.entity.Employee;
 import org.example.view.templates.*;
 import org.example.viewModel.EmployeesViewModel;
-
-import java.math.BigDecimal;
 
 public class EmployeesView extends BaseView {
 
@@ -24,7 +28,7 @@ public class EmployeesView extends BaseView {
     private VBox contentArea;
     private AppTable<Employee> table;
     private StateButton addBtn;
-    private FilterBar filterBar;
+    private HBox filterBar;
 
     @Override
     protected void setContent() {
@@ -82,7 +86,7 @@ public class EmployeesView extends BaseView {
         contentArea = new VBox(25);
         VBox.setVgrow(contentArea, Priority.ALWAYS);
 
-        filterBar = new FilterBar();
+        filterBar = createCustomFilterBar();
 
         HBox summaryContainer = new HBox(20);
 
@@ -108,9 +112,21 @@ public class EmployeesView extends BaseView {
                 createSummaryCard("ONBOARDING", onboardingLabel, onboardingLabelSub, "#F59E0B")
         );
 
-        table = new AppTable<>("No employees found. Click '+ Add Employee' to start.");
+        table = new AppTable<>("");
         table.setItems(viewModel.getEmployees());
         VBox.setVgrow(table, Priority.ALWAYS);
+
+        VBox emptyStateBox = new VBox(5);
+        emptyStateBox.setAlignment(Pos.CENTER);
+
+        Label emptyTitle = new Label("No Employees Yet");
+        emptyTitle.setStyle("-fx-font-size: 36px; -fx-font-weight: 900; -fx-text-fill: #111827;");
+
+        Label emptySub = new Label("Register your first employee");
+        emptySub.setStyle("-fx-font-size: 18px; -fx-text-fill: #869F9B;");
+        emptyStateBox.getChildren().addAll(emptyTitle, emptySub);
+
+        table.setPlaceholder(emptyStateBox);
 
         TableColumn<Employee, String> nameCol = new TableColumn<>("NAME");
         nameCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getName() + " " + cellData.getValue().getSurname()));
@@ -181,6 +197,16 @@ public class EmployeesView extends BaseView {
         root.setCenter(mainContainer);
 
         scene = new Scene(root);
+
+        try {
+            scene.getStylesheets().add(getClass().getResource("/styles/table.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());
+        } catch (Exception e) {
+            var logger = AppLog.getLogger(EmployeesView.class);
+            logger.warn("Could not load CSS files for EmployeesView: {}", e.getMessage());
+            logger.debug("CSS load exception", e);
+        }
+
         stage.setTitle("Admin - Employees");
     }
 
@@ -217,22 +243,105 @@ public class EmployeesView extends BaseView {
     }
 
     private VBox createSummaryCard(String title, Label valueLabel, Label subText, String subTextColor) {
-        VBox card = new VBox(10);
-        card.setStyle("-fx-background-color: " + Themes.BG_CARD + "; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 20;");
+        VBox card = new VBox(4);
+        card.setStyle("-fx-background-color: " + Themes.BG_CARD + "; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 18 20;");
         HBox.setHgrow(card, Priority.ALWAYS);
 
         Label lblTitle = new Label(title);
-        lblTitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 11px; -fx-font-weight: bold;");
+        lblTitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 16px; -fx-font-weight: bold;");
 
-        VBox valueBox = new VBox(2);
+        VBox valueBox = new VBox(0);
         valueBox.setAlignment(Pos.CENTER_LEFT);
 
         valueLabel.setStyle("-fx-font-size: 32px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
-        subText.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + subTextColor + ";");
+        subText.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + subTextColor + ";");
 
         valueBox.getChildren().addAll(valueLabel, subText);
         card.getChildren().addAll(lblTitle, valueBox);
 
         return card;
+    }
+
+    private HBox createCustomFilterBar() {
+        HBox bar = new HBox(15);
+        bar.setAlignment(Pos.CENTER_LEFT);
+        bar.setStyle("-fx-background-color: " + Themes.BG_CARD + "; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12 20;");
+
+        String filterStyle = "-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0; -fx-border-radius: 6; -fx-background-radius: 6; -fx-font-size: 14px; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;";
+
+        HBox searchContainer = new HBox(8);
+
+        searchContainer.setAlignment(Pos.CENTER_LEFT);
+        searchContainer.setStyle(filterStyle + " -fx-padding: 0 12;");
+        searchContainer.setPrefHeight(40);
+
+        SVGPath searchIcon = new SVGPath();
+
+        searchIcon.setContent("M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z");
+        searchIcon.setFill(Color.web(Themes.TEXT_MUTED));
+        searchIcon.setScaleX(0.8);
+        searchIcon.setScaleY(0.8);
+
+        TextField search = new TextField();
+        search.setStyle("-fx-background-color: transparent; -fx-border-width: 0; -fx-padding: 0; -fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+
+        StackPane searchPane = new StackPane();
+        searchPane.setAlignment(Pos.CENTER_LEFT);
+
+        Label searchPrompt = new Label("Search by name, role...");
+
+        searchPrompt.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 14px;");
+        searchPrompt.setMouseTransparent(true);
+        search.textProperty().addListener((obs, old, val) -> searchPrompt.setVisible(val.isEmpty()));
+
+        searchPane.getChildren().addAll(search, searchPrompt);
+
+        HBox.setHgrow(searchPane, Priority.ALWAYS);
+        HBox.setHgrow(searchContainer, Priority.ALWAYS);
+
+        searchContainer.getChildren().addAll(searchIcon, searchPane);
+
+        ComboBox<String> dept = new ComboBox<>();
+
+        dept.setPromptText("Department");
+        dept.setStyle(filterStyle);
+        dept.setPrefHeight(40);
+        dept.setPrefWidth(150);
+        dept.setButtonCell(new javafx.scene.control.ListCell<>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? "Department" : item);
+            }
+        });
+
+        DatePicker datePicker = new DatePicker();
+
+        datePicker.setStyle(filterStyle);
+        datePicker.getStyleClass().add("filter-item");
+        datePicker.setPrefHeight(40);
+        datePicker.setPrefWidth(150);
+
+        StackPane datePane = new StackPane();
+
+        datePane.setAlignment(Pos.CENTER_LEFT);
+
+        Label datePrompt = new Label("Filter Date");
+
+        datePrompt.setStyle("-fx-text-fill: #9CA3AF; -fx-padding: 0 0 0 12; -fx-font-size: 14px;");
+        datePrompt.setMouseTransparent(true);
+        datePicker.getEditor().textProperty().addListener((obs, old, val) -> datePrompt.setVisible(val.isEmpty()));
+        datePane.getChildren().addAll(datePicker, datePrompt);
+
+        Button clear = new Button("Clear");
+        clear.setStyle("-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-weight: bold; -fx-cursor: hand;");
+        clear.setOnAction(e -> {
+            search.clear();
+            dept.setValue(null);
+            datePicker.setValue(null);
+            datePicker.getEditor().clear();
+        });
+
+        bar.getChildren().addAll(searchContainer, dept, datePane, clear);
+        return bar;
     }
 }
