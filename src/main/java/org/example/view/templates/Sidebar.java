@@ -55,7 +55,13 @@ public class Sidebar {
         logo.setMinSize(36, 36);
         logo.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-background-radius: 10;");
 
-        Label adminLabel = new Label("Admin");
+        String compName;
+        try {
+            compName = SessionManager.getInstance().getCurrentCompany().getName();
+        } catch (Exception e) {
+            compName = "Unknown";
+        }
+        Label adminLabel = new Label(compName);
         adminLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: 900; -fx-text-fill: white;");
 
         logoBox.getChildren().addAll(logo, adminLabel);
