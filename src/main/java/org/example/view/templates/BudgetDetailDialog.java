@@ -75,7 +75,6 @@ public class BudgetDetailDialog {
         shadowWrapper.setStyle("-fx-background-color: transparent;");
         shadowWrapper.setPadding(new Insets(30));
 
-        // Nav Bar
         HBox topNav = new HBox(15);
         topNav.setAlignment(Pos.CENTER_LEFT);
 
@@ -90,13 +89,23 @@ public class BudgetDetailDialog {
         Region topSpacer = new Region();
         HBox.setHgrow(topSpacer, Priority.ALWAYS);
 
-        Button closeBtn = new Button("✕");
-        closeBtn.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 0; -fx-font-size: 18px; -fx-text-fill: #9CA3AF; -fx-font-weight: bold;");
+        Button closeBtn = new Button("X");
+        closeBtn.setMinSize(32, 32);
+        closeBtn.setMaxSize(32, 32);
+        closeBtn.setStyle(
+                "-fx-background-color: transparent;" +
+                        "-fx-background-radius: 8;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-text-fill: " + Themes.TEXT_MUTED + ";" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-size: 16px;" +
+                        "-fx-padding: 0;"
+        );
+        HBox.setMargin(closeBtn, new Insets(0, -15, 0, 0));
         closeBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper, null));
 
         topNav.getChildren().addAll(iconBox, topLabel, topSpacer, closeBtn);
 
-        // Header Title
         VBox headerBox = new VBox(12);
         headerBox.setAlignment(Pos.CENTER);
         headerBox.setPadding(new Insets(5, 0, 10, 0));
@@ -109,7 +118,6 @@ public class BudgetDetailDialog {
 
         headerBox.getChildren().addAll(titleLabel, categoryPill);
 
-        // Info grid
         GridPane infoGrid = new GridPane();
         infoGrid.setMaxWidth(Double.MAX_VALUE);
         infoGrid.setVgap(25);
@@ -129,8 +137,10 @@ public class BudgetDetailDialog {
         infoGrid.add(balanceLabel, 0, 0); infoGrid.add(balanceValue, 1, 0);
         GridPane.setValignment(balanceLabel, javafx.geometry.VPos.CENTER);
         GridPane.setValignment(balanceValue, javafx.geometry.VPos.CENTER);
+        GridPane.setHalignment(balanceValue, javafx.geometry.HPos.RIGHT);
 
         VBox limitBox = new VBox(8);
+        limitBox.setAlignment(Pos.CENTER_LEFT);
         Label limitLbl = new Label("ACCOUNT LIMIT");
         limitLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: #64748B; -fx-letter-spacing: 1px;");
 
@@ -148,11 +158,12 @@ public class BudgetDetailDialog {
         limitBox.getChildren().addAll(limitLbl, limitValBox);
 
         VBox statusBox = new VBox(8);
+        statusBox.setAlignment(Pos.CENTER_RIGHT);
         Label statusLbl = new Label("STATUS");
         statusLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: #64748B; -fx-letter-spacing: 1px;");
 
         HBox statusValBox = new HBox(6);
-        statusValBox.setAlignment(Pos.CENTER_LEFT);
+        statusValBox.setAlignment(Pos.CENTER_RIGHT);
 
         ImageView statusIcon = IconFactory.getIcon("circle-check", 18);
         Label statusVal = new Label("Active");
@@ -162,14 +173,13 @@ public class BudgetDetailDialog {
         statusBox.getChildren().addAll(statusLbl, statusValBox);
 
         infoGrid.add(limitBox, 0, 1); infoGrid.add(statusBox, 1, 1);
+        GridPane.setHalignment(statusBox, javafx.geometry.HPos.RIGHT);
 
-        // Separator
         Region separator = new Region();
         separator.setMinHeight(1);
         separator.setStyle("-fx-background-color: #E2E8F0;");
         VBox.setMargin(separator, new Insets(5, 0, 5, 0));
 
-        // Utilization progress
         double utilization = 0.0;
         if (account.getLimitAmount() != null && account.getLimitAmount() > 0) {
             utilization = Math.min((balance / account.getLimitAmount()) * 100.0, 100.0);
@@ -218,7 +228,6 @@ public class BudgetDetailDialog {
         barContainer.getChildren().addAll(barBg, barFill);
         utilBox.getChildren().addAll(utilGrid, barContainer);
 
-        // Footer buttons
         HBox footer = new HBox(15);
         footer.setPadding(new Insets(15, 0, 0, 0));
 
@@ -239,16 +248,39 @@ public class BudgetDetailDialog {
         );
         editBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper, onEdit));
 
+        editBtn.setOnMousePressed(e -> {
+            editBtn.setScaleX(0.98);
+            editBtn.setScaleY(0.98);
+        });
+
+        editBtn.setOnMouseReleased(e -> {
+            editBtn.setScaleX(1.0);
+            editBtn.setScaleY(1.0);
+        });
+
         Button deleteBtn = new Button();
         deleteBtn.setGraphic(IconFactory.getIcon("trash", 24));
         deleteBtn.setMinSize(52, 52);
-        deleteBtn.setStyle(
-                "-fx-background-color: #FCE8E8; " +
-                        "-fx-background-radius: 12; " +
-                        "-fx-cursor: hand;"
-        );
+
+        String normalDeleteStyle = "-fx-background-color: #FEE2E2; -fx-background-radius: 12; -fx-cursor: hand;";
+        String hoverDeleteStyle = "-fx-background-color: #FECACA; -fx-background-radius: 12; -fx-cursor: hand;";
+
+        deleteBtn.setStyle(normalDeleteStyle);
+
+        deleteBtn.setOnMouseEntered(e -> deleteBtn.setStyle(hoverDeleteStyle));
+        deleteBtn.setOnMouseExited(e -> deleteBtn.setStyle(normalDeleteStyle));
 
         deleteBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper, onDelete));
+
+        deleteBtn.setOnMousePressed(e -> {
+            deleteBtn.setScaleX(0.95);
+            deleteBtn.setScaleY(0.95);
+        });
+
+        deleteBtn.setOnMouseReleased(e -> {
+            deleteBtn.setScaleX(1.0);
+            deleteBtn.setScaleY(1.0);
+        });
 
         footer.getChildren().addAll(editBtn, deleteBtn);
 
@@ -258,7 +290,6 @@ public class BudgetDetailDialog {
         scene.setFill(null);
         modal.setScene(scene);
 
-        // Animations
         shadowWrapper.setOpacity(0);
         shadowWrapper.setTranslateY(30);
 
