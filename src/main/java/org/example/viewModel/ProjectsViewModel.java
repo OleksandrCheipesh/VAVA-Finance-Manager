@@ -11,10 +11,14 @@ import org.example.model.database.service.EmployeeService;
 import org.example.model.database.service.ProjectService;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
+
+import static org.apache.commons.math3.util.MathUtils.reduce;
 
 public class ProjectsViewModel {
     private final ObservableList<Project> projects = FXCollections.observableArrayList();
@@ -55,6 +59,20 @@ public class ProjectsViewModel {
             activeProject.set(projects.stream()
                     .filter(Project::isActive)
                     .count() + " Units");
+            float total = (float) projects.stream()
+                    .map(Project::getBudgetLimit)
+                    .filter(Objects::nonNull)
+                    .mapToDouble(BigDecimal::doubleValue)
+                    .sum();
+            String formatted;
+            if (total >= 1_000_000) {
+                formatted = String.format("%.1fM", total / 1_000_000);
+            } else if (total >= 1_000) {
+                formatted = String.format("%.1fK", total / 1_000);
+            } else {
+                formatted = String.format("%.1f $", total);
+            }
+            budget.set(formatted);
 
         }
     }
@@ -71,6 +89,20 @@ public class ProjectsViewModel {
             activeProject.set((int) projects.stream()
                     .filter(Project::isActive)
                     .count() + " Units");
+            float total = (float) projects.stream()
+                    .map(Project::getBudgetLimit)
+                    .filter(Objects::nonNull)
+                    .mapToDouble(BigDecimal::doubleValue)
+                    .sum();
+            String formatted;
+            if (total >= 1_000_000) {
+                formatted = String.format("%.1fM", total / 1_000_000);
+            } else if (total >= 1_000) {
+                formatted = String.format("%.1fK", total / 1_000);
+            } else {
+                formatted = String.format("%.1f $", total);
+            }
+            budget.set(formatted);
 
         }
     }
@@ -86,6 +118,20 @@ public class ProjectsViewModel {
             activeProject.set(projects.stream()
                     .filter(Project::isActive)
                     .count() + " Units");
+            float total = (float) projects.stream()
+                    .map(Project::getBudgetLimit)
+                    .filter(Objects::nonNull)
+                    .mapToDouble(BigDecimal::doubleValue)
+                    .sum();
+            String formatted;
+            if (total >= 1_000_000) {
+                formatted = String.format("%.1fM", total / 1_000_000);
+            } else if (total >= 1_000) {
+                formatted = String.format("%.1fK", total / 1_000);
+            } else {
+                formatted = String.format("%.1f $", total);
+            }
+            budget.set(formatted);
 
         }
     }
