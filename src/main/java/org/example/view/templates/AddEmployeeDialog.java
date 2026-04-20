@@ -80,16 +80,15 @@ public class AddEmployeeDialog {
 
         titleBox.getChildren().addAll(title, subtitle);
 
-        Button closeBtn = new Button("X");
+        Button closeBtn = new Button("✕");
         closeBtn.setMinSize(32, 32);
         closeBtn.setMaxSize(32, 32);
         closeBtn.setStyle(
                 "-fx-background-color: transparent;" +
                         "-fx-background-radius: 8;" +
                         "-fx-cursor: hand;" +
-                        "-fx-text-fill: " + Themes.TEXT_MUTED + ";" +
-                        "-fx-font-weight: bold;" +
-                        "-fx-font-size: 16px;" +
+                        "-fx-text-fill: #9CA3AF;" +
+                        "-fx-font-size: 18px;" +
                         "-fx-padding: 0;"
         );
         closeBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
@@ -162,10 +161,30 @@ public class AddEmployeeDialog {
             statusCombo.setValue(employeeToEdit.getStatus());
         }
 
+        HBox actionBox = new HBox(20);
+        actionBox.setAlignment(Pos.CENTER_RIGHT);
+        actionBox.setPadding(new Insets(10, 0, 0, 0));
+
+        Button cancelBtn = new Button("Cancel");
+        cancelBtn.setMinWidth(Region.USE_PREF_SIZE);
+        cancelBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-padding: 10 20;");
+        cancelBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
+
+        cancelBtn.setOnMousePressed(e -> {
+            cancelBtn.setScaleX(0.98);
+            cancelBtn.setScaleY(0.98);
+        });
+
+        cancelBtn.setOnMouseReleased(e -> {
+            cancelBtn.setScaleX(1.0);
+            cancelBtn.setScaleY(1.0);
+        });
+
         StateButton saveBtn = new StateButton(isEditMode ? "Update" : "Save", StateButton.ButtonType.PRIMARY);
 
         saveBtn.setMaxWidth(Double.MAX_VALUE);
         saveBtn.setMinHeight(50);
+        HBox.setHgrow(saveBtn, Priority.ALWAYS);
 
         saveBtn.setOnMousePressed(e -> {
             saveBtn.setScaleX(0.98);
@@ -210,7 +229,9 @@ public class AddEmployeeDialog {
             }).start();
         });
 
-        root.getChildren().addAll(header, form, saveBtn);
+        actionBox.getChildren().addAll(cancelBtn, saveBtn);
+
+        root.getChildren().addAll(header, form, actionBox);
 
         Scene scene = new Scene(shadowWrapper);
         scene.setFill(null);
