@@ -88,7 +88,7 @@ public class SettingsView extends BaseView {
         mainContainer.getChildren().addAll(topBar, scrollPane);
         root.setCenter(mainContainer);
 
-        scene = new Scene(root, 1200, 800);
+        scene = new Scene(root);
 
         try {
             var tableCss = getClass().getResource("/styles/table.css");
