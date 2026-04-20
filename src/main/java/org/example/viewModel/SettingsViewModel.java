@@ -9,7 +9,6 @@ import org.example.model.database.entity.User;
 import org.example.model.PasswordUtil;
 import org.example.model.database.service.CompanyService;
 import org.example.model.database.service.UserService;
-import org.example.model.database.entity.Position;
 import org.example.model.models.SettingsModel;
 import org.example.model.validation.CompanyValExept;
 import org.example.model.validation.CompanyValidator;
