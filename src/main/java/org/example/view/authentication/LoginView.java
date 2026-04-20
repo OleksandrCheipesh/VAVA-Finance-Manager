@@ -48,6 +48,17 @@ public class LoginView extends BaseView {
 
         // Submit button and navigation link
         loginButton  = UIFactory.primaryButton("Log in", Themes.FORM_MAX_WIDTH);
+
+        loginButton.setOnMousePressed(e -> {
+            loginButton.setScaleX(0.98);
+            loginButton.setScaleY(0.98);
+        });
+
+        loginButton.setOnMouseReleased(e -> {
+            loginButton.setScaleX(1.0);
+            loginButton.setScaleY(1.0);
+        });
+
         registerLink = UIFactory.navLink("Switch to Registration");
 
         Hyperlink forgotPasswordLink = UIFactory.navLink("Forgot Password?");

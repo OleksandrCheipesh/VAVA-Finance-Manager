@@ -132,9 +132,24 @@ public class Sidebar {
 
         Button logoutBtn = new Button("Logout");
         logoutBtn.setMaxWidth(Double.MAX_VALUE);
-        logoutBtn.setStyle("-fx-background-color: " + Themes.SIDEBAR_LOGOUT_BG + "; -fx-text-fill: #D1D5DB; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;");
-        logoutBtn.setOnMouseEntered(e -> logoutBtn.setStyle("-fx-background-color: " + Themes.SIDEBAR_LOGOUT_HOVER + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;"));
-        logoutBtn.setOnMouseExited(e -> logoutBtn.setStyle("-fx-background-color: " + Themes.SIDEBAR_LOGOUT_BG + "; -fx-text-fill: #D1D5DB; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;"));
+
+        String normalStyle = "-fx-background-color: " + Themes.SIDEBAR_LOGOUT_BG + "; -fx-text-fill: #D1D5DB; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;";
+        String hoverStyle = "-fx-background-color: " + Themes.SIDEBAR_LOGOUT_HOVER + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;";
+
+        logoutBtn.setStyle(normalStyle);
+        logoutBtn.setOnMouseEntered(e -> logoutBtn.setStyle(hoverStyle));
+        logoutBtn.setOnMouseExited(e -> logoutBtn.setStyle(normalStyle));
+
+        logoutBtn.setOnMousePressed(e -> {
+            logoutBtn.setScaleX(0.95);
+            logoutBtn.setScaleY(0.95);
+        });
+
+        logoutBtn.setOnMouseReleased(e -> {
+            logoutBtn.setScaleX(1.0);
+            logoutBtn.setScaleY(1.0);
+        });
+
         logoutBtn.setOnMouseClicked(e -> ToastManager.showSuccess(stage, "Logged out successfully"));
 
         profileCard.getChildren().addAll(textContainer, logoutBtn);
