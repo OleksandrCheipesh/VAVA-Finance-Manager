@@ -42,9 +42,17 @@ public class EmployeesView extends BaseView {
         topBar.setStyle("-fx-background-color: " + Themes.BG_CARD + "; -fx-padding: 0 40; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-width: 0 0 1 0;");
         topBar.setMinHeight(85);
 
+        VBox titleBox = new VBox(2);
+        titleBox.setAlignment(Pos.BOTTOM_LEFT);
+        HBox.setMargin(titleBox, new Insets(0, 0, 15, 0));
+
         Label title = new Label("Employees");
         title.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
-        HBox.setMargin(title, new Insets(0, 0, 25, 0));
+
+        Label subtitle = new Label("Manage your team members and their roles.");
+        subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 14px;");
+
+        titleBox.getChildren().addAll(title, subtitle);
 
         Region sep = new Region();
         sep.setPrefSize(2, 30);
@@ -81,7 +89,7 @@ public class EmployeesView extends BaseView {
         addBtn = new StateButton("+ Add Employee", StateButton.ButtonType.PRIMARY);
         HBox.setMargin(addBtn, new Insets(0, 0, 20, 0));
 
-        topBar.getChildren().addAll(title, sep, tabs, spacer, addBtn);
+        topBar.getChildren().addAll(titleBox, sep, tabs, spacer, addBtn);
 
         contentArea = new VBox(25);
         VBox.setVgrow(contentArea, Priority.ALWAYS);

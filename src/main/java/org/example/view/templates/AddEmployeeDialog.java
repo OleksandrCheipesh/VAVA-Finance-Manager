@@ -71,8 +71,14 @@ public class AddEmployeeDialog {
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER_LEFT);
 
+        VBox titleBox = new VBox(4);
         Label title = new Label(isEditMode ? "Edit Employee" : "New Employee");
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+
+        Label subtitle = new Label(isEditMode ? "Update member information." : "Add a new member to your team.");
+        subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
+
+        titleBox.getChildren().addAll(title, subtitle);
 
         Button closeBtn = new Button("X");
         closeBtn.setMinSize(32, 32);
@@ -90,7 +96,7 @@ public class AddEmployeeDialog {
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        header.getChildren().addAll(title, spacer, closeBtn);
+        header.getChildren().addAll(titleBox, spacer, closeBtn);
 
         // Form Fields
         VBox form = new VBox(15);
@@ -241,7 +247,6 @@ public class AddEmployeeDialog {
 
         ParallelTransition exit = new ParallelTransition(fadeOut, slideDown);
         exit.setOnFinished(e -> modal.close());
-
         exit.play();
     }
 }

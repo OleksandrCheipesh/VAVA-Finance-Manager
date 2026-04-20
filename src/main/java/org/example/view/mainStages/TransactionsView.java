@@ -41,9 +41,17 @@ public class TransactionsView extends BaseView {
         topBar.setStyle("-fx-background-color: white; -fx-padding: 0 40; -fx-border-color: #E5E7EB; -fx-border-width: 0 0 1 0;");
         topBar.setMinHeight(85);
 
-        Label title = new Label("Transaction");
+        VBox titleBox = new VBox(2);
+        titleBox.setAlignment(Pos.BOTTOM_LEFT);
+        HBox.setMargin(titleBox, new Insets(0, 0, 15, 0));
+
+        Label title = new Label("Transactions");
         title.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: #111827;");
-        HBox.setMargin(title, new Insets(0, 0, 25, 0));
+
+        Label subtitle = new Label("Monitor your income, expenses, and financial records.");
+        subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 14px;");
+
+        titleBox.getChildren().addAll(title, subtitle);
 
         // Visual divider
         Region sep = new Region();
@@ -98,7 +106,7 @@ public class TransactionsView extends BaseView {
         addBtn = new StateButton("+ Add Transaction", StateButton.ButtonType.PRIMARY);
         HBox.setMargin(addBtn, new Insets(0, 0, 20, 0));
 
-        topBar.getChildren().addAll(title, sep, tabs, spacer, addBtn);
+        topBar.getChildren().addAll(titleBox, sep, tabs, spacer, addBtn);
 
 
         // Content area

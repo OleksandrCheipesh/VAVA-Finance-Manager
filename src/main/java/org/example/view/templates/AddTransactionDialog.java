@@ -73,8 +73,14 @@ public class AddTransactionDialog {
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER_LEFT);
 
+        VBox titleBox = new VBox(4);
         Label title = new Label("New Transaction");
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+
+        Label subtitle = new Label("Record a new sale or purchase.");
+        subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
+
+        titleBox.getChildren().addAll(title, subtitle);
 
         Button closeBtn = new Button("X");
 
@@ -94,7 +100,7 @@ public class AddTransactionDialog {
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        header.getChildren().addAll(title, spacer, closeBtn);
+        header.getChildren().addAll(titleBox, spacer, closeBtn);
 
         HBox toggleBox = new HBox();
         toggleBox.setStyle("-fx-background-color: " + Themes.BG_FIELD + "; -fx-background-radius: 8; -fx-padding: 4;");
@@ -223,6 +229,7 @@ public class AddTransactionDialog {
         form.getChildren().addAll(amountBox, descBox, splitBox, dateBox);
 
         StateButton saveBtn = new StateButton("Save", StateButton.ButtonType.PRIMARY);
+        saveBtn.setMinHeight(50);
         saveBtn.setMaxWidth(Double.MAX_VALUE);
 
         final String origAmountStyle = amountField.getStyle();
