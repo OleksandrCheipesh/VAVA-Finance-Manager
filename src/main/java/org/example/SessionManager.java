@@ -89,6 +89,10 @@ public final class SessionManager {
         return companyId;
     }
 
+    public synchronized void setCurrentCompany(Company currentCompany) {
+        this.currentCompany = currentCompany;
+    }
+
     public synchronized SessionStatus getStatus() {
         return new SessionStatus(
                 currentUser != null ? currentUser.getId() : -1,
