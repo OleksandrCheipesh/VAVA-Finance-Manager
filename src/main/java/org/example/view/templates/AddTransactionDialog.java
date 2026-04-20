@@ -82,7 +82,7 @@ public class AddTransactionDialog {
 
         titleBox.getChildren().addAll(title, subtitle);
 
-        Button closeBtn = new Button("✕");
+        Button closeBtn = new Button("X");
 
         closeBtn.setMinSize(32, 32);
         closeBtn.setMaxSize(32, 32);
@@ -90,8 +90,9 @@ public class AddTransactionDialog {
                 "-fx-background-color: transparent;" +
                         "-fx-background-radius: 8;" +
                         "-fx-cursor: hand;" +
-                        "-fx-text-fill: #9CA3AF;" +
-                        "-fx-font-size: 18px;" +
+                        "-fx-text-fill: " + Themes.TEXT_MUTED + ";" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-size: 16px;" +
                         "-fx-padding: 0;"
         );
 

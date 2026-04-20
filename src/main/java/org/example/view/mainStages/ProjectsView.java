@@ -8,7 +8,10 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.SVGPath;
 import org.example.model.database.entity.Project;
 import org.example.view.templates.*;
 import org.example.viewModel.ProjectsViewModel;
@@ -36,22 +39,25 @@ public class ProjectsView extends BaseView {
 
         // --- 1. Top Bar ---
         HBox topBar = new HBox(20);
-        topBar.setAlignment(Pos.CENTER_LEFT);
+        topBar.setAlignment(Pos.BOTTOM_LEFT);
         topBar.setStyle("-fx-background-color: " + Themes.BG_CARD + "; -fx-padding: 0 40; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-width: 0 0 1 0;");
         topBar.setMinHeight(85);
 
-        VBox titleBox = new VBox(5);
-        titleBox.setAlignment(Pos.CENTER_LEFT);
+        VBox titleBox = new VBox(2);
+        titleBox.setAlignment(Pos.BOTTOM_LEFT);
         Label title = new Label("Projects");
         title.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
         Label subTitle = new Label("Monitoring capital allocation and architectural milestones.");
         subTitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 14px;");
         titleBox.getChildren().addAll(title, subTitle);
 
+        HBox.setMargin(titleBox, new Insets(0, 0, 15, 0));
+
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         addBtn = new StateButton("+ Add New Project", StateButton.ButtonType.PRIMARY);
+        HBox.setMargin(addBtn, new Insets(0, 0, 20, 0));
 
         topBar.getChildren().addAll(titleBox, spacer, addBtn);
 
@@ -69,11 +75,38 @@ public class ProjectsView extends BaseView {
         activeTitle.setStyle("-fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
         // Leader requested Regex Search Bar
+        HBox searchContainer = new HBox(8);
+        searchContainer.setAlignment(Pos.CENTER_LEFT);
+        searchContainer.setStyle("-fx-background-color: white; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 0 15;");
+        searchContainer.setMinHeight(40);
+        searchContainer.setPrefHeight(40);
+        searchContainer.setMaxHeight(40);
+        searchContainer.setPrefWidth(250);
+
+        SVGPath searchIcon = new SVGPath();
+        searchIcon.setContent("M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z");
+        searchIcon.setFill(Color.web(Themes.TEXT_MUTED));
+        searchIcon.setScaleX(0.8);
+        searchIcon.setScaleY(0.8);
+
         TextField searchBar = new TextField();
-        searchBar.setPromptText("\uD83D\uDD0D Search by name...");
-        searchBar.setStyle("-fx-background-color: white; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8 15; -fx-font-size: 14px;");
-        searchBar.setPrefWidth(250);
-        searchBar.textProperty().addListener((obs, old, val) -> viewModel.filterBySearch(val));
+        searchBar.setStyle("-fx-background-color: transparent; -fx-border-width: 0; -fx-padding: 0; -fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+
+        StackPane searchPane = new StackPane();
+        searchPane.setAlignment(Pos.CENTER_LEFT);
+        Label searchPrompt = new Label("Search by name...");
+        searchPrompt.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 14px;");
+        searchPrompt.setMouseTransparent(true);
+
+        searchBar.textProperty().addListener((obs, old, val) -> {
+            searchPrompt.setVisible(val.isEmpty());
+            viewModel.filterBySearch(val);
+        });
+
+        searchPane.getChildren().addAll(searchBar, searchPrompt);
+        HBox.setHgrow(searchPane, Priority.ALWAYS);
+
+        searchContainer.getChildren().addAll(searchIcon, searchPane);
 
         Region headerSpacer = new Region();
         HBox.setHgrow(headerSpacer, Priority.ALWAYS);
@@ -83,12 +116,11 @@ public class ProjectsView extends BaseView {
 
 //        Мне нужно здесь подключить данные из view model
         summaryBox.getChildren().addAll(
-
                 createHeaderWidget("TOTAL BUDGET", viewModel.budgetProperty(), "💼"),
                 createHeaderWidget("ACTIVE SPRINT", viewModel.activeProjectProperty(), "⏱")
         );
 
-        contentHeader.getChildren().addAll(activeTitle, searchBar, headerSpacer, summaryBox);
+        contentHeader.getChildren().addAll(activeTitle, searchContainer, headerSpacer, summaryBox);
 
         // --- 3. Card Grid ---
         cardGrid = new FlowPane(25, 25);
@@ -120,6 +152,16 @@ public class ProjectsView extends BaseView {
     @Override
     protected void setLogic() {
         addBtn.setOnAction(e -> AddProjectDialog.show(stage, newProj -> viewModel.addProject(newProj)));
+
+        addBtn.setOnMousePressed(e -> {
+            addBtn.setScaleX(0.95);
+            addBtn.setScaleY(0.95);
+        });
+
+        addBtn.setOnMouseReleased(e -> {
+            addBtn.setScaleX(1.0);
+            addBtn.setScaleY(1.0);
+        });
 
         viewModel.messageProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && newVal.startsWith("Success:")) {
@@ -154,8 +196,21 @@ public class ProjectsView extends BaseView {
         // Top Row (Icon + Pill)
         HBox topRow = new HBox();
         topRow.setAlignment(Pos.CENTER_LEFT);
-        Label icon = new Label("▶"); // Placeholder for an icon
-        icon.setStyle("-fx-background-color: #E6F7F6; -fx-text-fill: " + Themes.PRIMARY + "; -fx-padding: 8 12; -fx-background-radius: 8; -fx-font-size: 14px;");
+
+        StackPane iconBox = new StackPane();
+        iconBox.setStyle("-fx-background-color: #E6F7F6; -fx-padding: 8; -fx-background-radius: 8;");
+
+        ImageView baseFolder = IconFactory.getIcon("folder", 16);
+        baseFolder.setFitWidth(16);
+        baseFolder.setFitHeight(16);
+
+        Region coloredFolder = new Region();
+        coloredFolder.setStyle("-fx-background-color: " + Themes.PRIMARY + ";");
+        coloredFolder.setMinSize(16, 16);
+        coloredFolder.setMaxSize(16, 16);
+        coloredFolder.setClip(baseFolder);
+
+        iconBox.getChildren().add(coloredFolder);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -163,7 +218,7 @@ public class ProjectsView extends BaseView {
         Label statusPill = new Label("MONITORING");
         statusPill.setStyle("-fx-background-color: #F1F5F9; -fx-text-fill: " + Themes.PRIMARY + "; -fx-padding: 4 10; -fx-background-radius: 12; -fx-font-size: 10px; -fx-font-weight: 900;");
 
-        topRow.getChildren().addAll(icon, spacer, statusPill);
+        topRow.getChildren().addAll(iconBox, spacer, statusPill);
 
         // Titles
         VBox titleBox = new VBox(8);
@@ -176,7 +231,8 @@ public class ProjectsView extends BaseView {
         titleBox.getChildren().addAll(name, desc);
 
         // Details (Timeline & Budget)
-        HBox detailsBox = new HBox(20);
+        HBox detailsBox = new HBox();
+        detailsBox.setAlignment(Pos.CENTER_LEFT);
 
         VBox timelineBox = new VBox(5);
         Label timeLabel = new Label("TIMELINE");
@@ -185,14 +241,18 @@ public class ProjectsView extends BaseView {
         timeValue.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
         timelineBox.getChildren().addAll(timeLabel, timeValue);
 
+        Region detailSpacer = new Region();
+        HBox.setHgrow(detailSpacer, Priority.ALWAYS);
+
         VBox capBox = new VBox(5);
+        capBox.setAlignment(Pos.CENTER_LEFT);
         Label capLabel = new Label("BUDGET CAP");
         capLabel.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
         Label capValue = new Label(currencyFormat.format(p.getBudgetLimit()));
         capValue.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: " + Themes.PRIMARY + ";");
         capBox.getChildren().addAll(capLabel, capValue);
 
-        detailsBox.getChildren().addAll(timelineBox, capBox);
+        detailsBox.getChildren().addAll(timelineBox, detailSpacer, capBox);
 
         // Progress Bar
         double percentage = p.getSpendPercentage();
