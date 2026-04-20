@@ -42,13 +42,17 @@ public final class SessionManager {
             throw new IllegalArgumentException("Cannot login with null user");
         }
         this.currentUser = user;
-        try {
-            currentCompany =  new CompanyService().getCompanyById(user.getCompanyId()).get();
-        }catch (NoSuchElementException e) {
+
+        Integer companyId = user.getCompanyId();
+        if (companyId == null) {
             currentCompany = null;
-        } catch (SQLException e) {
-            currentCompany = null;
-            throw new IllegalStateException(e.getMessage());
+        } else {
+            try {
+                currentCompany = new CompanyService().getCompanyById(companyId).orElse(null);
+            } catch (SQLException e) {
+                currentCompany = null;
+                throw new IllegalStateException(e.getMessage(), e);
+            }
         }
         logger.info("User login: id={} email={}", user.getId(), user.getEmail());
         AppLog.pushSession(getStatus());

@@ -9,11 +9,11 @@ public class ProjectSummaryDTO {
     private final BigDecimal totalIncome;
     private final BigDecimal totalExpense;
     private final BigDecimal netProfit;
-    private final double monthOverMonthPct;
+    private final Double monthOverMonthPct;
 
     public ProjectSummaryDTO(int projectId, String projectName,
                              BigDecimal totalIncome, BigDecimal totalExpense,
-                             BigDecimal netProfit, double monthOverMonthPct) {
+                             BigDecimal netProfit, Double monthOverMonthPct) {
         this.projectId          = projectId;
         this.projectName        = projectName;
         this.totalIncome        = totalIncome;
@@ -27,5 +27,5 @@ public class ProjectSummaryDTO {
     public BigDecimal getTotalIncome()       { return totalIncome; }
     public BigDecimal getTotalExpense()      { return totalExpense; }
     public BigDecimal getNetProfit()         { return netProfit; }
-    public double     getMonthOverMonthPct() { return monthOverMonthPct; }
+    public Double     getMonthOverMonthPct() { return monthOverMonthPct; }
 }
