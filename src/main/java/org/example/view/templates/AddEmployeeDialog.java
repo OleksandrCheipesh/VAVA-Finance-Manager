@@ -98,7 +98,6 @@ public class AddEmployeeDialog {
         HBox.setHgrow(spacer, Priority.ALWAYS);
         header.getChildren().addAll(titleBox, spacer, closeBtn);
 
-        // Form Fields
         VBox form = new VBox(15);
 
         TextField nameField = UIFactory.inputField("Name");
@@ -163,15 +162,29 @@ public class AddEmployeeDialog {
             statusCombo.setValue(employeeToEdit.getStatus());
         }
 
-        // Save Button
         StateButton saveBtn = new StateButton(isEditMode ? "Update" : "Save", StateButton.ButtonType.PRIMARY);
 
         saveBtn.setMaxWidth(Double.MAX_VALUE);
         saveBtn.setMinHeight(50);
 
+        saveBtn.setOnMousePressed(e -> {
+            saveBtn.setScaleX(0.98);
+            saveBtn.setScaleY(0.98);
+        });
+
+        saveBtn.setOnMouseReleased(e -> {
+            saveBtn.setScaleX(1.0);
+            saveBtn.setScaleY(1.0);
+        });
+
+        final String origNameStyle = nameField.getStyle();
+        String errorBorder = "-fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8;";
+
         saveBtn.setOnAction(e -> {
+            nameField.setStyle(origNameStyle);
+
             if (nameField.getText().trim().isEmpty()) {
-                nameField.setStyle(nameField.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";");
+                nameField.setStyle(nameField.getStyle() + errorBorder);
                 return;
             }
 
@@ -211,7 +224,6 @@ public class AddEmployeeDialog {
 
         modal.setScene(scene);
 
-        // Entrance Animation
         shadowWrapper.setOpacity(0);
         shadowWrapper.setTranslateY(30);
 
@@ -247,6 +259,7 @@ public class AddEmployeeDialog {
 
         ParallelTransition exit = new ParallelTransition(fadeOut, slideDown);
         exit.setOnFinished(e -> modal.close());
+
         exit.play();
     }
 }

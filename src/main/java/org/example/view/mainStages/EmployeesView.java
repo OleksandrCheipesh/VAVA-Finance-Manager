@@ -89,6 +89,16 @@ public class EmployeesView extends BaseView {
         addBtn = new StateButton("+ Add Employee", StateButton.ButtonType.PRIMARY);
         HBox.setMargin(addBtn, new Insets(0, 0, 20, 0));
 
+        addBtn.setOnMousePressed(e -> {
+            addBtn.setScaleX(0.95);
+            addBtn.setScaleY(0.95);
+        });
+
+        addBtn.setOnMouseReleased(e -> {
+            addBtn.setScaleX(1.0);
+            addBtn.setScaleY(1.0);
+        });
+
         topBar.getChildren().addAll(titleBox, sep, tabs, spacer, addBtn);
 
         contentArea = new VBox(25);

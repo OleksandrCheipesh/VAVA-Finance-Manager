@@ -232,12 +232,22 @@ public class AddTransactionDialog {
         saveBtn.setMinHeight(50);
         saveBtn.setMaxWidth(Double.MAX_VALUE);
 
+        saveBtn.setOnMousePressed(e -> {
+            saveBtn.setScaleX(0.98);
+            saveBtn.setScaleY(0.98);
+        });
+
+        saveBtn.setOnMouseReleased(e -> {
+            saveBtn.setScaleX(1.0);
+            saveBtn.setScaleY(1.0);
+        });
+
         final String origAmountStyle = amountField.getStyle();
         final String origDescStyle = descField.getStyle();
         final String origDateStyle = datePicker.getStyle();
         final String origAccountStyle = accountCombo.getStyle();
 
-        String errorBorder = "-fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-width: 1.5; -fx-border-radius: 6;";
+        String errorBorder = "-fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8;";
 
         saveBtn.setOnAction(e -> {
             amountField.setStyle(origAmountStyle);

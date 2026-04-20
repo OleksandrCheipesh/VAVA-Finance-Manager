@@ -37,7 +37,6 @@ public class AddUserDialog {
         modal.initModality(Modality.APPLICATION_MODAL);
         modal.initStyle(StageStyle.TRANSPARENT);
 
-        // --- Zhodný Blur a Tmavosť s ostatnými dialógmi ---
         Scene ownerScene = owner.getScene();
         Paint originalFill = ownerScene.getFill();
         ownerScene.setFill(Color.web(Themes.TEXT_DARK));
@@ -72,7 +71,6 @@ public class AddUserDialog {
             if (e.getTarget() == shadowWrapper) closeWithAnimation(modal, shadowWrapper);
         });
 
-        // Header
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER_LEFT);
 
@@ -101,7 +99,6 @@ public class AddUserDialog {
         HBox.setHgrow(spacer, Priority.ALWAYS);
         header.getChildren().addAll(titleBox, spacer, closeBtn);
 
-        // Form
         VBox form = new VBox(15);
         VBox.setMargin(form, new Insets(10, 0, 0, 0));
 
@@ -125,11 +122,9 @@ public class AddUserDialog {
         emailField.setMinHeight(FIELD_HEIGHT); emailField.setPrefHeight(FIELD_HEIGHT); emailField.setMaxHeight(FIELD_HEIGHT);
         VBox emailBox = createLabeledField("EMAIL ADDRESS", emailField);
 
-        // Password field so zhodným dizajnom
         PasswordField passField = new PasswordField();
         VBox passwordBox = createSecurePasswordFieldWrapper("PASSWORD", "••••••••••••", passField);
 
-        // ComboBox so zhodným dizajnom
         boolean hasDirector = users.stream().anyMatch(u -> u.getPosition() == Position.Director);
         ComboBox<Position> roleCombo = new ComboBox<>();
         roleCombo.getItems().addAll(
@@ -141,9 +136,8 @@ public class AddUserDialog {
         roleCombo.setMinHeight(FIELD_HEIGHT);
         roleCombo.setPrefHeight(FIELD_HEIGHT);
         roleCombo.setMaxHeight(FIELD_HEIGHT);
-        roleCombo.setMaxWidth(Double.MAX_VALUE); // Aby sa natiahol úplne doprava
+        roleCombo.setMaxWidth(Double.MAX_VALUE);
 
-        // Dynamické skopírovanie štýlu z UIFactory, aby bol ComboBox na 100% zhodný s TextFieldom
         ComboBox<String> dummyCombo = UIFactory.inputComboBox("");
         roleCombo.getStyleClass().setAll(dummyCombo.getStyleClass());
         roleCombo.setStyle(dummyCombo.getStyle());
@@ -152,48 +146,91 @@ public class AddUserDialog {
 
         form.getChildren().addAll(nameGrid, emailBox, passwordBox, roleBox);
 
-        // Error label
-        Label errorLabel = new Label();
-        errorLabel.setStyle("-fx-text-fill: " + Themes.TEXT_ERROR + "; -fx-font-size: 13px; -fx-font-weight: bold;");
-        errorLabel.setVisible(false);
-        errorLabel.setManaged(false);
-        errorLabel.visibleProperty().addListener((obs, oldVal, newVal) -> errorLabel.setManaged(newVal));
-
-        // Footer
         HBox actionBox = new HBox(20);
         actionBox.setAlignment(Pos.CENTER_RIGHT);
         actionBox.setStyle("-fx-padding: 10 0 0 0;");
 
         Button cancelBtn = new Button("Cancel");
-        cancelBtn.setMinWidth(Region.USE_PREF_SIZE); // Zabraňuje "Ca..." scvrknutiu
+        cancelBtn.setMinWidth(Region.USE_PREF_SIZE);
         cancelBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-padding: 10 20;");
         cancelBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
+
+        cancelBtn.setOnMousePressed(e -> {
+            cancelBtn.setScaleX(0.98);
+            cancelBtn.setScaleY(0.98);
+        });
+
+        cancelBtn.setOnMouseReleased(e -> {
+            cancelBtn.setScaleX(1.0);
+            cancelBtn.setScaleY(1.0);
+        });
 
         StateButton saveBtn = new StateButton("Save User", StateButton.ButtonType.PRIMARY);
         saveBtn.setMinHeight(50);
         saveBtn.setPrefWidth(340);
         HBox.setHgrow(saveBtn, Priority.ALWAYS);
 
+        saveBtn.setOnMousePressed(e -> {
+            saveBtn.setScaleX(0.98);
+            saveBtn.setScaleY(0.98);
+        });
+
+        saveBtn.setOnMouseReleased(e -> {
+            saveBtn.setScaleX(1.0);
+            saveBtn.setScaleY(1.0);
+        });
+
+        final String origNameStyle = nameField.getStyle();
+        final String origSurnameStyle = surnameField.getStyle();
+        final String origEmailStyle = emailField.getStyle();
+        final String origPassStyle = passField.getStyle();
+        final String origRoleStyle = roleCombo.getStyle();
+
+        String errorBorder = "-fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8;";
+
         saveBtn.setOnAction(e -> {
+            nameField.setStyle(origNameStyle);
+            surnameField.setStyle(origSurnameStyle);
+            emailField.setStyle(origEmailStyle);
+            passField.setStyle(origPassStyle);
+            roleCombo.setStyle(origRoleStyle);
+
             String name = nameField.getText().trim();
             String surname = surnameField.getText().trim();
             String email = emailField.getText().trim();
             String password = passField.getText().trim();
             Position selectedPosition = roleCombo.getValue();
 
-            errorLabel.setVisible(false);
+            boolean hasError = false;
 
+            if (name.isEmpty()) {
+                nameField.setStyle(nameField.getStyle() + errorBorder);
+                hasError = true;
+            }
+            if (surname.isEmpty()) {
+                surnameField.setStyle(surnameField.getStyle() + errorBorder);
+                hasError = true;
+            }
+            if (email.isEmpty()) {
+                emailField.setStyle(emailField.getStyle() + errorBorder);
+                hasError = true;
+            }
+            if (password.isEmpty()) {
+                passField.setStyle(passField.getStyle() + errorBorder);
+                hasError = true;
+            }
             if (selectedPosition == null) {
-                errorLabel.setText("Please select a role.");
-                errorLabel.setVisible(true);
+                roleCombo.setStyle(roleCombo.getStyle() + errorBorder);
+                hasError = true;
+            }
+
+            if (hasError) {
                 return;
             }
 
             try {
                 RegisterValidator.validate(name, surname, email, password);
             } catch (IllegalArgumentException ex) {
-                errorLabel.setText(ex.getMessage());
-                errorLabel.setVisible(true);
                 return;
             }
 
@@ -210,7 +247,7 @@ public class AddUserDialog {
         });
 
         actionBox.getChildren().addAll(cancelBtn, saveBtn);
-        root.getChildren().addAll(header, form, errorLabel, actionBox);
+        root.getChildren().addAll(header, form, actionBox);
 
         Scene scene = new Scene(shadowWrapper);
         scene.setFill(null);
@@ -223,7 +260,6 @@ public class AddUserDialog {
 
         modal.setScene(scene);
 
-        // Animation
         shadowWrapper.setOpacity(0);
         shadowWrapper.setTranslateY(30);
 
@@ -257,15 +293,15 @@ public class AddUserDialog {
 
         StackPane pane = new StackPane();
         pane.setAlignment(Pos.CENTER_RIGHT);
-        pane.setMaxWidth(Double.MAX_VALUE); // Aby sa wrapper natiahol na maximum
+        pane.setMaxWidth(Double.MAX_VALUE);
 
-        TextField dummy = UIFactory.inputField(""); // Získame CSS štýly priamo z tvojej továrne
+        TextField dummy = UIFactory.inputField("");
 
         pf.setPromptText(prompt);
         pf.setMinHeight(FIELD_HEIGHT); pf.setPrefHeight(FIELD_HEIGHT); pf.setMaxHeight(FIELD_HEIGHT);
         pf.setMaxWidth(Double.MAX_VALUE);
-        pf.getStyleClass().setAll(dummy.getStyleClass()); // Aplikujeme CSS od UIFactory
-        pf.setStyle(dummy.getStyle() + "; -fx-padding: 0 45 0 15;"); // Zachováme miesto pre ikonku oka
+        pf.getStyleClass().setAll(dummy.getStyleClass());
+        pf.setStyle(dummy.getStyle() + "; -fx-padding: 0 45 0 15;");
 
         TextField tf = new TextField();
         tf.setPromptText(prompt);

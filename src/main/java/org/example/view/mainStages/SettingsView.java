@@ -58,7 +58,7 @@ public class SettingsView extends BaseView {
         title.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: #111827;");
 
         Label subtitle = new Label("Configure your organization's parameters and customize your portal experience.");
-        subtitle.setStyle("-fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+        subtitle.setStyle("-fx-font-size: 14px; -fx-font-fill: " + Themes.TEXT_MUTED + ";");
 
         titleBox.getChildren().addAll(title, subtitle);
         HBox.setMargin(titleBox, new Insets(0, 0, 15, 0));
@@ -161,6 +161,22 @@ public class SettingsView extends BaseView {
                 alert.initOwner(stage);
                 alert.showAndWait();
             }
+        });
+
+        addClickEffect(saveCompanyBtn);
+        addClickEffect(applyPrefsBtn);
+        addClickEffect(addUserBtn);
+        addClickEffect(savePassBtn);
+    }
+
+    private void addClickEffect(Button btn) {
+        btn.setOnMousePressed(e -> {
+            btn.setScaleX(0.95);
+            btn.setScaleY(0.95);
+        });
+        btn.setOnMouseReleased(e -> {
+            btn.setScaleX(1.0);
+            btn.setScaleY(1.0);
         });
     }
 

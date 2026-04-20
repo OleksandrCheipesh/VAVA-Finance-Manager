@@ -58,6 +58,16 @@ public class DashBoardView extends BaseView {
         StateButton configBtn = new StateButton("Configurate", StateButton.ButtonType.PRIMARY);
         HBox.setMargin(configBtn, new Insets(0, 0, 20, 0));
 
+        configBtn.setOnMousePressed(e -> {
+            configBtn.setScaleX(0.95);
+            configBtn.setScaleY(0.95);
+        });
+
+        configBtn.setOnMouseReleased(e -> {
+            configBtn.setScaleX(1.0);
+            configBtn.setScaleY(1.0);
+        });
+
         topBar.getChildren().addAll(titleBox, topSpacer, configBtn);
 
         // Content
@@ -194,6 +204,15 @@ public class DashBoardView extends BaseView {
         Button viewAllBtn = new Button("View All");
         viewAllBtn.setMaxWidth(Double.MAX_VALUE);
         viewAllBtn.setStyle("-fx-background-color: #F8FAFC; -fx-text-fill: " + Themes.DARK_TEXT + "; -fx-font-weight: 900; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-insets: 0;");
+
+        viewAllBtn.setOnMousePressed(e -> {
+            viewAllBtn.setScaleX(0.98);
+            viewAllBtn.setScaleY(0.98);
+        });
+        viewAllBtn.setOnMouseReleased(e -> {
+            viewAllBtn.setScaleX(1.0);
+            viewAllBtn.setScaleY(1.0);
+        });
 
         VBox.setMargin(viewAllBtn, new Insets(20, 0, 0, 0));
 
