@@ -1,7 +1,0 @@
-String compName;
-        try {
-            compName = SessionManager.getInstance().getCurrentCompany().getName();
-        } catch (Exception e) {
-            compName = "Unknown";
-        }
-        Label adminLabel = new Label(compName);
