@@ -10,6 +10,7 @@ import org.example.model.PasswordUtil;
 import org.example.model.database.service.UserService;
 import org.example.model.database.entity.Position;
 import org.example.model.models.SettingsModel;
+import org.example.model.validation.CompanyValExept;
 
 import java.sql.SQLException;
 
@@ -57,8 +58,9 @@ public class SettingsViewModel {
         }
     }
 
-    public void saveCompanyProfile() {
-        System.out.println("Saving Company: " + companyName.get());
+    public void saveCompanyProfile(String name,String industry, String country, String currency) throws CompanyValExept {
+        Company company = new Company();
+        throw new CompanyValExept(CompanyValExept.CompanyErrorCode.NAME_ERR,"test");
     }
 
     public void applyPreferences() {
