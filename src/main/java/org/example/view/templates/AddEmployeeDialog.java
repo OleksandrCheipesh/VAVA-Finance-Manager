@@ -12,6 +12,7 @@ import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -19,17 +20,11 @@ import javafx.util.Duration;
 import org.example.SessionManager;
 import org.example.logging.AppLog;
 import org.example.model.database.entity.Employee;
-import org.example.model.validation.EmpValExept;
-import org.example.model.validation.EmployeeValidator;
 
-import java.math.BigDecimal;
-import java.sql.SQLException;
-import java.time.OffsetDateTime;
 import java.util.function.Consumer;
 
 public class AddEmployeeDialog {
 
-    // Pass null for employeeToEdit if creating a NEW employee.
     public static void show(Stage owner, Employee employeeToEdit, Consumer<Employee> onSuccess) {
         boolean isEditMode = (employeeToEdit != null);
 
@@ -38,81 +33,127 @@ public class AddEmployeeDialog {
         modal.initModality(Modality.APPLICATION_MODAL);
         modal.initStyle(StageStyle.TRANSPARENT);
 
-        javafx.scene.Node backgroundRoot = owner.getScene().getRoot();
-        GaussianBlur blur = new GaussianBlur(30);
+        Scene ownerScene = owner.getScene();
+        Paint originalFill = ownerScene.getFill();
+        ownerScene.setFill(Color.web(Themes.TEXT_DARK));
+
+        Node backgroundRoot = ownerScene.getRoot();
         ColorAdjust darken = new ColorAdjust();
-        darken.setBrightness(-0.4);
-        darken.setInput(blur);
-        backgroundRoot.setEffect(darken);
+        darken.setBrightness(-0.3);
 
-        modal.setOnHidden(e -> backgroundRoot.setEffect(null));
+        GaussianBlur blur = new GaussianBlur(15);
+        blur.setInput(darken);
+        backgroundRoot.setEffect(blur);
 
-        StackPane modalContainer = new StackPane();
-        modalContainer.setStyle("-fx-background-color: transparent;");
-        modalContainer.setPadding(new Insets(60));
+        modal.setOnHidden(e -> {
+            backgroundRoot.setEffect(null);
+            ownerScene.setFill(originalFill);
+        });
 
         VBox root = new VBox(20);
         root.setPadding(new Insets(30));
-        root.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-border-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.25), 40, 0, 0, 15);");
+        root.setStyle(
+                "-fx-background-color: " + Themes.BG_CARD + ";" +
+                        "-fx-background-radius: 16;" +
+                        "-fx-border-radius: 16;" +
+                        "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 20, 0, 0, 10);"
+        );
         root.setPrefWidth(450);
-        root.setMaxWidth(450);
 
-        modalContainer.getChildren().add(root);
-        StackPane.setAlignment(root, Pos.CENTER);
+        StackPane shadowWrapper = new StackPane(root);
+        shadowWrapper.setStyle("-fx-background-color: transparent;");
+        shadowWrapper.setPadding(new Insets(30));
 
-        modalContainer.setOnMouseClicked(e -> {
-            if (e.getTarget() == modalContainer) closeWithAnimation(modal, root);
+        shadowWrapper.setOnMouseClicked(e -> {
+            if (e.getTarget() == shadowWrapper) closeWithAnimation(modal, shadowWrapper);
         });
 
-        // Header
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER_LEFT);
+
+        VBox titleBox = new VBox(4);
         Label title = new Label(isEditMode ? "Edit Employee" : "New Employee");
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+
+        Label subtitle = new Label(isEditMode ? "Update member information." : "Add a new member to your team.");
+        subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
+
+        titleBox.getChildren().addAll(title, subtitle);
 
         Button closeBtn = new Button("X");
         closeBtn.setMinSize(32, 32);
         closeBtn.setMaxSize(32, 32);
-        closeBtn.setStyle("-fx-background-color: " + Themes.BG_FIELD + "; -fx-background-radius: 8; -fx-cursor: hand; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-weight: bold;");
-        closeBtn.setOnAction(e -> closeWithAnimation(modal, root));
+        closeBtn.setStyle(
+                "-fx-background-color: transparent;" +
+                        "-fx-background-radius: 8;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-text-fill: " + Themes.TEXT_MUTED + ";" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-size: 16px;" +
+                        "-fx-padding: 0;"
+        );
+        closeBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        header.getChildren().addAll(title, spacer, closeBtn);
+        header.getChildren().addAll(titleBox, spacer, closeBtn);
 
         // Form Fields
         VBox form = new VBox(15);
 
         TextField nameField = UIFactory.inputField("Name");
+        nameField.setMinHeight(44);
+        nameField.setPrefHeight(44);
+
         TextField surnameField = UIFactory.inputField("Surname");
+        surnameField.setMinHeight(44);
+        surnameField.setPrefHeight(44);
+
         HBox splitName = new HBox(15);
         HBox.setHgrow(nameField, Priority.ALWAYS);
         HBox.setHgrow(surnameField, Priority.ALWAYS);
-        splitName.getChildren().addAll(createLabeledField("Name", nameField), createLabeledField("Surname", surnameField));
+
+        splitName.getChildren().addAll(createLabeledField("NAME", nameField), createLabeledField("SURNAME", surnameField));
 
         TextField emailField = UIFactory.inputField("E-mail");
-        VBox emailBox = createLabeledField("E-mail", emailField);
+        emailField.setMinHeight(44);
+        emailField.setPrefHeight(44);
+        VBox emailBox = createLabeledField("E-MAIL", emailField);
 
         TextField roleField = UIFactory.inputField("Industry");
-        VBox roleBox = createLabeledField("Role", roleField);
+        roleField.setMinHeight(44);
+        roleField.setPrefHeight(44);
+        VBox roleBox = createLabeledField("ROLE", roleField);
 
         TextField deptField = UIFactory.inputField("Department");
+        deptField.setMinHeight(44);
+        deptField.setPrefHeight(44);
 
-        // Status ComboBox
-        ComboBox<String> statusCombo = new ComboBox<>();
+        ComboBox<String> statusCombo = UIFactory.inputComboBox("Active");
         statusCombo.getItems().addAll("Active", "Inactive", "Contractor");
         statusCombo.setValue("Active");
         statusCombo.setMaxWidth(Double.MAX_VALUE);
-        statusCombo.setStyle("-fx-background-color: " + Themes.BG_FIELD_LARGE + "; -fx-border-color: " + Themes.BORDER_LARGE + "; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-size: 14px; -fx-padding: 5;");
+        statusCombo.setPrefWidth(0);
+        statusCombo.setMinHeight(44);
+        statusCombo.setPrefHeight(44);
+        statusCombo.setMaxHeight(44);
 
-        HBox splitBottom = new HBox(15);
-        HBox.setHgrow(deptField, Priority.ALWAYS);
-        HBox.setHgrow(statusCombo, Priority.ALWAYS);
-        splitBottom.getChildren().addAll(createLabeledField("Department", deptField), createLabeledField("Status", statusCombo));
+        GridPane splitBottom = new GridPane();
+        splitBottom.setHgap(15);
+
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setPercentWidth(65);
+
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setPercentWidth(35);
+
+        splitBottom.getColumnConstraints().addAll(col1, col2);
+
+        splitBottom.add(createLabeledField("DEPARTMENT", deptField), 0, 0);
+        splitBottom.add(createLabeledField("STATUS", statusCombo), 1, 0);
 
         form.getChildren().addAll(splitName, emailBox, roleBox, splitBottom);
 
-        // Pre-fill if editing
         if (isEditMode) {
             nameField.setText(employeeToEdit.getName());
             surnameField.setText(employeeToEdit.getSurname());
@@ -123,57 +164,77 @@ public class AddEmployeeDialog {
         }
 
         // Save Button
-        StateButton saveBtn = new StateButton("Save", StateButton.ButtonType.PRIMARY);
+        StateButton saveBtn = new StateButton(isEditMode ? "Update" : "Save", StateButton.ButtonType.PRIMARY);
+
         saveBtn.setMaxWidth(Double.MAX_VALUE);
+        saveBtn.setMinHeight(50);
+
         saveBtn.setOnAction(e -> {
-            if (nameField.getText().isEmpty()) {
+            if (nameField.getText().trim().isEmpty()) {
                 nameField.setStyle(nameField.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";");
                 return;
             }
+
             saveBtn.setLoading(true);
             new Thread(() -> {
                 try { Thread.sleep(600); } catch (InterruptedException ex) {}
                 javafx.application.Platform.runLater(() -> {
                     Employee emp = isEditMode ? employeeToEdit : new Employee();
+
                     if (!isEditMode) emp.setCompanyId(SessionManager.getInstance().getCurrentCompanyId());
-                    emp.setName(nameField.getText());
-                    emp.setSurname(surnameField.getText());
-                    emp.setEmail(emailField.getText());
-                    emp.setPosition(roleField.getText());
-                    emp.setDepartment(deptField.getText());
+
+                    emp.setName(nameField.getText().trim());
+                    emp.setSurname(surnameField.getText().trim());
+                    emp.setEmail(emailField.getText().trim());
+                    emp.setPosition(roleField.getText().trim());
+                    emp.setDepartment(deptField.getText().trim());
                     emp.setStatus(statusCombo.getValue());
 
                     onSuccess.accept(emp);
-                    ToastManager.showSuccess(owner, isEditMode ? "Employee updated!" : "Employee added!");
-                    closeWithAnimation(modal, root);
+
+                    closeWithAnimation(modal, shadowWrapper);
                 });
             }).start();
         });
 
         root.getChildren().addAll(header, form, saveBtn);
-        Scene scene = new Scene(modalContainer);
-        scene.setFill(Color.TRANSPARENT);
+
+        Scene scene = new Scene(shadowWrapper);
+        scene.setFill(null);
+
+        try {
+            scene.getStylesheets().add(AddEmployeeDialog.class.getResource("/styles/global.css").toExternalForm());
+        } catch (Exception e) {
+            var logger = AppLog.getLogger(AddEmployeeDialog.class);
+            logger.warn("Could not load global.css for AddEmployeeDialog: {}", e.getMessage());
+        }
+
         modal.setScene(scene);
 
-        root.setOpacity(0);
-        root.setTranslateY(30);
+        // Entrance Animation
+        shadowWrapper.setOpacity(0);
+        shadowWrapper.setTranslateY(30);
 
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(300), root);
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(300), shadowWrapper);
         fadeIn.setToValue(1);
 
-        TranslateTransition slideUp = new TranslateTransition(Duration.millis(300), root);
+        TranslateTransition slideUp = new TranslateTransition(Duration.millis(300), shadowWrapper);
         slideUp.setToY(0);
 
-        new ParallelTransition(fadeIn, slideUp).play();
-
+        ParallelTransition entrance = new ParallelTransition(fadeIn, slideUp);
         modal.show();
+        entrance.play();
     }
 
     private static VBox createLabeledField(String labelText, Node field) {
         Label label = new Label(labelText);
         label.setStyle("-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-size: 13px;");
+
         VBox box = new VBox(5, label, field);
+
+        box.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(box, Priority.ALWAYS);
+
         return box;
     }
 

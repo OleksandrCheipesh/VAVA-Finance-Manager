@@ -19,7 +19,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.example.model.PasswordUtil;
-import org.example.viewModel.UserUI;
 import org.example.model.database.entity.Position;
 import org.example.model.database.entity.User;
 import org.example.model.validation.RegisterValidator;
@@ -38,6 +37,7 @@ public class AddUserDialog {
         modal.initModality(Modality.APPLICATION_MODAL);
         modal.initStyle(StageStyle.TRANSPARENT);
 
+        // --- Zhodný Blur a Tmavosť s ostatnými dialógmi ---
         Scene ownerScene = owner.getScene();
         Paint originalFill = ownerScene.getFill();
         ownerScene.setFill(Color.web(Themes.TEXT_DARK));
@@ -68,6 +68,10 @@ public class AddUserDialog {
         shadowWrapper.setStyle("-fx-background-color: transparent;");
         shadowWrapper.setPadding(new Insets(30));
 
+        shadowWrapper.setOnMouseClicked(e -> {
+            if (e.getTarget() == shadowWrapper) closeWithAnimation(modal, shadowWrapper);
+        });
+
         // Header
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER_LEFT);
@@ -84,8 +88,9 @@ public class AddUserDialog {
         closeBtn.setMaxSize(32, 32);
         closeBtn.setStyle(
                 "-fx-background-color: transparent;" +
+                        "-fx-background-radius: 8;" +
                         "-fx-cursor: hand;" +
-                        "-fx-text-fill: #9CA3AF;" +
+                        "-fx-text-fill: " + Themes.TEXT_MUTED + ";" +
                         "-fx-font-weight: bold;" +
                         "-fx-font-size: 16px;" +
                         "-fx-padding: 0;"
@@ -93,18 +98,19 @@ public class AddUserDialog {
         closeBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
 
         Region spacer = new Region();
-
         HBox.setHgrow(spacer, Priority.ALWAYS);
         header.getChildren().addAll(titleBox, spacer, closeBtn);
 
         // Form
-        VBox form = new VBox(18);
+        VBox form = new VBox(15);
         VBox.setMargin(form, new Insets(10, 0, 0, 0));
 
-        TextField nameField = createTextField("e.g. Julian");
+        TextField nameField = UIFactory.inputField("e.g. Julian");
+        nameField.setMinHeight(FIELD_HEIGHT); nameField.setPrefHeight(FIELD_HEIGHT); nameField.setMaxHeight(FIELD_HEIGHT);
         VBox nameBox = createLabeledField("NAME", nameField);
 
-        TextField surnameField = createTextField("e.g. Sterling");
+        TextField surnameField = UIFactory.inputField("e.g. Sterling");
+        surnameField.setMinHeight(FIELD_HEIGHT); surnameField.setPrefHeight(FIELD_HEIGHT); surnameField.setMaxHeight(FIELD_HEIGHT);
         VBox surnameBox = createLabeledField("SURNAME", surnameField);
 
         GridPane nameGrid = new GridPane();
@@ -115,12 +121,15 @@ public class AddUserDialog {
         nameGrid.add(nameBox, 0, 0);
         nameGrid.add(surnameBox, 1, 0);
 
-        TextField emailField = createTextField("julian.s@mintmanagement.com");
+        TextField emailField = UIFactory.inputField("julian.s@mintmanagement.com");
+        emailField.setMinHeight(FIELD_HEIGHT); emailField.setPrefHeight(FIELD_HEIGHT); emailField.setMaxHeight(FIELD_HEIGHT);
         VBox emailBox = createLabeledField("EMAIL ADDRESS", emailField);
 
+        // Password field so zhodným dizajnom
         PasswordField passField = new PasswordField();
         VBox passwordBox = createSecurePasswordFieldWrapper("PASSWORD", "••••••••••••", passField);
 
+        // ComboBox so zhodným dizajnom
         boolean hasDirector = users.stream().anyMatch(u -> u.getPosition() == Position.Director);
         ComboBox<Position> roleCombo = new ComboBox<>();
         roleCombo.getItems().addAll(
@@ -129,46 +138,41 @@ public class AddUserDialog {
                         .toList()
         );
         roleCombo.setPromptText("Select organization role");
-        roleCombo.setMinHeight(FIELD_HEIGHT); roleCombo.setPrefHeight(FIELD_HEIGHT); roleCombo.setMaxHeight(FIELD_HEIGHT);
-        roleCombo.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 15; -fx-border-width: 0; -fx-font-size: 14px;");
-        roleCombo.setMaxWidth(Double.MAX_VALUE);
+        roleCombo.setMinHeight(FIELD_HEIGHT);
+        roleCombo.setPrefHeight(FIELD_HEIGHT);
+        roleCombo.setMaxHeight(FIELD_HEIGHT);
+        roleCombo.setMaxWidth(Double.MAX_VALUE); // Aby sa natiahol úplne doprava
+
+        // Dynamické skopírovanie štýlu z UIFactory, aby bol ComboBox na 100% zhodný s TextFieldom
+        ComboBox<String> dummyCombo = UIFactory.inputComboBox("");
+        roleCombo.getStyleClass().setAll(dummyCombo.getStyleClass());
+        roleCombo.setStyle(dummyCombo.getStyle());
+
         VBox roleBox = createLabeledField("ACCESS ROLE", roleCombo);
 
         form.getChildren().addAll(nameGrid, emailBox, passwordBox, roleBox);
 
         // Error label
         Label errorLabel = new Label();
-        errorLabel.setStyle("-fx-text-fill: " + Themes.TEXT_ERROR + "; -fx-font-size: 12px;");
+        errorLabel.setStyle("-fx-text-fill: " + Themes.TEXT_ERROR + "; -fx-font-size: 13px; -fx-font-weight: bold;");
         errorLabel.setVisible(false);
         errorLabel.setManaged(false);
         errorLabel.visibleProperty().addListener((obs, oldVal, newVal) -> errorLabel.setManaged(newVal));
 
         // Footer
-        HBox actionBox = new HBox(15);
-
-        actionBox.setAlignment(Pos.CENTER_LEFT);
+        HBox actionBox = new HBox(20);
+        actionBox.setAlignment(Pos.CENTER_RIGHT);
         actionBox.setStyle("-fx-padding: 10 0 0 0;");
 
-        VBox.setMargin(actionBox, new Insets(10, 0, 0, 0));
-
         Button cancelBtn = new Button("Cancel");
-
-        cancelBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-weight: bold; -fx-font-size: 16px; -fx-cursor: hand; -fx-background-insets: 0; -fx-padding: 10 15 10 0;");
+        cancelBtn.setMinWidth(Region.USE_PREF_SIZE); // Zabraňuje "Ca..." scvrknutiu
+        cancelBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-padding: 10 20;");
         cancelBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
 
-        Button saveBtn = new Button("Save User");
-
-        saveBtn.setMinHeight(48);
-        saveBtn.setMaxWidth(Double.MAX_VALUE);
-
+        StateButton saveBtn = new StateButton("Save User", StateButton.ButtonType.PRIMARY);
+        saveBtn.setMinHeight(50);
+        saveBtn.setPrefWidth(340);
         HBox.setHgrow(saveBtn, Priority.ALWAYS);
-
-        String normalStyle = "-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-insets: 0;";
-        String hoverStyle = "-fx-background-color: " + Themes.BTN_PRIMARY_HOVER + "; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-insets: 0;";
-
-        saveBtn.setStyle(normalStyle);
-        saveBtn.setOnMouseEntered(e -> saveBtn.setStyle(hoverStyle));
-        saveBtn.setOnMouseExited(e -> saveBtn.setStyle(normalStyle));
 
         saveBtn.setOnAction(e -> {
             String name = nameField.getText().trim();
@@ -176,6 +180,8 @@ public class AddUserDialog {
             String email = emailField.getText().trim();
             String password = passField.getText().trim();
             Position selectedPosition = roleCombo.getValue();
+
+            errorLabel.setVisible(false);
 
             if (selectedPosition == null) {
                 errorLabel.setText("Please select a role.");
@@ -191,10 +197,16 @@ public class AddUserDialog {
                 return;
             }
 
-            String hashedPassword = PasswordUtil.hash(password);
-            User newUser = new User(name, surname, email, hashedPassword, selectedPosition, null);
-            onSuccess.accept(newUser);
-            closeWithAnimation(modal, shadowWrapper);
+            saveBtn.setLoading(true);
+            new Thread(() -> {
+                try { Thread.sleep(600); } catch (InterruptedException ex) {}
+                javafx.application.Platform.runLater(() -> {
+                    String hashedPassword = PasswordUtil.hash(password);
+                    User newUser = new User(name, surname, email, hashedPassword, selectedPosition, null);
+                    onSuccess.accept(newUser);
+                    closeWithAnimation(modal, shadowWrapper);
+                });
+            }).start();
         });
 
         actionBox.getChildren().addAll(cancelBtn, saveBtn);
@@ -227,58 +239,40 @@ public class AddUserDialog {
         entranceAnimation.play();
     }
 
-
-    private static TextField createTextField(String prompt) {
-        TextField tf = new TextField();
-
-        tf.setPromptText(prompt);
-        tf.setMinHeight(FIELD_HEIGHT); tf.setPrefHeight(FIELD_HEIGHT); tf.setMaxHeight(FIELD_HEIGHT);
-        tf.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 15; -fx-border-width: 0; -fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_DARK + ";");
-
-        return tf;
-    }
-
-    private static ComboBox<String> createComboBox(String prompt, String... items) {
-        ComboBox<String> cb = new ComboBox<>();
-
-        cb.getItems().addAll(items);
-        cb.setPromptText(prompt);
-        cb.setMinHeight(FIELD_HEIGHT); cb.setPrefHeight(FIELD_HEIGHT); cb.setMaxHeight(FIELD_HEIGHT);
-
-        cb.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 15; -fx-border-width: 0; -fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_DARK + ";");
-        cb.setMaxWidth(Double.MAX_VALUE);
-
-        return cb;
-    }
-
     private static VBox createLabeledField(String labelText, Node field) {
         Label label = new Label(labelText);
+        label.setStyle("-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-size: 13px;");
 
-        label.setStyle("-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 11px; -fx-letter-spacing: 0.5px;");
-
-        VBox box = new VBox(6, label, field);
+        VBox box = new VBox(5, label, field);
         box.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(box, Priority.ALWAYS);
 
         return box;
     }
 
     private static VBox createSecurePasswordFieldWrapper(String labelText, String prompt, PasswordField pf) {
-        VBox box = new VBox(6);
+        VBox box = new VBox(5);
         Label label = new Label(labelText);
-        label.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-letter-spacing: 0.5px;");
+        label.setStyle("-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-size: 13px;");
 
         StackPane pane = new StackPane();
         pane.setAlignment(Pos.CENTER_RIGHT);
+        pane.setMaxWidth(Double.MAX_VALUE); // Aby sa wrapper natiahol na maximum
+
+        TextField dummy = UIFactory.inputField(""); // Získame CSS štýly priamo z tvojej továrne
 
         pf.setPromptText(prompt);
         pf.setMinHeight(FIELD_HEIGHT); pf.setPrefHeight(FIELD_HEIGHT); pf.setMaxHeight(FIELD_HEIGHT);
-        pf.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 45 0 15; -fx-border-width: 0; -fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+        pf.setMaxWidth(Double.MAX_VALUE);
+        pf.getStyleClass().setAll(dummy.getStyleClass()); // Aplikujeme CSS od UIFactory
+        pf.setStyle(dummy.getStyle() + "; -fx-padding: 0 45 0 15;"); // Zachováme miesto pre ikonku oka
 
         TextField tf = new TextField();
-
         tf.setPromptText(prompt);
         tf.setMinHeight(FIELD_HEIGHT); tf.setPrefHeight(FIELD_HEIGHT); tf.setMaxHeight(FIELD_HEIGHT);
-        tf.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 45 0 15; -fx-border-width: 0; -fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+        tf.setMaxWidth(Double.MAX_VALUE);
+        tf.getStyleClass().setAll(dummy.getStyleClass());
+        tf.setStyle(dummy.getStyle() + "; -fx-padding: 0 45 0 15;");
         tf.setManaged(false); tf.setVisible(false);
         tf.textProperty().bindBidirectional(pf.textProperty());
 
@@ -287,7 +281,6 @@ public class AddUserDialog {
         eyeIcon.setIconColor(Color.web(Themes.TEXT_MUTED));
 
         StackPane eyePane = new StackPane(eyeIcon);
-
         eyePane.setPadding(new Insets(0, 15, 0, 0));
         eyePane.setStyle("-fx-cursor: hand;");
         eyePane.setMaxWidth(45);
@@ -305,6 +298,9 @@ public class AddUserDialog {
         });
 
         pane.getChildren().addAll(pf, tf, eyePane);
+
+        box.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(box, Priority.ALWAYS);
         box.getChildren().addAll(label, pane);
 
         return box;
@@ -322,4 +318,3 @@ public class AddUserDialog {
         exitAnimation.play();
     }
 }
-

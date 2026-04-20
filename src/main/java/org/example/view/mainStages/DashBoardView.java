@@ -40,9 +40,17 @@ public class DashBoardView extends BaseView {
         topBar.setStyle("-fx-background-color: white; -fx-padding: 0 40; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-width: 0 0 1 0;");
         topBar.setMinHeight(85);
 
+        VBox titleBox = new VBox(2);
+        titleBox.setAlignment(Pos.BOTTOM_LEFT);
+        HBox.setMargin(titleBox, new Insets(0, 0, 15, 0));
+
         Label title = new Label("Dashboard");
         title.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
-        HBox.setMargin(title, new Insets(0, 0, 25, 0));
+
+        Label subtitle = new Label("Overview of your key performance indicators.");
+        subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 14px;");
+
+        titleBox.getChildren().addAll(title, subtitle);
 
         Region topSpacer = new Region();
         HBox.setHgrow(topSpacer, Priority.ALWAYS);
@@ -50,7 +58,7 @@ public class DashBoardView extends BaseView {
         StateButton configBtn = new StateButton("Configurate", StateButton.ButtonType.PRIMARY);
         HBox.setMargin(configBtn, new Insets(0, 0, 20, 0));
 
-        topBar.getChildren().addAll(title, topSpacer, configBtn);
+        topBar.getChildren().addAll(titleBox, topSpacer, configBtn);
 
         // Content
         contentArea = new VBox(25);
@@ -111,7 +119,7 @@ public class DashBoardView extends BaseView {
         VBox.setMargin(projTitle, new Insets(20, 0, 5, 0));
 
         activeProjectsValueLabel = new Label();
-        activeProjectsValueLabel.setStyle("-fx-font-size: 32px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+        activeProjectsValueLabel.setStyle("-fx-font-size: 32px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
 
         projectsCard.getChildren().addAll(projHeader, projTitle, activeProjectsValueLabel);
 
@@ -127,7 +135,7 @@ public class DashBoardView extends BaseView {
         VBox chartTitleBox = new VBox(4);
 
         Label chartTitle = new Label("Revenue vs Projections");
-        chartTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+        chartTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: " + Themes.DARK_TEXT + ";");
 
         Label chartSubtitle = new Label("Quarterly financial performance analysis");
         chartSubtitle.setStyle("-fx-font-size: 12px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
@@ -166,7 +174,7 @@ public class DashBoardView extends BaseView {
         expenseCard.setMinHeight(250);
 
         Label expenseTitle = new Label("Expense Distribution");
-        expenseTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+        expenseTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: " + Themes.DARK_TEXT + ";");
 
         Region expensePlaceholder = new Region();
         VBox.setVgrow(expensePlaceholder, Priority.ALWAYS);
@@ -177,7 +185,7 @@ public class DashBoardView extends BaseView {
         VBox.setVgrow(transactionsCard, Priority.ALWAYS);
 
         Label transTitle = new Label("Recent Transactions");
-        transTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+        transTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
 
         VBox.setMargin(transTitle, new Insets(0, 0, 20, 0));
 
@@ -185,7 +193,7 @@ public class DashBoardView extends BaseView {
 
         Button viewAllBtn = new Button("View All");
         viewAllBtn.setMaxWidth(Double.MAX_VALUE);
-        viewAllBtn.setStyle("-fx-background-color: #F8FAFC; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-weight: 900; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-insets: 0;");
+        viewAllBtn.setStyle("-fx-background-color: #F8FAFC; -fx-text-fill: " + Themes.DARK_TEXT + "; -fx-font-weight: 900; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-insets: 0;");
 
         VBox.setMargin(viewAllBtn, new Insets(20, 0, 0, 0));
 
@@ -256,7 +264,7 @@ public class DashBoardView extends BaseView {
             monthLbl.setStyle("-fx-font-size: 11px; -fx-font-weight: 900; -fx-text-fill: " + Themes.PRIMARY + ";");
 
             Label dayLbl = new Label(String.valueOf(tx.getDate().getDayOfMonth()));
-            dayLbl.setStyle("-fx-font-size: 17px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+            dayLbl.setStyle("-fx-font-size: 17px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
 
             dateBlock.getChildren().addAll(monthLbl, dayLbl);
 
@@ -264,7 +272,7 @@ public class DashBoardView extends BaseView {
             textsBlock.setAlignment(Pos.CENTER_LEFT);
 
             Label descLbl = new Label(tx.getDescription());
-            descLbl.setStyle("-fx-font-size: 14.5px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+            descLbl.setStyle("-fx-font-size: 14.5px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
 
             Label clientLbl = new Label(tx.getClientName());
             clientLbl.setStyle("-fx-font-size: 12.5px; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-weight: 600;");

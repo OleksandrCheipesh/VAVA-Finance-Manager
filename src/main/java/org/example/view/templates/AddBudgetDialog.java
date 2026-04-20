@@ -103,12 +103,12 @@ public class AddBudgetDialog {
         closeBtn.setMaxSize(32, 32);
 
         closeBtn.setStyle(
-                "-fx-background-color: " + Themes.BG_FIELD + ";" +
+                "-fx-background-color: transparent;" +
                         "-fx-background-radius: 8;" +
                         "-fx-cursor: hand;" +
                         "-fx-text-fill: " + Themes.TEXT_MUTED + ";" +
                         "-fx-font-weight: bold;" +
-                        "-fx-font-size: 14px;" +
+                        "-fx-font-size: 16px;" +
                         "-fx-padding: 0;"
         );
 
@@ -125,8 +125,9 @@ public class AddBudgetDialog {
 
         // 1. Name Field
         TextField nameField = UIFactory.inputField("e.g., Main Operating Account");
-
-        nameField.setMinHeight(FIELD_HEIGHT); nameField.setPrefHeight(FIELD_HEIGHT); nameField.setMaxHeight(FIELD_HEIGHT);
+        nameField.setMinHeight(FIELD_HEIGHT);
+        nameField.setPrefHeight(FIELD_HEIGHT);
+        nameField.setMaxHeight(FIELD_HEIGHT);
 
         VBox nameBox = createLabeledField("ACCOUNT NAME", nameField);
 
@@ -137,19 +138,22 @@ public class AddBudgetDialog {
             catCombo.getItems().add(formatCategory(cat));
         }
         catCombo.setMaxWidth(Double.MAX_VALUE);
-        catCombo.setMinHeight(FIELD_HEIGHT); catCombo.setPrefHeight(FIELD_HEIGHT); catCombo.setMaxHeight(FIELD_HEIGHT);
+        catCombo.setMinHeight(FIELD_HEIGHT);
+        catCombo.setPrefHeight(FIELD_HEIGHT);
+        catCombo.setMaxHeight(FIELD_HEIGHT);
 
         VBox catBox = createLabeledField("CATEGORY", catCombo);
 
         TextField limitField = UIFactory.inputField("0.00 (optional)");
 
         limitField.setMaxWidth(Double.MAX_VALUE);
-        limitField.setMinHeight(FIELD_HEIGHT); limitField.setPrefHeight(FIELD_HEIGHT); limitField.setMaxHeight(FIELD_HEIGHT);
+        limitField.setMinHeight(FIELD_HEIGHT);
+        limitField.setPrefHeight(FIELD_HEIGHT);
+        limitField.setMaxHeight(FIELD_HEIGHT);
 
         VBox limitBox = createLabeledField("LIMIT AMOUNT", limitField);
 
         GridPane row1Grid = new GridPane();
-
         row1Grid.setHgap(15);
 
         ColumnConstraints r1c1 = new ColumnConstraints(); r1c1.setPercentWidth(50);
@@ -163,7 +167,9 @@ public class AddBudgetDialog {
         TextField balanceField = UIFactory.inputField("0.00");
 
         balanceField.setMaxWidth(Double.MAX_VALUE);
-        balanceField.setMinHeight(FIELD_HEIGHT); balanceField.setPrefHeight(FIELD_HEIGHT); balanceField.setMaxHeight(FIELD_HEIGHT);
+        balanceField.setMinHeight(FIELD_HEIGHT);
+        balanceField.setPrefHeight(FIELD_HEIGHT);
+        balanceField.setMaxHeight(FIELD_HEIGHT);
 
         VBox balanceBox = createLabeledField("INITIAL BALANCE", balanceField);
 
@@ -171,12 +177,13 @@ public class AddBudgetDialog {
 
         currencyCombo.setItems(FXCollections.observableArrayList("CZK", "EUR", "GBP", "USD"));
         currencyCombo.setMaxWidth(Double.MAX_VALUE);
-        currencyCombo.setMinHeight(FIELD_HEIGHT); currencyCombo.setPrefHeight(FIELD_HEIGHT); currencyCombo.setMaxHeight(FIELD_HEIGHT);
+        currencyCombo.setMinHeight(FIELD_HEIGHT);
+        currencyCombo.setPrefHeight(FIELD_HEIGHT);
+        currencyCombo.setMaxHeight(FIELD_HEIGHT);
 
         VBox currencyBox = createLabeledField("CURRENCY", currencyCombo);
 
         GridPane row2Grid = new GridPane();
-
         row2Grid.setHgap(15);
 
         ColumnConstraints r2c1 = new ColumnConstraints(); r2c1.setPercentWidth(50);
@@ -196,7 +203,9 @@ public class AddBudgetDialog {
 
         toggleBox.setStyle("-fx-background-color: " + Themes.BG_FIELD + "; -fx-background-radius: 8; -fx-padding: 4;");
         toggleBox.setMaxWidth(Double.MAX_VALUE);
-        toggleBox.setMinHeight(FIELD_HEIGHT); toggleBox.setPrefHeight(FIELD_HEIGHT); toggleBox.setMaxHeight(FIELD_HEIGHT);
+        toggleBox.setMinHeight(FIELD_HEIGHT);
+        toggleBox.setPrefHeight(FIELD_HEIGHT);
+        toggleBox.setMaxHeight(FIELD_HEIGHT);
 
         Button monthlyBtn = new Button("Monthly");
         Button weeklyBtn = new Button("Weekly");
