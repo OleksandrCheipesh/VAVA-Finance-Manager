@@ -80,17 +80,10 @@ public class AddEmployeeDialog {
 
         titleBox.getChildren().addAll(title, subtitle);
 
-        Button closeBtn = new Button("✕");
+        Button closeBtn = new Button("X");
         closeBtn.setMinSize(32, 32);
         closeBtn.setMaxSize(32, 32);
-        closeBtn.setStyle(
-                "-fx-background-color: transparent;" +
-                        "-fx-background-radius: 8;" +
-                        "-fx-cursor: hand;" +
-                        "-fx-text-fill: #9CA3AF;" +
-                        "-fx-font-size: 18px;" +
-                        "-fx-padding: 0;"
-        );
+        closeBtn.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-weight: bold; -fx-font-size: 16px; -fx-padding: 0;");
         closeBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
 
         Region spacer = new Region();
