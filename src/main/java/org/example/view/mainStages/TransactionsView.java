@@ -55,9 +55,11 @@ public class TransactionsView extends BaseView {
 
         // Visual divider
         Region sep = new Region();
+
         sep.setPrefSize(2, 30);
         sep.setMaxSize(2, 30);
         sep.setStyle("-fx-background-color: #E5E7EB;");
+
         HBox.setMargin(sep, new Insets(0, 10, 25, 10));
 
         // Tabs
@@ -106,6 +108,16 @@ public class TransactionsView extends BaseView {
         addBtn = new StateButton("+ Add Transaction", StateButton.ButtonType.PRIMARY);
         HBox.setMargin(addBtn, new Insets(0, 0, 20, 0));
 
+        addBtn.setOnMousePressed(e -> {
+            addBtn.setScaleX(0.95);
+            addBtn.setScaleY(0.95);
+        });
+
+        addBtn.setOnMouseReleased(e -> {
+            addBtn.setScaleX(1.0);
+            addBtn.setScaleY(1.0);
+        });
+
         topBar.getChildren().addAll(titleBox, sep, tabs, spacer, addBtn);
 
 
@@ -116,7 +128,7 @@ public class TransactionsView extends BaseView {
         // Filter Bar
         HBox filterBar = createCustomFilterBar();
 
-        // Summary Cards — values bound to ViewModel computed properties
+        // Summary Cards
         SummaryCard incomeCard   = new SummaryCard("INCOME",      "0.00$", "0 sales",     Themes.TEXT_SUCCESS);
         SummaryCard expensesCard = new SummaryCard("EXPENSES",    "0.00$", "0 purchases", Themes.TEXT_ERROR);
         SummaryCard netCard      = new SummaryCard("NET BALANCE", "0.00$", "",            Themes.TEXT_SUCCESS);
@@ -129,7 +141,6 @@ public class TransactionsView extends BaseView {
         viewModel.netBalanceProperty()    .addListener((obs, o, v) -> netCard.setValue(v));
         viewModel.largestAmountProperty() .addListener((obs, o, v) -> largestCard.setValue(v));
 
-        // Seed initial values
         incomeCard.setValue(viewModel.totalIncomeProperty().get());
         incomeCard.setSubText(viewModel.incomeSubtextProperty().get());
 
@@ -144,7 +155,6 @@ public class TransactionsView extends BaseView {
 
         // Table and empty state
         table = new AppTable<>("");
-
         table.setItems(viewModel.getFilteredTransactions());
 
         VBox.setVgrow(table, Priority.ALWAYS);
@@ -166,7 +176,6 @@ public class TransactionsView extends BaseView {
         TableColumn<Transaction, LocalDate> dateCol = new TableColumn<>("DATE");
         dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
         dateCol.setStyle(headerStyle);
-
         dateCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(LocalDate item, boolean empty) {
                 super.updateItem(item, empty);
@@ -181,14 +190,11 @@ public class TransactionsView extends BaseView {
         });
 
         TableColumn<Transaction, BigDecimal> amountCol = new TableColumn<>("AMOUNT");
-
         amountCol.setCellValueFactory(new PropertyValueFactory<>("amount"));
         amountCol.setStyle(headerStyle);
-
         amountCol.setCellFactory(col -> new TableCell<>() {
             private final java.text.DecimalFormat df = new java.text.DecimalFormat(
                     "#,##0.00", new java.text.DecimalFormatSymbols(java.util.Locale.US));
-
             @Override protected void updateItem(BigDecimal item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
@@ -197,10 +203,13 @@ public class TransactionsView extends BaseView {
                 } else {
                     int idx = getIndex();
                     if (idx < 0 || idx >= getTableView().getItems().size()) return;
+
                     Transaction t = getTableView().getItems().get(idx);
+
                     if (t == null) return;
 
                     boolean isSale = "SALE".equalsIgnoreCase(t.getType());
+
                     setText((isSale ? "+$" : "-$") + df.format(item));
                     String color = isSale ? Themes.TEXT_SUCCESS : Themes.TEXT_ERROR;
                     setStyle("-fx-text-fill: " + color + "; -fx-font-weight: 800; -fx-font-size: 16px; -fx-alignment: center-left;");
@@ -211,7 +220,6 @@ public class TransactionsView extends BaseView {
         TableColumn<Transaction, Integer> projectCol = new TableColumn<>("PROJECT");
         projectCol.setCellValueFactory(new PropertyValueFactory<>("projectId"));
         projectCol.setStyle(headerStyle);
-
         projectCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(Integer item, boolean empty) {
                 super.updateItem(item, empty);
@@ -222,7 +230,6 @@ public class TransactionsView extends BaseView {
                     setAlignment(Pos.CENTER_LEFT);
                 } else {
                     setText(viewModel.getProjectName(item));
-
                     setFont(Font.font("System", FontWeight.NORMAL, 15));
                     setTextFill(Color.web(Themes.TEXT_MUTED));
                     setAlignment(Pos.CENTER_LEFT);
@@ -231,10 +238,8 @@ public class TransactionsView extends BaseView {
         });
 
         TableColumn<Transaction, String> descCol = new TableColumn<>("DESCRIPTION");
-
         descCol.setCellValueFactory(new PropertyValueFactory<>("description"));
         descCol.setStyle(headerStyle);
-
         descCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -255,7 +260,6 @@ public class TransactionsView extends BaseView {
         TableColumn<Transaction, String> typeCol = new TableColumn<>("TYPE");
         typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
         typeCol.setStyle(headerStyle);
-
         typeCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -264,6 +268,7 @@ public class TransactionsView extends BaseView {
                     setAlignment(Pos.CENTER_LEFT);
                 } else {
                     boolean isSale = "SALE".equalsIgnoreCase(item);
+
                     Label pill = new Label(isSale ? "Sale" : "Buy");
                     String color = isSale ? Themes.TEXT_SUCCESS : "#F59E0B";
 
@@ -275,7 +280,6 @@ public class TransactionsView extends BaseView {
         });
 
         TableColumn<Transaction, Void> actionCol = new TableColumn<>("ACTION");
-
         actionCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
@@ -283,7 +287,6 @@ public class TransactionsView extends BaseView {
                     setGraphic(null);
                 } else {
                     Label dots = new Label("⋮");
-
                     dots.setPadding(Insets.EMPTY);
                     dots.setStyle(
                             "-fx-text-fill: #9CA3AF; " +
@@ -292,7 +295,6 @@ public class TransactionsView extends BaseView {
                                     "-fx-cursor: hand; " +
                                     "-fx-background-color: transparent;"
                     );
-
                     dots.setOnMouseClicked(e -> {
                         Transaction tx = getTableView().getItems().get(getIndex());
                         TransactionDetailDialog.show(

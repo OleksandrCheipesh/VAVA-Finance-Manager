@@ -203,6 +203,22 @@ public class SettingsView extends BaseView {
                 alert.showAndWait();
             }
         });
+
+        addClickEffect(saveCompanyBtn);
+        addClickEffect(applyPrefsBtn);
+        addClickEffect(addUserBtn);
+        addClickEffect(savePassBtn);
+    }
+
+    private void addClickEffect(Button btn) {
+        btn.setOnMousePressed(e -> {
+            btn.setScaleX(0.95);
+            btn.setScaleY(0.95);
+        });
+        btn.setOnMouseReleased(e -> {
+            btn.setScaleX(1.0);
+            btn.setScaleY(1.0);
+        });
     }
 
     private VBox buildCompanyProfile() {

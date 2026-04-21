@@ -42,6 +42,17 @@ public class ResetPasswordView extends BaseView {
         confirmPasswordField = UIFactory.passwordField("Confirm Password");
 
         resetButton = UIFactory.primaryButton("Reset Password", Themes.FORM_MAX_WIDTH);
+
+        resetButton.setOnMousePressed(e -> {
+            resetButton.setScaleX(0.98);
+            resetButton.setScaleY(0.98);
+        });
+
+        resetButton.setOnMouseReleased(e -> {
+            resetButton.setScaleX(1.0);
+            resetButton.setScaleY(1.0);
+        });
+
         backToLoginLink = UIFactory.navLink("Back to Login");
 
         messageLabel = UIFactory.messageLabel();
@@ -119,4 +130,3 @@ public class ResetPasswordView extends BaseView {
         });
     }
 }
-

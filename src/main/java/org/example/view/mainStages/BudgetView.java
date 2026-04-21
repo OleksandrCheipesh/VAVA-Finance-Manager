@@ -58,7 +58,6 @@ public class BudgetView extends BaseView {
 
         VBox mainContainer = new VBox();
 
-        // Top bar
         HBox topBar = new HBox(20);
 
         topBar.setAlignment(Pos.BOTTOM_LEFT);
@@ -83,7 +82,6 @@ public class BudgetView extends BaseView {
 
         topBar.getChildren().addAll(titleBox, spacer1);
 
-        // Content part
         contentArea = new VBox(25);
         VBox.setVgrow(contentArea, Priority.ALWAYS);
 
@@ -93,10 +91,8 @@ public class BudgetView extends BaseView {
                 .divide(3)
                 .subtract(1);
 
-        // Top summary cards
         HBox summaryContainer = new HBox(GRID_GAP);
 
-        // Card 1: Total Combined Balance (from transactions)
         VBox card1 = createBaseCard(false, cardWidthBinding);
 
         Label c1Title = new Label("TOTAL COMBINED BALANCE");
@@ -114,7 +110,6 @@ public class BudgetView extends BaseView {
 
         card1.getChildren().addAll(c1Title, c1Value, c1Pill);
 
-        // Card 2: Monthly Budget Limit (from account limits)
         VBox card2 = createBaseCard(false, cardWidthBinding);
 
         Label c2Title = new Label("MONTHLY BUDGET LIMIT");
@@ -148,7 +143,6 @@ public class BudgetView extends BaseView {
 
         updateLimitCard(totalLimit);
 
-        // Card 3: Remaining Budget
         VBox card3 = createBaseCard(true, cardWidthBinding);
 
         Label c3Title = new Label("REMAINING BUDGET");
@@ -165,7 +159,6 @@ public class BudgetView extends BaseView {
 
         summaryContainer.getChildren().addAll(card1, card2, card3);
 
-        // Middle header and Search bar
         HBox midHeader = new HBox(15);
 
         midHeader.setAlignment(Pos.BOTTOM_LEFT);
@@ -211,6 +204,16 @@ public class BudgetView extends BaseView {
         addAccountBtnMid.setMinHeight(44);
         addAccountBtnMid.setPrefHeight(44);
         addAccountBtnMid.setMaxHeight(44);
+
+        addAccountBtnMid.setOnMousePressed(e -> {
+            addAccountBtnMid.setScaleX(0.95);
+            addAccountBtnMid.setScaleY(0.95);
+        });
+
+        addAccountBtnMid.setOnMouseReleased(e -> {
+            addAccountBtnMid.setScaleX(1.0);
+            addAccountBtnMid.setScaleY(1.0);
+        });
 
         midHeader.getChildren().addAll(midTitleBox, spacer2, searchContainer, addAccountBtnMid);
 
@@ -392,6 +395,7 @@ public class BudgetView extends BaseView {
 
         Button menuBtn = new Button("⋮");
         menuBtn.setStyle("-fx-background-color: transparent; -fx-font-size: 22px; -fx-text-fill: #CBD5E1; -fx-cursor: hand; -fx-padding: 0;");
+        menuBtn.setMouseTransparent(true);
 
         cardHeader.getChildren().addAll(iconBox, spacer, menuBtn);
 
@@ -453,14 +457,12 @@ public class BudgetView extends BaseView {
 
         card.setCursor(Cursor.HAND);
         card.setOnMouseClicked(e -> {
-            if (e.getTarget() != menuBtn) {
-                BudgetDetailDialog.show(
-                        stage,
-                        account,
-                        () -> ToastManager.showError(stage, "Edit functionality coming in the next task."),
-                        () -> viewModel.deleteAccount(account)
-                );
-            }
+            BudgetDetailDialog.show(
+                    stage,
+                    account,
+                    () -> ToastManager.showError(stage, "Edit functionality coming in the next task."),
+                    () -> viewModel.deleteAccount(account)
+            );
         });
 
         return card;

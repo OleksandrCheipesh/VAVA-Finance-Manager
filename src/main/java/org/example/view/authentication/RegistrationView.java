@@ -49,7 +49,18 @@ public class RegistrationView extends BaseView {
 
         // Submit button and navigation link
         registerButton = UIFactory.primaryButton("Create Account", Themes.FORM_MAX_WIDTH);
-        loginLink      = UIFactory.navLink("Switch to Login");
+
+        registerButton.setOnMousePressed(e -> {
+            registerButton.setScaleX(0.98);
+            registerButton.setScaleY(0.98);
+        });
+
+        registerButton.setOnMouseReleased(e -> {
+            registerButton.setScaleX(1.0);
+            registerButton.setScaleY(1.0);
+        });
+
+        loginLink = UIFactory.navLink("Switch to Login");
 
         // Message label for success/error feedback
         messageLabel   = UIFactory.messageLabel();

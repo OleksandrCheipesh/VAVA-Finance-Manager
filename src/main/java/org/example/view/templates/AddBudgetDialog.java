@@ -85,7 +85,6 @@ public class AddBudgetDialog {
         shadowWrapper.setStyle("-fx-background-color: transparent;");
         shadowWrapper.setPadding(new Insets(30));
 
-        // Header
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER_LEFT);
 
@@ -120,10 +119,8 @@ public class AddBudgetDialog {
 
         header.getChildren().addAll(titleBox, spacer, closeBtn);
 
-        // Fields
         VBox form = new VBox(15);
 
-        // 1. Name Field
         TextField nameField = UIFactory.inputField("e.g., Main Operating Account");
         nameField.setMinHeight(FIELD_HEIGHT);
         nameField.setPrefHeight(FIELD_HEIGHT);
@@ -131,7 +128,6 @@ public class AddBudgetDialog {
 
         VBox nameBox = createLabeledField("ACCOUNT NAME", nameField);
 
-        // 2. Category and Limit
         ComboBox<String> catCombo = UIFactory.inputComboBox("Select Category");
 
         for (AccountCategory cat : AccountCategory.values()) {
@@ -163,7 +159,6 @@ public class AddBudgetDialog {
         row1Grid.add(catBox, 0, 0);
         row1Grid.add(limitBox, 1, 0);
 
-        // 3. Current Balance and Currency
         TextField balanceField = UIFactory.inputField("0.00");
 
         balanceField.setMaxWidth(Double.MAX_VALUE);
@@ -193,7 +188,6 @@ public class AddBudgetDialog {
         row2Grid.add(balanceBox, 0, 0);
         row2Grid.add(currencyBox, 1, 0);
 
-        // 4. Frequency
         VBox freqBoxMain = new VBox(5);
 
         Label freqLabel = new Label("FREQUENCY CYCLE");
@@ -241,7 +235,6 @@ public class AddBudgetDialog {
 
         form.getChildren().addAll(nameBox, row1Grid, row2Grid, freqBoxMain);
 
-        // Buttons part
         HBox actionBox = new HBox(20);
 
         actionBox.setAlignment(Pos.CENTER_RIGHT);
@@ -249,14 +242,24 @@ public class AddBudgetDialog {
 
         Button cancelBtn = new Button("Cancel");
 
-        cancelBtn.setMinWidth(Button.USE_PREF_SIZE);
+        cancelBtn.setMinWidth(Region.USE_PREF_SIZE);
         cancelBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-padding: 10 20;");
         cancelBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
+
+        cancelBtn.setOnMousePressed(e -> {
+            cancelBtn.setScaleX(0.98);
+            cancelBtn.setScaleY(0.98);
+        });
+
+        cancelBtn.setOnMouseReleased(e -> {
+            cancelBtn.setScaleX(1.0);
+            cancelBtn.setScaleY(1.0);
+        });
 
         StateButton saveBtn = new StateButton("Save Account", StateButton.ButtonType.PRIMARY);
 
         saveBtn.setMinHeight(50);
-        saveBtn.setPrefWidth(340);
+        saveBtn.setMaxWidth(Double.MAX_VALUE);
 
         String normalStyle = "-fx-background-color: " + Themes.PRIMARY + ";" +
                 "-fx-text-fill: white;" +
@@ -277,17 +280,30 @@ public class AddBudgetDialog {
         saveBtn.setOnMouseEntered(e -> saveBtn.setStyle(hoverStyle));
         saveBtn.setOnMouseExited(e -> saveBtn.setStyle(normalStyle));
 
+        saveBtn.setOnMousePressed(e -> {
+            saveBtn.setScaleX(0.98);
+            saveBtn.setScaleY(0.98);
+        });
+
+        saveBtn.setOnMouseReleased(e -> {
+            saveBtn.setScaleX(1.0);
+            saveBtn.setScaleY(1.0);
+        });
+
+        HBox.setHgrow(saveBtn, Priority.ALWAYS);
+
+        String errorBorder = "-fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8;";
+
         saveBtn.setOnAction(e -> {
-            // Reset error styles
-            nameField.setStyle(nameField.getStyle().replace("-fx-border-color: " + Themes.TEXT_ERROR + ";", ""));
-            balanceField.setStyle(balanceField.getStyle().replace("-fx-border-color: " + Themes.TEXT_ERROR + ";", ""));
-            limitField.setStyle(limitField.getStyle().replace("-fx-border-color: " + Themes.TEXT_ERROR + ";", ""));
-            currencyCombo.setStyle(currencyCombo.getStyle().replace("-fx-border-color: " + Themes.TEXT_ERROR + ";", ""));
+            nameField.setStyle(nameField.getStyle().replace(errorBorder, ""));
+            balanceField.setStyle(balanceField.getStyle().replace(errorBorder, ""));
+            limitField.setStyle(limitField.getStyle().replace(errorBorder, ""));
+            currencyCombo.setStyle(currencyCombo.getStyle().replace(errorBorder, ""));
 
             boolean isValid = true;
 
             if (nameField.getText().trim().isEmpty()) {
-                nameField.setStyle(nameField.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";");
+                nameField.setStyle(nameField.getStyle() + errorBorder);
                 isValid = false;
             }
 
@@ -297,7 +313,7 @@ public class AddBudgetDialog {
                     balanceParsed = new BigDecimal(balanceField.getText().replace(",", "").trim());
                     if (balanceParsed.compareTo(BigDecimal.ZERO) < 0) throw new NumberFormatException();
                 } catch (NumberFormatException ex) {
-                    balanceField.setStyle(balanceField.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";");
+                    balanceField.setStyle(balanceField.getStyle() + errorBorder);
                     isValid = false;
                 }
             }
@@ -309,13 +325,13 @@ public class AddBudgetDialog {
                     if (raw < 0) throw new NumberFormatException();
                     limitParsed = (int) raw;
                 } catch (NumberFormatException ex) {
-                    limitField.setStyle(limitField.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";");
+                    limitField.setStyle(limitField.getStyle() + errorBorder);
                     isValid = false;
                 }
             }
 
             if (currencyCombo.getValue() == null) {
-                currencyCombo.setStyle(currencyCombo.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";");
+                currencyCombo.setStyle(currencyCombo.getStyle() + errorBorder);
                 isValid = false;
             }
 
@@ -370,7 +386,6 @@ public class AddBudgetDialog {
 
         modal.setScene(scene);
 
-        // Animation
         shadowWrapper.setOpacity(0);
         shadowWrapper.setTranslateY(30);
 

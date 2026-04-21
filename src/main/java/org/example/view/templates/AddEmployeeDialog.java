@@ -83,22 +83,13 @@ public class AddEmployeeDialog {
         Button closeBtn = new Button("X");
         closeBtn.setMinSize(32, 32);
         closeBtn.setMaxSize(32, 32);
-        closeBtn.setStyle(
-                "-fx-background-color: transparent;" +
-                        "-fx-background-radius: 8;" +
-                        "-fx-cursor: hand;" +
-                        "-fx-text-fill: " + Themes.TEXT_MUTED + ";" +
-                        "-fx-font-weight: bold;" +
-                        "-fx-font-size: 16px;" +
-                        "-fx-padding: 0;"
-        );
+        closeBtn.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-weight: bold; -fx-font-size: 16px; -fx-padding: 0;");
         closeBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         header.getChildren().addAll(titleBox, spacer, closeBtn);
 
-        // Form Fields
         VBox form = new VBox(15);
 
         TextField nameField = UIFactory.inputField("Name");
@@ -163,15 +154,49 @@ public class AddEmployeeDialog {
             statusCombo.setValue(employeeToEdit.getStatus());
         }
 
-        // Save Button
+        HBox actionBox = new HBox(20);
+        actionBox.setAlignment(Pos.CENTER_RIGHT);
+        actionBox.setPadding(new Insets(10, 0, 0, 0));
+
+        Button cancelBtn = new Button("Cancel");
+        cancelBtn.setMinWidth(Region.USE_PREF_SIZE);
+        cancelBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-padding: 10 20;");
+        cancelBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
+
+        cancelBtn.setOnMousePressed(e -> {
+            cancelBtn.setScaleX(0.98);
+            cancelBtn.setScaleY(0.98);
+        });
+
+        cancelBtn.setOnMouseReleased(e -> {
+            cancelBtn.setScaleX(1.0);
+            cancelBtn.setScaleY(1.0);
+        });
+
         StateButton saveBtn = new StateButton(isEditMode ? "Update" : "Save", StateButton.ButtonType.PRIMARY);
 
         saveBtn.setMaxWidth(Double.MAX_VALUE);
         saveBtn.setMinHeight(50);
+        HBox.setHgrow(saveBtn, Priority.ALWAYS);
+
+        saveBtn.setOnMousePressed(e -> {
+            saveBtn.setScaleX(0.98);
+            saveBtn.setScaleY(0.98);
+        });
+
+        saveBtn.setOnMouseReleased(e -> {
+            saveBtn.setScaleX(1.0);
+            saveBtn.setScaleY(1.0);
+        });
+
+        final String origNameStyle = nameField.getStyle();
+        String errorBorder = "-fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8;";
 
         saveBtn.setOnAction(e -> {
+            nameField.setStyle(origNameStyle);
+
             if (nameField.getText().trim().isEmpty()) {
-                nameField.setStyle(nameField.getStyle() + "-fx-border-color: " + Themes.TEXT_ERROR + ";");
+                nameField.setStyle(nameField.getStyle() + errorBorder);
                 return;
             }
 
@@ -197,7 +222,9 @@ public class AddEmployeeDialog {
             }).start();
         });
 
-        root.getChildren().addAll(header, form, saveBtn);
+        actionBox.getChildren().addAll(cancelBtn, saveBtn);
+
+        root.getChildren().addAll(header, form, actionBox);
 
         Scene scene = new Scene(shadowWrapper);
         scene.setFill(null);
@@ -211,7 +238,6 @@ public class AddEmployeeDialog {
 
         modal.setScene(scene);
 
-        // Entrance Animation
         shadowWrapper.setOpacity(0);
         shadowWrapper.setTranslateY(30);
 
@@ -247,6 +273,7 @@ public class AddEmployeeDialog {
 
         ParallelTransition exit = new ParallelTransition(fadeOut, slideDown);
         exit.setOnFinished(e -> modal.close());
+
         exit.play();
     }
 }

@@ -228,16 +228,46 @@ public class AddTransactionDialog {
 
         form.getChildren().addAll(amountBox, descBox, splitBox, dateBox);
 
+        HBox actionBox = new HBox(20);
+        actionBox.setAlignment(Pos.CENTER_RIGHT);
+        actionBox.setPadding(new Insets(10, 0, 0, 0));
+
+        Button cancelBtn = new Button("Cancel");
+        cancelBtn.setMinWidth(Region.USE_PREF_SIZE);
+        cancelBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-padding: 10 20;");
+        cancelBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
+
+        cancelBtn.setOnMousePressed(e -> {
+            cancelBtn.setScaleX(0.98);
+            cancelBtn.setScaleY(0.98);
+        });
+
+        cancelBtn.setOnMouseReleased(e -> {
+            cancelBtn.setScaleX(1.0);
+            cancelBtn.setScaleY(1.0);
+        });
+
         StateButton saveBtn = new StateButton("Save", StateButton.ButtonType.PRIMARY);
         saveBtn.setMinHeight(50);
         saveBtn.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(saveBtn, Priority.ALWAYS);
+
+        saveBtn.setOnMousePressed(e -> {
+            saveBtn.setScaleX(0.98);
+            saveBtn.setScaleY(0.98);
+        });
+
+        saveBtn.setOnMouseReleased(e -> {
+            saveBtn.setScaleX(1.0);
+            saveBtn.setScaleY(1.0);
+        });
 
         final String origAmountStyle = amountField.getStyle();
         final String origDescStyle = descField.getStyle();
         final String origDateStyle = datePicker.getStyle();
         final String origAccountStyle = accountCombo.getStyle();
 
-        String errorBorder = "-fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-width: 1.5; -fx-border-radius: 6;";
+        String errorBorder = "-fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8;";
 
         saveBtn.setOnAction(e -> {
             amountField.setStyle(origAmountStyle);
@@ -303,7 +333,9 @@ public class AddTransactionDialog {
             }).start();
         });
 
-        root.getChildren().addAll(header, toggleBox, form, saveBtn);
+        actionBox.getChildren().addAll(cancelBtn, saveBtn);
+
+        root.getChildren().addAll(header, toggleBox, form, actionBox);
 
         Scene scene = new Scene(shadowWrapper);
         scene.setFill(null);
