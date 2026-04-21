@@ -172,7 +172,7 @@ public class Sidebar {
      
         logoutBtn.setOnMouseClicked(e -> {
             SessionManager.getInstance().logout();
-            ToastManager.showSuccess(stage, "Logged out successfully")
+            ToastManager.showSuccess(stage, "Logged out successfully");
 
             BaseView loginView = new LoginView();
             loginView.show(stage);
