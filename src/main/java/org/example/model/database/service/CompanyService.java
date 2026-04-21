@@ -16,25 +16,60 @@ public class CompanyService {
         String sql = "INSERT INTO companies (name, industry, country, currency) " +
                      "VALUES (?, ?, ?, ?) RETURNING id, created_at";
 
-        try (Connection connection = ConnectionProvider.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setString(1, company.getName());
-            preparedStatement.setString(2, company.getIndustry());
-            preparedStatement.setString(3, company.getCountry());
-            preparedStatement.setString(4, company.getCurrency());
+        Connection connection = null;
+        boolean originalAutoCommit = true;
+        try {
+            connection = ConnectionProvider.getConnection();
+            originalAutoCommit = connection.getAutoCommit();
+            connection.setAutoCommit(false);
 
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    company.setId(resultSet.getInt("id"));
-                    company.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, company.getName());
+                preparedStatement.setString(2, company.getIndustry());
+                preparedStatement.setString(3, company.getCountry());
+                preparedStatement.setString(4, company.getCurrency());
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        company.setId(resultSet.getInt("id"));
+                        company.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+                    }
                 }
             }
 
+            // create a default account for the new company to avoid null account_id issues
+            String accSql = "INSERT INTO accounts (company_id, account_name, currency, limit_amount, category, cycle) " +
+                            "VALUES (?, ?, ?, ?, ?::account_category, ?::account_cycle) RETURNING id, created_at";
+            try (PreparedStatement psAcc = connection.prepareStatement(accSql)) {
+                psAcc.setInt(1, company.getId());
+                String defaultAccountName = company.getName() + " - Default";
+                psAcc.setString(2, defaultAccountName);
+                psAcc.setString(3, company.getCurrency());
+                psAcc.setNull(4, Types.INTEGER);
+                psAcc.setString(5, "OTHER");
+                psAcc.setString(6, "MONTHLY");
+
+                try (ResultSet rs = psAcc.executeQuery()) {
+                    if (rs.next()) {
+                        int accountId = rs.getInt("id");
+                        logger.info("Default account created for company id={} account_id={}", company.getId(), accountId);
+                    }
+                }
+            }
+
+            connection.commit();
             logger.info("Company created: id={} name={}", company.getId(), company.getName());
             return company;
         } catch (SQLException e) {
+            if (connection != null) {
+                try { connection.rollback(); } catch (SQLException ex) { /* ignore */ }
+            }
             logger.error("Failed to create company {}", company == null ? "<null>" : company.getName(), e);
             throw e;
+        } finally {
+            if (connection != null) {
+                try { connection.setAutoCommit(originalAutoCommit); connection.close(); } catch (SQLException ignored) {}
+            }
         }
     }
 

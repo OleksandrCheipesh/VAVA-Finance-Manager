@@ -4,11 +4,14 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.example.SessionManager;
+import org.example.model.database.entity.Company;
 import org.example.model.database.entity.User;
 import org.example.model.PasswordUtil;
+import org.example.model.database.service.CompanyService;
 import org.example.model.database.service.UserService;
-import org.example.model.database.entity.Position;
 import org.example.model.models.SettingsModel;
+import org.example.model.validation.CompanyValExept;
+import org.example.model.validation.CompanyValidator;
 
 import java.sql.SQLException;
 
@@ -35,10 +38,18 @@ public class SettingsViewModel {
     }
 
     private void loadInitialData() {
-        companyName.set("Mint Management");
-        country.set("Slovakia");
-        currency.set("EUR (€)");
-        industry.set("Financial Services");
+        try {
+            Company company = SessionManager.getInstance().getCurrentCompany();
+            companyName.set(company.getName());
+            country.set(company.getCountry());
+            currency.set(company.getCurrency());
+            industry.set(company.getIndustry());
+        } catch (Exception e) {
+            companyName.set("Unknown");
+            country.set("Unknown");
+            currency.set("Unknown");
+            industry.set("Unknown");
+        }
 
         try {
             int companyId = SessionManager.getInstance().getCurrentUser().getCompanyId();
@@ -48,8 +59,18 @@ public class SettingsViewModel {
         }
     }
 
-    public void saveCompanyProfile() {
-        System.out.println("Saving Company: " + companyName.get());
+        public void saveCompanyProfile(String name,String industry, String country, String currency) throws CompanyValExept {
+            Company company = new Company(name,industry,country,currency);
+            company.setId(SessionManager.getInstance().getCurrentCompany().getId());
+            CompanyValidator.validate(company);
+            CompanyService db = new CompanyService();
+            try {
+                db.updateCompany(company);
+                SessionManager.getInstance().setCurrentCompany(company);
+            } catch (SQLException e) {
+//                TODO: loging
+            }
+
     }
 
     public void applyPreferences() {

@@ -10,6 +10,9 @@ import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import org.example.SessionManager;
+import org.example.model.database.entity.User;
+import org.example.view.authentication.LoginView;
 import org.example.view.mainStages.*;
 
 public class Sidebar {
@@ -52,7 +55,13 @@ public class Sidebar {
         logo.setMinSize(36, 36);
         logo.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-background-radius: 10;");
 
-        Label adminLabel = new Label("Admin");
+        String compName;
+        try {
+            compName = SessionManager.getInstance().getCurrentCompany().getName();
+        } catch (Exception e) {
+            compName = "Unknown";
+        }
+        Label adminLabel = new Label(compName);
         adminLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: 900; -fx-text-fill: white;");
 
         logoBox.getChildren().addAll(logo, adminLabel);
@@ -123,9 +132,19 @@ public class Sidebar {
         profileCard.setStyle("-fx-background-color: " + Themes.SIDEBAR_PROFILE_BG + "; -fx-background-radius: 12; -fx-padding: 16;");
 
         VBox textContainer = new VBox(2);
-        Label name = new Label("Alex Johnson");
+
+        User user = SessionManager.getInstance().getCurrentUser();
+        String fullName = (user != null)
+                ? user.getName() + " " + user.getSurname()
+                : "Unknown User";
+
+        String roleText = (user != null && user.getPosition() != null)
+                ? user.getPosition().name()
+                : "No Role";
+
+        Label name = new Label(fullName);
         name.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: white;");
-        Label role = new Label("System Admin");
+        Label role = new Label(roleText);
         role.setStyle("-fx-font-size: 13px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
         textContainer.getChildren().addAll(name, role);
@@ -150,7 +169,15 @@ public class Sidebar {
             logoutBtn.setScaleY(1.0);
         });
 
-        logoutBtn.setOnMouseClicked(e -> ToastManager.showSuccess(stage, "Logged out successfully"));
+     
+        logoutBtn.setOnMouseClicked(e -> {
+            SessionManager.getInstance().logout();
+            ToastManager.showSuccess(stage, "Logged out successfully")
+
+            BaseView loginView = new LoginView();
+            loginView.show(stage);
+        });
+
 
         profileCard.getChildren().addAll(textContainer, logoutBtn);
         return profileCard;

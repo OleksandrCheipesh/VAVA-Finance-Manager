@@ -9,6 +9,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import org.example.model.database.entity.Position;
 import org.example.model.database.entity.User;
+import org.example.model.validation.CompanyValExept;
 import org.example.view.templates.*;
 import org.example.viewModel.SettingsViewModel;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -137,7 +138,47 @@ public class SettingsView extends BaseView {
             viewModel.languageProperty().set("Slovak");
         });
 
-        saveCompanyBtn.setOnAction(e -> viewModel.saveCompanyProfile());
+        saveCompanyBtn.setOnAction(e -> {
+            String normalStyle = "-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 15; -fx-border-width: 0;";
+            String errorStyle = "-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 15; -fx-border-width: 2; -fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-radius: 8;";
+            try {
+                industryBox.setStyle(normalStyle);
+                countryBox.setStyle(normalStyle);
+                currencyBox.setStyle(normalStyle);
+                companyNameField.setStyle(normalStyle);
+                viewModel.saveCompanyProfile(this.companyNameField.getText(),this.industryBox.getValue(),this.countryBox.getValue(),this.currencyBox.getValue());
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Success");
+                alert.setHeaderText(null);
+                alert.setContentText("Current company successfully updated");
+                alert.initOwner(stage);
+                alert.showAndWait();
+            } catch (CompanyValExept ex) {
+                switch (ex.getCode()) {
+                    case NAME_ERR:
+                        companyNameField.setStyle(errorStyle);
+                        break;
+
+                    case INDUSTRY_ERR:
+                        industryBox.setStyle(errorStyle);
+                        break;
+
+                    case COUNTRY_ERR:
+                        countryBox.setStyle(errorStyle);
+                        break;
+
+                    case CURRENCY_ERR:
+                        currencyBox.setStyle(errorStyle);
+                        break;
+                }
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText(ex.getMessage());
+                alert.initOwner(stage);
+                alert.showAndWait();
+            }
+        });
         applyPrefsBtn.setOnAction(e -> viewModel.applyPreferences());
 
         addUserBtn.setOnAction(e -> AddUserDialog.show(stage, viewModel.getUsers(), viewModel::addUser));

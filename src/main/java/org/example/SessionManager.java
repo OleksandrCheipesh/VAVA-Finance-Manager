@@ -1,16 +1,22 @@
 package org.example;
 
 
+import org.example.model.database.entity.Company;
 import org.example.model.database.entity.Position;
 import org.example.model.database.entity.User;
 import org.example.logging.AppLog;
+import org.example.model.database.service.CompanyService;
+
+import java.sql.SQLException;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 
 public final class SessionManager {
 
     private static SessionManager instance;
     private User currentUser;
-
+    private Company currentCompany;
 
     private SessionManager() {
         this.currentUser = null;
@@ -36,6 +42,18 @@ public final class SessionManager {
             throw new IllegalArgumentException("Cannot login with null user");
         }
         this.currentUser = user;
+
+        Integer companyId = user.getCompanyId();
+        if (companyId == null) {
+            currentCompany = null;
+        } else {
+            try {
+                currentCompany = new CompanyService().getCompanyById(companyId).orElse(null);
+            } catch (SQLException e) {
+                currentCompany = null;
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        }
         logger.info("User login: id={} email={}", user.getId(), user.getEmail());
         AppLog.pushSession(getStatus());
     }
@@ -75,6 +93,10 @@ public final class SessionManager {
         return companyId;
     }
 
+    public synchronized void setCurrentCompany(Company currentCompany) {
+        this.currentCompany = currentCompany;
+    }
+
     public synchronized SessionStatus getStatus() {
         return new SessionStatus(
                 currentUser != null ? currentUser.getId() : -1,
@@ -102,4 +124,11 @@ public final class SessionManager {
             String email,
             Integer companyId
     ) {}
+
+    public Company getCurrentCompany() {
+        if (currentCompany == null) {
+            throw new IllegalStateException("No authenticated company in session");
+        }
+        return currentCompany;
+    }
 }
