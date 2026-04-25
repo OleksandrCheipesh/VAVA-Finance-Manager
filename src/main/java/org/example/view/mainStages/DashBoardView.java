@@ -320,7 +320,14 @@ public class DashBoardView extends BaseView {
 
     private VBox createBaseCard() {
         VBox card = new VBox();
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 10, 0, 0, 4);");
+
+        card.setStyle("-fx-background-color: white; " +
+                "-fx-background-radius: 16; " +
+                "-fx-border-color: " + Themes.BORDER_LIGHT + "; " +
+                "-fx-border-width: 1; " +
+                "-fx-border-radius: 16; " +
+                "-fx-padding: 25; " +
+                "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 4);");
 
         return card;
     }

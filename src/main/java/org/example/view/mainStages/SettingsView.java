@@ -256,6 +256,7 @@ public class SettingsView extends BaseView {
         grid.getColumnConstraints().addAll(col1, col2);
 
         card.getChildren().addAll(header, grid);
+
         return card;
     }
 
@@ -289,6 +290,7 @@ public class SettingsView extends BaseView {
         applyPrefsBtn.setStyle("-fx-background-color: #E5E7EB; -fx-text-fill: #374151; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-insets: 0;");
 
         card.getChildren().addAll(header, langLabel, langToggle, createField("DATE FORMAT", dateBox), applyPrefsBtn);
+
         return card;
     }
 
@@ -406,6 +408,7 @@ public class SettingsView extends BaseView {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         card.getChildren().addAll(header, table);
+
         return card;
     }
 
@@ -438,13 +441,25 @@ public class SettingsView extends BaseView {
         HBox btnContainer = new HBox(savePassBtn);
         btnContainer.setAlignment(Pos.CENTER);
         card.getChildren().addAll(header, createSecurePasswordFieldWrapper("CURRENT PASSWORD", "••••••••••••", currentPassField), newPassRow, btnContainer);
+
         return card;
     }
 
     private VBox createCard() {
         VBox card = new VBox(25);
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 30; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-width: 1;");
-        card.setEffect(new javafx.scene.effect.DropShadow(10, Color.rgb(0, 0, 0, 0.05)));
+
+        card.setStyle(
+                "-fx-background-color: white; " +
+                        "-fx-background-radius: 16; " +
+                        "-fx-border-radius: 16; " +
+                        "-fx-border-color: " + Themes.BORDER_LIGHT + "; " +
+                        "-fx-border-width: 1; " +
+                        "-fx-padding: 30; " +
+                        "-fx-background-insets: 0;"
+        );
+
+        card.setEffect(new javafx.scene.effect.DropShadow(10, Color.rgb(0, 0, 0, 0.03)));
+
         return card;
     }
 
@@ -458,33 +473,41 @@ public class SettingsView extends BaseView {
         icon.setIconColor(Color.web(colorHex));
 
         pane.getChildren().add(icon);
+
         return pane;
     }
 
     private VBox createField(String labelText, Control inputControl) {
         VBox box = new VBox(8);
+
         Label label = new Label(labelText);
         label.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+
         inputControl.setMaxWidth(Double.MAX_VALUE);
         box.getChildren().addAll(label, inputControl);
+
         return box;
     }
 
     private TextField createTextField(String prompt) {
         TextField tf = new TextField();
+
         tf.setPromptText(prompt);
         tf.setMinHeight(44); tf.setPrefHeight(44); tf.setMaxHeight(44);
-        tf.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 15; -fx-border-width: 0;");
+        tf.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 15; -fx-border-color: transparent; -fx-background-insets: 0;");
+
         return tf;
     }
 
     private ComboBox<String> createComboBox(String prompt, String... items) {
         ComboBox<String> cb = new ComboBox<>();
+
         cb.getItems().addAll(items);
         cb.setPromptText(prompt);
         cb.setMinHeight(44); cb.setPrefHeight(44); cb.setMaxHeight(44);
-        cb.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 15; -fx-border-width: 0;");
+        cb.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 5; -fx-border-color: transparent; -fx-background-insets: 0;");
         cb.setMaxWidth(Double.MAX_VALUE);
+
         return cb;
     }
 
@@ -530,6 +553,7 @@ public class SettingsView extends BaseView {
 
         pane.getChildren().addAll(pf, tf, eyePane);
         box.getChildren().addAll(label, pane);
+
         return box;
     }
 }
