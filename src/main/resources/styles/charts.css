@@ -1,0 +1,30 @@
+/* Globally for all charts */
+.chart {
+    -fx-padding: 10px;
+}
+.chart-plot-background {
+    -fx-background-color: transparent;
+}
+.chart-vertical-grid-lines, .chart-horizontal-grid-lines {
+    -fx-stroke: #F3F4F6;
+    -fx-stroke-width: 1px;
+}
+.axis {
+    -fx-tick-label-fill: #9CA3AF;
+    -fx-font-size: 11px;
+}
+.axis-line {
+    -fx-stroke: transparent;
+}
+.chart-legend {
+    -fx-background-color: transparent;
+    -fx-padding: 10 0 0 0;
+}
+
+/* Structural stuff for columns and rows */
+.income-expense-chart .chart-bar {
+    -fx-background-radius: 4 4 0 0;
+}
+.trend-line-chart .chart-series-line {
+    -fx-stroke-width: 2px;
+}

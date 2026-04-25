@@ -8,10 +8,9 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
-import org.example.view.templates.BaseView;
-import org.example.view.templates.StateButton;
-import org.example.view.templates.Themes;
+import org.example.view.templates.*;
 import org.example.viewModel.DashboardViewModel;
+import org.example.viewModel.ReportsViewModel;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -25,6 +24,9 @@ public class DashBoardView extends BaseView {
     private Label revenueBadgeLabel;
     private Label activeProjectsValueLabel;
     private VBox transactionsListContainer;
+
+    // Report ViewModel instance to get dummy data for charts
+    private final ReportsViewModel reportsViewModel = new ReportsViewModel();
 
     @Override
     protected void setContent() {
@@ -135,7 +137,7 @@ public class DashBoardView extends BaseView {
 
         kpiContainer.getChildren().addAll(revenueCard, projectsCard);
 
-        // Placeholder for Revenue Chart
+        // Trend bar and Bar graphs
         VBox revenueChartCard = createBaseCard();
         VBox.setVgrow(revenueChartCard, Priority.ALWAYS);
 
@@ -155,7 +157,6 @@ public class DashBoardView extends BaseView {
         HBox.setHgrow(chartSpacer, Priority.ALWAYS);
 
         HBox toggleBox = new HBox(2);
-
         toggleBox.setAlignment(Pos.CENTER);
         toggleBox.setStyle("-fx-background-color: #F8FAFC; -fx-background-radius: 10; -fx-padding: 4;");
         toggleBox.setMaxHeight(Region.USE_PREF_SIZE);
@@ -163,15 +164,17 @@ public class DashBoardView extends BaseView {
         Button dailyBtn = createToggleButton("Daily", false);
         Button weeklyBtn = createToggleButton("Weekly", true);
         Button monthlyBtn = createToggleButton("Monthly", false);
-
         toggleBox.getChildren().addAll(dailyBtn, weeklyBtn, monthlyBtn);
 
         chartHeader.getChildren().addAll(chartTitleBox, chartSpacer, toggleBox);
 
-        Region chartPlaceholder = new Region();
-        VBox.setVgrow(chartPlaceholder, Priority.ALWAYS);
+        TrendLineChart trendChart = new TrendLineChart(reportsViewModel.getMonthlySummaries());
+        IncomeExpenseBarChart barChart = new IncomeExpenseBarChart(reportsViewModel.getMonthlySummaries());
 
-        revenueChartCard.getChildren().addAll(chartHeader, chartPlaceholder);
+        VBox chartContainer = new VBox(15, trendChart, barChart);
+        VBox.setVgrow(chartContainer, Priority.ALWAYS);
+
+        revenueChartCard.getChildren().addAll(chartHeader, chartContainer);
 
         leftColumn.getChildren().addAll(kpiContainer, revenueChartCard);
 
@@ -179,16 +182,16 @@ public class DashBoardView extends BaseView {
         rightColumn.setPrefWidth(380);
         rightColumn.setMinWidth(380);
 
-        // Placeholder for Expense Distribution
+        // PieChart
         VBox expenseCard = createBaseCard();
         expenseCard.setMinHeight(250);
 
-        Label expenseTitle = new Label("Expense Distribution");
+        Label expenseTitle = new Label("Top Projects");
         expenseTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: " + Themes.DARK_TEXT + ";");
 
-        Region expensePlaceholder = new Region();
-        VBox.setVgrow(expensePlaceholder, Priority.ALWAYS);
-        expenseCard.getChildren().addAll(expenseTitle, expensePlaceholder);
+        ProjectPieChart pieChart = new ProjectPieChart(reportsViewModel.getProjectSummaries());
+        VBox.setVgrow(pieChart, Priority.ALWAYS);
+        expenseCard.getChildren().addAll(expenseTitle, pieChart);
 
         // Recent Transactions
         VBox transactionsCard = createBaseCard();
@@ -231,6 +234,7 @@ public class DashBoardView extends BaseView {
 
         try {
             scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/styles/charts.css").toExternalForm());
         } catch (Exception e) {
             System.out.println("Warning: CSS files not found.");
         }
