@@ -116,8 +116,8 @@ public class ProjectsView extends BaseView {
 
 //        Мне нужно здесь подключить данные из view model
         summaryBox.getChildren().addAll(
-                createHeaderWidget("TOTAL BUDGET", viewModel.budgetProperty(), "💼"),
-                createHeaderWidget("ACTIVE SPRINT", viewModel.activeProjectProperty(), "⏱")
+                createHeaderWidget("TOTAL BUDGET", viewModel.budgetProperty(), "wallet"),
+                createHeaderWidget("ACTIVE SPRINT", viewModel.activeProjectProperty(), "calendar")
         );
 
         contentHeader.getChildren().addAll(activeTitle, searchContainer, headerSpacer, summaryBox);
@@ -312,13 +312,17 @@ public class ProjectsView extends BaseView {
         return card;
     }
 
-    private HBox createHeaderWidget(String title, StringProperty valueProperty, String iconTxt) {
+    private HBox createHeaderWidget(String title, StringProperty valueProperty, String iconName) {
         HBox widget = new HBox(15);
         widget.setAlignment(Pos.CENTER_LEFT);
         widget.setStyle("-fx-background-color: white; -fx-border-color: #E2E8F0; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12 20;");
 
-        Label icon = new Label(iconTxt);
-        icon.setStyle("-fx-background-color: #E6F7F6; -fx-text-fill: " + Themes.PRIMARY + "; -fx-padding: 8; -fx-background-radius: 8; -fx-font-size: 16px;");
+        StackPane iconBox = new StackPane();
+        iconBox.setMinSize(36, 36);
+        iconBox.setMaxSize(36, 36);
+        iconBox.setStyle("-fx-background-color: #E6F7F6; -fx-background-radius: 8;");
+        ImageView iconView = IconFactory.getIcon(iconName, 18);
+        iconBox.getChildren().add(iconView);
 
         VBox textBox = new VBox(2);
         Label lblTitle = new Label(title);
@@ -328,7 +332,7 @@ public class ProjectsView extends BaseView {
         lblValue.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
         textBox.getChildren().addAll(lblTitle, lblValue);
 
-        widget.getChildren().addAll(icon, textBox);
+        widget.getChildren().addAll(iconBox, textBox);
         return widget;
     }
 }
