@@ -133,12 +133,14 @@ public class EditTransactionDialog {
         VBox form = new VBox(15);
         TextField amountField = UIFactory.inputField("0.00");
         if (!initialAmount.isEmpty()) amountField.setText(initialAmount);
-        VBox amountBox = createLabeledField("Amount", amountField);
+        Label amountError = errorLabel();
+        VBox amountBox = createLabeledField("Amount", amountField, amountError);
 
         String initialDesc = existingTx != null && existingTx.getDescription() != null ? existingTx.getDescription() : "";
         TextField descField = UIFactory.inputField("Enter description");
         if (!initialDesc.isEmpty()) descField.setText(initialDesc);
-        VBox descBox = createLabeledField("Description", descField);
+        Label descError = errorLabel();
+        VBox descBox = createLabeledField("Description", descField, descError);
 
         // Account selector — pre-select account matching existingTx.accountId
         boolean hasAccounts = !accounts.isEmpty();
@@ -174,7 +176,8 @@ public class EditTransactionDialog {
                 }
             }
         }
-        VBox accountBox = createLabeledField("Account", accountCombo);
+        Label accountError = errorLabel();
+        VBox accountBox = createLabeledField("Account", accountCombo, accountError);
 
         Map<String, Integer> projectNameToId = new HashMap<>();
         ComboBox<String> projectCombo = UIFactory.inputComboBox("Select Project");
@@ -189,7 +192,8 @@ public class EditTransactionDialog {
         if (initialProject != null) {
             projectCombo.setValue(initialProject);
         }
-        VBox projectBox = createLabeledField("Project", projectCombo);
+        Label projectError = errorLabel();
+        VBox projectBox = createLabeledField("Project", projectCombo, projectError);
 
         HBox splitBox = new HBox(15);
         HBox.setHgrow(accountBox, Priority.ALWAYS);
@@ -209,7 +213,8 @@ public class EditTransactionDialog {
             }
         });
 
-        VBox dateBox = createLabeledField("Date", datePicker);
+        Label dateError = errorLabel();
+        VBox dateBox = createLabeledField("Date", datePicker, dateError);
 
         form.getChildren().addAll(amountBox, descBox, splitBox, dateBox);
 
@@ -221,50 +226,63 @@ public class EditTransactionDialog {
         final String origDateStyle = datePicker.getStyle();
         final String origAccountStyle = accountCombo.getStyle();
 
-        String errorBorder = "-fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-width: 1.5; -fx-border-radius: 6;";
+        String errorBorder = "-fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8;";
 
         saveBtn.setOnAction(e -> {
-            amountField.setStyle(origAmountStyle);
-            descField.setStyle(origDescStyle);
-            datePicker.setStyle(origDateStyle);
-            accountCombo.setStyle(origAccountStyle);
+            // Clear all previous errors
+            clearFieldError(amountField, origAmountStyle, amountError);
+            clearFieldError(descField, origDescStyle, descError);
+            clearFieldError(datePicker, origDateStyle, dateError);
+            clearFieldError(accountCombo, origAccountStyle, accountError);
 
             boolean valid = true;
-            if (amountField.getText().isBlank()) {
-                amountField.setStyle(amountField.getStyle() + errorBorder);
+
+            // Validate amount — parse immediately, not in background thread
+            BigDecimal amount = null;
+            String amountText = amountField.getText().trim();
+            if (amountText.isBlank()) {
+                showFieldError(amountField, errorBorder, amountError, "Amount is required");
                 valid = false;
+            } else {
+                try {
+                    amount = new BigDecimal(amountText);
+                    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+                        showFieldError(amountField, errorBorder, amountError, "Amount must be greater than zero");
+                        valid = false;
+                    }
+                } catch (NumberFormatException ex) {
+                    showFieldError(amountField, errorBorder, amountError, "Enter a valid number (e.g. 1500.00)");
+                    valid = false;
+                }
             }
+
             if (descField.getText().isBlank()) {
-                descField.setStyle(descField.getStyle() + errorBorder);
+                showFieldError(descField, errorBorder, descError, "Description is required");
                 valid = false;
             }
+
             if (datePicker.getValue() == null) {
-                datePicker.setStyle(datePicker.getStyle() + errorBorder);
+                showFieldError(datePicker, errorBorder, dateError, "Please select a date");
                 valid = false;
             }
+
             if (accountCombo.getValue() == null) {
-                accountCombo.setStyle(accountCombo.getStyle() + errorBorder);
+                showFieldError(accountCombo, errorBorder, accountError,
+                        accounts.isEmpty() ? "No accounts available — create one first" : "Please select an account");
                 valid = false;
             }
+
             if (!valid) {
-                ToastManager.showError(owner, accounts.isEmpty()
-                        ? "No accounts found. Please create an account first."
-                        : "Please fill in all required fields correctly.");
+                ToastManager.showError(owner, "Please fix the highlighted fields.");
                 return;
             }
 
+            final BigDecimal finalAmount = amount;
             saveBtn.setLoading(true);
             new Thread(() -> {
                 try { Thread.sleep(800); } catch (InterruptedException ex) { Thread.currentThread().interrupt(); }
                 javafx.application.Platform.runLater(() -> {
                     try {
-                        BigDecimal amount = new BigDecimal(amountField.getText().trim());
-                        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-                            saveBtn.setLoading(false);
-                            amountField.setStyle(amountField.getStyle() + errorBorder);
-                            return;
-                        }
-
                         String desc = descField.getText().trim();
                         java.time.LocalDate date = datePicker.getValue();
                         Integer clientId = null;
@@ -273,16 +291,14 @@ public class EditTransactionDialog {
 
                         int txId = existingTx != null ? existingTx.getId() : 0;
                         int txCompanyId = existingTx != null ? existingTx.getCompanyId() : 0;
-                        Transaction newTx = new Transaction(txCompanyId, accountId, projectId, clientId, selectedType, amount, desc, date);
+                        Transaction newTx = new Transaction(txCompanyId, accountId, projectId, clientId, selectedType, finalAmount, desc, date);
                         newTx.setId(txId);
 
                         onSuccess.accept(newTx);
                         closeWithAnimation(modal, shadowWrapper);
-                    } catch (NumberFormatException ex) {
-                        saveBtn.setLoading(false);
-                        amountField.setStyle(amountField.getStyle() + errorBorder);
                     } catch (Exception ex) {
                         saveBtn.setLoading(false);
+                        ToastManager.showError(owner, "Something went wrong. Please try again.");
                         var logger = AppLog.getLogger(EditTransactionDialog.class);
                         logger.error("Unexpected error saving transaction: {}", ex.getMessage(), ex);
                     }
@@ -319,10 +335,34 @@ public class EditTransactionDialog {
         entranceAnimation.play();
     }
 
-    private static VBox createLabeledField(String labelText, Node field) {
+    private static Label errorLabel() {
+        Label lbl = new Label();
+        lbl.setStyle("-fx-text-fill: " + Themes.TEXT_ERROR + "; -fx-font-size: 11px;");
+        lbl.setVisible(false);
+        lbl.setManaged(false);
+        return lbl;
+    }
+
+    private static void showFieldError(Node field, String errorBorder, Label errorLabel, String message) {
+        field.setStyle(field.getStyle() + errorBorder);
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
+        errorLabel.setManaged(true);
+    }
+
+    private static void clearFieldError(Node field, String origStyle, Label errorLabel) {
+        field.setStyle(origStyle);
+        errorLabel.setVisible(false);
+        errorLabel.setManaged(false);
+    }
+
+    private static VBox createLabeledField(String labelText, Node field, Label errorLabel) {
         Label label = new Label(labelText);
         label.setStyle("-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-size: 13px;");
-        return new VBox(5, label, field);
+        VBox box = new VBox(4, label, field, errorLabel);
+        box.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(box, Priority.ALWAYS);
+        return box;
     }
 
     private static void closeWithAnimation(Stage modal, Node animatedNode) {
