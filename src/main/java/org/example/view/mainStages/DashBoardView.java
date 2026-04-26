@@ -7,10 +7,10 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.SVGPath;
 import org.example.view.templates.*;
 import org.example.viewModel.DashboardViewModel;
 import org.example.viewModel.ReportsViewModel;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -76,9 +76,9 @@ public class DashBoardView extends BaseView {
         HBox.setHgrow(revenueCard, Priority.ALWAYS);
 
         HBox revHeader = new HBox();
-        revHeader.setAlignment(Pos.TOP_LEFT);
+        revHeader.setAlignment(Pos.CENTER_LEFT);
 
-        StackPane revIconBox = createIconBox("M12 6v12m-3-2.818.879.659 1.171.224 1.545-.216C12.863 15.37 14.5 14.512 14.5 13c0-1.5-2-2-3.5-2C9.5 11 8 10.5 8 9c0-1.512 1.5-2.5 3.5-2.5.879 0 1.659.306 2.293.818M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z", Themes.PRIMARY);
+        StackPane revIconBox = createIcon("fas-dollar-sign", Themes.PRIMARY, Themes.PRIMARY + "22");
         Region revSpacer = new Region();
 
         HBox.setHgrow(revSpacer, Priority.ALWAYS);
@@ -102,9 +102,9 @@ public class DashBoardView extends BaseView {
         HBox.setHgrow(projectsCard, Priority.ALWAYS);
 
         HBox projHeader = new HBox();
+        projHeader.setAlignment(Pos.CENTER_LEFT);
 
-        projHeader.setAlignment(Pos.TOP_LEFT);
-        StackPane projIconBox = createIconBox("M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z", Themes.PURPLE_ICON);
+        StackPane projIconBox = createIcon("fas-briefcase", Themes.PURPLE_ICON, Themes.PURPLE_ICON + "22");
 
         Region projSpacer = new Region();
         HBox.setHgrow(projSpacer, Priority.ALWAYS);
@@ -313,27 +313,23 @@ public class DashBoardView extends BaseView {
                 "-fx-border-color: " + Themes.BORDER_LIGHT + "; " +
                 "-fx-border-width: 1; " +
                 "-fx-border-radius: 16; " +
-                "-fx-padding: 25; " +
+                "-fx-padding: 30; " +
                 "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 4);");
 
         return card;
     }
 
-    private StackPane createIconBox(String pathData, String colorHex) {
+    private StackPane createIcon(String iconCode, String colorHex, String bgColorHex) {
         StackPane pane = new StackPane();
-
         pane.setMinSize(40, 40);
         pane.setMaxSize(40, 40);
-        pane.setStyle("-fx-background-color: " + colorHex + "22; -fx-background-radius: 10;");
+        pane.setStyle("-fx-background-color: " + bgColorHex + "; -fx-background-radius: 12;");
 
-        SVGPath svg = new SVGPath();
+        FontIcon icon = new FontIcon(iconCode);
+        icon.setIconSize(16);
+        icon.setIconColor(Color.web(colorHex));
 
-        svg.setContent(pathData);
-        svg.setFill(Color.TRANSPARENT);
-        svg.setStroke(Color.web(colorHex));
-        svg.setStrokeWidth(2.0);
-
-        pane.getChildren().add(svg);
+        pane.getChildren().add(icon);
 
         return pane;
     }
