@@ -196,8 +196,20 @@ public class ReportModals {
         titleBox.getChildren().addAll(title, subTitle);
 
         Region spacer = new Region(); HBox.setHgrow(spacer, Priority.ALWAYS);
-        Button closeBtn = new Button("✕");
-        closeBtn.setStyle("-fx-background-color: transparent; -fx-font-size: 20px; -fx-cursor: hand; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-background-insets: 0;");
+
+        Button closeBtn = new Button("X");
+
+        closeBtn.setMinSize(32, 32);
+        closeBtn.setMaxSize(32, 32);
+        closeBtn.setStyle(
+                "-fx-background-color: transparent;" +
+                        "-fx-background-radius: 8;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-text-fill: " + Themes.TEXT_MUTED + ";" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-size: 16px;" +
+                        "-fx-padding: 0;"
+        );
 
         closeBtn.setOnAction(e -> closeWithAnimation(modal, container));
 
@@ -247,7 +259,7 @@ public class ReportModals {
 
         HBox customDates = new HBox(10);
 
-        VBox fromBox = new VBox(5); Label fromLbl = new Label("FROM"); fromLbl.setStyle("-fx-font-size: 9px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+        VBox fromBox = new VBox(5); Label fromLbl = new Label("FROM"); fromLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
         DatePicker fromDP = UIFactory.inputDatePicker("mm/dd/yyyy");
         fromDP.setMinHeight(44);
@@ -258,7 +270,7 @@ public class ReportModals {
         fromBox.getChildren().addAll(fromLbl, fromDP);
         HBox.setHgrow(fromBox, Priority.ALWAYS);
 
-        VBox toBox = new VBox(5); Label toLbl = new Label("TO"); toLbl.setStyle("-fx-font-size: 9px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+        VBox toBox = new VBox(5); Label toLbl = new Label("TO"); toLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
         DatePicker toDP = UIFactory.inputDatePicker("mm/dd/yyyy");
 
@@ -272,14 +284,20 @@ public class ReportModals {
         HBox.setHgrow(toBox, Priority.ALWAYS);
         customDates.getChildren().addAll(fromBox, toBox);
 
-        VBox statusBox = new VBox(5);
+        VBox statusBox = new VBox(8);
 
         Label statusLbl = new Label("PROJECT STATUS");
         statusLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
-        RadioButton r1 = new RadioButton("All Projects"); r1.setSelected(true);
+        RadioButton r1 = new RadioButton("All Projects");
+        r1.setSelected(true);
+        r1.getStyleClass().add("custom-radio");
+
         RadioButton r2 = new RadioButton("Active only");
+        r2.getStyleClass().add("custom-radio");
+
         RadioButton r3 = new RadioButton("Inactive only");
+        r3.getStyleClass().add("custom-radio");
 
         ToggleGroup tg = new ToggleGroup(); r1.setToggleGroup(tg); r2.setToggleGroup(tg); r3.setToggleGroup(tg);
         statusBox.getChildren().addAll(statusLbl, r1, r2, r3);

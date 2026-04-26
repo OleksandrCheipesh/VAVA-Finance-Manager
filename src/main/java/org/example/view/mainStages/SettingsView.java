@@ -139,14 +139,20 @@ public class SettingsView extends BaseView {
         });
 
         saveCompanyBtn.setOnAction(e -> {
-            String normalStyle = "-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 15; -fx-border-width: 0;";
-            String errorStyle = "-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 15; -fx-border-width: 2; -fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-radius: 8;";
+            String normalStyleField = "-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 15; -fx-border-color: transparent; -fx-border-width: 2; -fx-border-radius: 8;";
+            String errorStyleField = "-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 15; -fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-width: 2; -fx-border-radius: 8;";
+
+            String normalStyleCombo = "-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 5; -fx-border-color: transparent; -fx-border-width: 2; -fx-border-radius: 8;";
+            String errorStyleCombo = "-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 5; -fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-width: 2; -fx-border-radius: 8;";
+
             try {
-                industryBox.setStyle(normalStyle);
-                countryBox.setStyle(normalStyle);
-                currencyBox.setStyle(normalStyle);
-                companyNameField.setStyle(normalStyle);
+                industryBox.setStyle(normalStyleCombo);
+                countryBox.setStyle(normalStyleCombo);
+                currencyBox.setStyle(normalStyleCombo);
+                companyNameField.setStyle(normalStyleField);
+
                 viewModel.saveCompanyProfile(this.companyNameField.getText(),this.industryBox.getValue(),this.countryBox.getValue(),this.currencyBox.getValue());
+
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Success");
                 alert.setHeaderText(null);
@@ -156,22 +162,20 @@ public class SettingsView extends BaseView {
             } catch (CompanyValExept ex) {
                 switch (ex.getCode()) {
                     case NAME_ERR:
-                        companyNameField.setStyle(errorStyle);
+                        companyNameField.setStyle(errorStyleField);
                         break;
-
                     case INDUSTRY_ERR:
-                        industryBox.setStyle(errorStyle);
+                        industryBox.setStyle(errorStyleCombo);
                         break;
-
                     case COUNTRY_ERR:
-                        countryBox.setStyle(errorStyle);
+                        countryBox.setStyle(errorStyleCombo);
                         break;
-
                     case CURRENCY_ERR:
-                        currencyBox.setStyle(errorStyle);
+                        currencyBox.setStyle(errorStyleCombo);
                         break;
                 }
                 Alert alert = new Alert(Alert.AlertType.ERROR);
+
                 alert.setTitle("Error");
                 alert.setHeaderText(null);
                 alert.setContentText(ex.getMessage());
@@ -494,7 +498,7 @@ public class SettingsView extends BaseView {
 
         tf.setPromptText(prompt);
         tf.setMinHeight(44); tf.setPrefHeight(44); tf.setMaxHeight(44);
-        tf.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 15; -fx-border-color: transparent; -fx-background-insets: 0;");
+        tf.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 15; -fx-border-color: transparent; -fx-border-width: 2; -fx-border-radius: 8; -fx-background-insets: 0;");
 
         return tf;
     }
@@ -505,7 +509,7 @@ public class SettingsView extends BaseView {
         cb.getItems().addAll(items);
         cb.setPromptText(prompt);
         cb.setMinHeight(44); cb.setPrefHeight(44); cb.setMaxHeight(44);
-        cb.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 5; -fx-border-color: transparent; -fx-background-insets: 0;");
+        cb.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 5; -fx-border-color: transparent; -fx-border-width: 2; -fx-border-radius: 8; -fx-background-insets: 0;");
         cb.setMaxWidth(Double.MAX_VALUE);
 
         return cb;
