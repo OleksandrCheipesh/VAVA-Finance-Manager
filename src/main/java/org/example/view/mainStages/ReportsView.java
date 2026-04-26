@@ -23,29 +23,38 @@ public class ReportsView extends BaseView {
         buildSidebar(root);
 
         VBox mainContainer = new VBox();
-        mainContainer.setStyle("-fx-background-color: #F8FAFC;");
+        mainContainer.setStyle("-fx-background-color: " + Themes.BG_DASHBOARD + ";");
 
-        // --- 1. Top Header ---
+        // Top Header
         HBox topBar = new HBox(20);
-        topBar.setAlignment(Pos.CENTER_LEFT);
-        topBar.setStyle("-fx-background-color: white; -fx-padding: 0 40; -fx-border-color: #E2E8F0; -fx-border-width: 0 0 1 0;");
+
+        topBar.setAlignment(Pos.BOTTOM_LEFT);
+        topBar.setStyle("-fx-background-color: white; -fx-padding: 0 40; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-width: 0 0 1 0;");
         topBar.setMinHeight(85);
 
         VBox titleBox = new VBox(2);
-        titleBox.setAlignment(Pos.CENTER_LEFT);
-        Label title = new Label("Reports");
-        title.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
-        Label subTitle = new Label("Financial overview · FY 2024");
-        subTitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
-        titleBox.getChildren().addAll(title, subTitle);
-        topBar.getChildren().add(titleBox);
+        titleBox.setAlignment(Pos.BOTTOM_LEFT);
 
-        // --- 2. Content Area ---
+        Label title = new Label("Reports");
+        title.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: #111827;");
+
+        Label subTitle = new Label("Financial overview · FY 2024");
+        subTitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 14px;");
+        titleBox.getChildren().addAll(title, subTitle);
+
+        HBox.setMargin(titleBox, new Insets(0, 0, 15, 0));
+
+        Region topSpacer = new Region();
+        HBox.setHgrow(topSpacer, Priority.ALWAYS);
+
+        topBar.getChildren().addAll(titleBox, topSpacer);
+
+        // Content Area
         contentArea = new VBox(25);
         contentArea.setPadding(new Insets(30, 40, 40, 40));
         VBox.setVgrow(contentArea, Priority.ALWAYS);
 
-        // --- TOP SECTION: 3 Cards ---
+        // Top Section: 3 Cards
         HBox cardsRow = new HBox(25);
 
         VBox card1 = buildCard("PROJECT PROFIT DISTRIBUTION", "$1.4M", "TOTAL", true);
@@ -66,7 +75,7 @@ public class ReportsView extends BaseView {
 
         cardsRow.getChildren().addAll(card1, card2, card3);
 
-        // --- BOTTOM SECTION: Tabs & Table ---
+        // Bottom Section: Tabs & Table
         VBox tableSection = new VBox();
         tableSection.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-border-color: #E2E8F0; -fx-border-radius: 16;");
         VBox.setVgrow(tableSection, Priority.ALWAYS);
@@ -100,10 +109,15 @@ public class ReportsView extends BaseView {
         stage.setTitle("Admin - Reports");
     }
 
-    @Override protected void setStyle() {}
-    @Override protected void setLogic() {}
+    @Override
+    protected void setStyle() {
+        contentArea.setStyle("-fx-background-color: " + Themes.BG_DASHBOARD + ";");
+    }
 
-    // --- Card Builder ---
+    @Override
+    protected void setLogic() {}
+
+    // Card Builder
     private VBox buildCard(String titleText, String mainVal, String subVal, boolean singleStat) {
         VBox card = new VBox(15);
         card.setPadding(new Insets(25));
@@ -116,6 +130,7 @@ public class ReportsView extends BaseView {
 
         // Expand icon
         Label expandIcon = new Label();
+
         expandIcon.setGraphic(IconFactory.getIcon("layout-dashboard", 16));
         expandIcon.setOpacity(0.5);
         header.getChildren().addAll(title, spacer, expandIcon);
@@ -132,8 +147,10 @@ public class ReportsView extends BaseView {
             footer.setAlignment(Pos.CENTER);
             VBox statBox = new VBox(2);
             statBox.setAlignment(Pos.CENTER);
+
             Label val = new Label(mainVal);
-            val.setStyle("-fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+            val.setStyle("-fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: #111827;");
+
             Label sub = new Label(subVal);
             sub.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
             statBox.getChildren().addAll(val, sub);
@@ -149,8 +166,9 @@ public class ReportsView extends BaseView {
 
             VBox stat2 = new VBox(2);
             stat2.setAlignment(Pos.CENTER_RIGHT);
+
             Label lbl2 = new Label("NET EXPENSE"); lbl2.setStyle("-fx-font-size: 9px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
-            Label val2 = new Label(subVal); val2.setStyle("-fx-font-size: 20px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+            Label val2 = new Label(subVal); val2.setStyle("-fx-font-size: 20px; -fx-font-weight: 900; -fx-text-fill: #111827;");
             stat2.getChildren().addAll(lbl2, val2);
 
             footer.getChildren().addAll(stat1, footerSpacer, stat2);
@@ -160,9 +178,10 @@ public class ReportsView extends BaseView {
         return card;
     }
 
-    // --- Tabs & Filters ---
+    // Tabs & Filters
     private HBox buildTableTabs() {
         HBox header = new HBox(15);
+
         header.setAlignment(Pos.BOTTOM_LEFT);
         header.setPadding(new Insets(0, 20, 0, 20));
         header.setStyle("-fx-border-color: #E2E8F0; -fx-border-width: 0 0 1 0;");
@@ -175,21 +194,26 @@ public class ReportsView extends BaseView {
         Label tab2 = new Label("Income"); tab2.setStyle(inactiveStyle);
         Label tab3 = new Label("Expenses"); tab3.setStyle(inactiveStyle);
         Label tab4 = new Label("HR & Payroll"); tab4.setStyle(inactiveStyle);
-        Label tab5 = new Label("Monthly Table"); tab5.setStyle(activeStyle); // Active
+        Label tab5 = new Label("Monthly Table"); tab5.setStyle(activeStyle);
 
         Region spacer = new Region(); HBox.setHgrow(spacer, Priority.ALWAYS);
 
         Button filterBtn = new Button("Filters");
         filterBtn.setGraphic(IconFactory.getIcon("layout-dashboard", 14));
-        filterBtn.setStyle("-fx-background-color: #F1F5F9; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand;");
+        filterBtn.setStyle("-fx-background-color: #F1F5F9; -fx-text-fill: #111827; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-insets: 0; -fx-padding: 8 16;");
 
         Button exportBtn = new Button("Export CSV");
         exportBtn.setGraphic(IconFactory.getWhiteIcon("receipt", 14));
-        exportBtn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand;");
+        exportBtn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-insets: 0; -fx-padding: 8 16;");
+
         HBox.setMargin(exportBtn, new Insets(0, 0, 10, 0));
         HBox.setMargin(filterBtn, new Insets(0, 0, 10, 0));
 
+        addClickEffect(filterBtn);
+        addClickEffect(exportBtn);
+
         header.getChildren().addAll(tab1, tab2, tab3, tab4, tab5, spacer, filterBtn, exportBtn);
+
         return header;
     }
 
@@ -208,6 +232,7 @@ public class ReportsView extends BaseView {
 
     private HBox buildPagination() {
         HBox pagination = new HBox(10);
+
         pagination.setAlignment(Pos.CENTER_RIGHT);
         pagination.setPadding(new Insets(20));
         pagination.setStyle("-fx-border-color: #E2E8F0; -fx-border-width: 1 0 0 0;");
@@ -222,6 +247,19 @@ public class ReportsView extends BaseView {
         Button next = new Button(">"); next.setStyle("-fx-background-color: white; -fx-border-color: #E2E8F0; -fx-border-radius: 6; -fx-cursor: hand;");
 
         pagination.getChildren().addAll(info, spacer, prev, page1, page2, next);
+
         return pagination;
+    }
+
+    // Helper Methods
+    private void addClickEffect(Button btn) {
+        btn.setOnMousePressed(e -> {
+            btn.setScaleX(0.95);
+            btn.setScaleY(0.95);
+        });
+        btn.setOnMouseReleased(e -> {
+            btn.setScaleX(1.0);
+            btn.setScaleY(1.0);
+        });
     }
 }
