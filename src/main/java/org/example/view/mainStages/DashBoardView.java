@@ -57,20 +57,7 @@ public class DashBoardView extends BaseView {
         Region topSpacer = new Region();
         HBox.setHgrow(topSpacer, Priority.ALWAYS);
 
-        StateButton configBtn = new StateButton("Configurate", StateButton.ButtonType.PRIMARY);
-        HBox.setMargin(configBtn, new Insets(0, 0, 20, 0));
-
-        configBtn.setOnMousePressed(e -> {
-            configBtn.setScaleX(0.95);
-            configBtn.setScaleY(0.95);
-        });
-
-        configBtn.setOnMouseReleased(e -> {
-            configBtn.setScaleX(1.0);
-            configBtn.setScaleY(1.0);
-        });
-
-        topBar.getChildren().addAll(titleBox, topSpacer, configBtn);
+        topBar.getChildren().addAll(titleBox, topSpacer);
 
         // Content
         contentArea = new VBox(25);
@@ -91,7 +78,7 @@ public class DashBoardView extends BaseView {
         HBox revHeader = new HBox();
         revHeader.setAlignment(Pos.TOP_LEFT);
 
-        StackPane revIconBox = createIconBox("M4 4h16v12H4z M12 14a4 4 0 100-8 4 4 0 000 8z M12 10V6 M12 14v-4", Themes.PRIMARY);
+        StackPane revIconBox = createIconBox("M12 6v12m-3-2.818.879.659 1.171.224 1.545-.216C12.863 15.37 14.5 14.512 14.5 13c0-1.5-2-2-3.5-2C9.5 11 8 10.5 8 9c0-1.512 1.5-2.5 3.5-2.5.879 0 1.659.306 2.293.818M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z", Themes.PRIMARY);
         Region revSpacer = new Region();
 
         HBox.setHgrow(revSpacer, Priority.ALWAYS);
@@ -117,7 +104,7 @@ public class DashBoardView extends BaseView {
         HBox projHeader = new HBox();
 
         projHeader.setAlignment(Pos.TOP_LEFT);
-        StackPane projIconBox = createIconBox("M12 2a1 1 0 011 1v2c2.8 1.4 4.8 4.3 4.8 7.6 0 2.2-.9 4.2-2.3 5.7L12 22l-3.5-3.7C7.1 16.8 6.2 14.8 6.2 12.6 6.2 9.3 8.2 6.4 11 5V3a1 1 0 011-1z M12 12a1 1 0 110-2 1 1 0 010 2z M9.5 22h5", Themes.PURPLE_ICON);
+        StackPane projIconBox = createIconBox("M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z", Themes.PURPLE_ICON);
 
         Region projSpacer = new Region();
         HBox.setHgrow(projSpacer, Priority.ALWAYS);
