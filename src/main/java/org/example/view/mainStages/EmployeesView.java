@@ -19,6 +19,8 @@ import org.example.logging.AppLog;
 import org.example.model.database.entity.Employee;
 import org.example.view.templates.*;
 import org.example.viewModel.EmployeesViewModel;
+import javafx.scene.effect.GaussianBlur;
+
 
 public class EmployeesView extends BaseView {
 
@@ -29,6 +31,7 @@ public class EmployeesView extends BaseView {
     private AppTable<Employee> table;
     private StateButton addBtn;
     private HBox filterBar;
+    private HBox topBar;
 
     @Override
     protected void setContent() {
@@ -37,7 +40,7 @@ public class EmployeesView extends BaseView {
 
         VBox mainContainer = new VBox();
 
-        HBox topBar = new HBox(20);
+        topBar = new HBox(20);
         topBar.setAlignment(Pos.BOTTOM_LEFT);
         topBar.setStyle("-fx-background-color: " + Themes.BG_CARD + "; -fx-padding: 0 40; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-width: 0 0 1 0;");
         topBar.setMinHeight(85);
@@ -249,6 +252,29 @@ public class EmployeesView extends BaseView {
 
     @Override
     protected void setLogic() {
+        if (!viewModel.hasAccessProperty().get()) {
+            GaussianBlur blur = new GaussianBlur(10);
+            contentArea.setEffect(blur);
+
+            Label lock = new Label("🔒");
+            lock.setStyle("-fx-font-size: 48px;");
+
+            Label msg = new Label("Access Denied");
+            msg.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+            VBox box = new VBox(10, lock, msg);
+            box.setAlignment(Pos.CENTER);
+
+            StackPane overlay = new StackPane();
+            overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
+            overlay.getChildren().add(box);
+
+            StackPane wrapper = new StackPane(contentArea, overlay);
+            VBox.setVgrow(wrapper, Priority.ALWAYS);
+            root.setCenter(new VBox(topBar, wrapper));
+            return;
+        }
+
         addBtn.setOnAction(e -> AddEmployeeDialog.show(stage, null, newEmployee -> viewModel.addEmployee(newEmployee)));
 
         viewModel.messageProperty().addListener((obs, oldVal, newVal) -> {

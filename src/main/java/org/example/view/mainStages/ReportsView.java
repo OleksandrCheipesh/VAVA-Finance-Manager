@@ -6,16 +6,20 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import org.example.view.templates.*;
+import javafx.scene.effect.GaussianBlur;
+import org.example.viewModel.ReportsViewModel;
+
 // Import your actual ViewModel and DTOs here
 // import org.example.viewModel.ReportsViewModel;
 // import org.example.model.reports.MonthlySnapshotDTO;
 
 public class ReportsView extends BaseView {
 
-    // private final ReportsViewModel viewModel = new ReportsViewModel();
+    private final ReportsViewModel viewModel = new ReportsViewModel();
     private BorderPane root;
     private VBox contentArea;
     private TableView<Object> table; // Replace Object with MonthlySnapshotDTO
+    private HBox topBar;
 
     @Override
     protected void setContent() {
@@ -26,7 +30,7 @@ public class ReportsView extends BaseView {
         mainContainer.setStyle("-fx-background-color: #F8FAFC;");
 
         // --- 1. Top Header ---
-        HBox topBar = new HBox(20);
+        topBar = new HBox(20);
         topBar.setAlignment(Pos.CENTER_LEFT);
         topBar.setStyle("-fx-background-color: white; -fx-padding: 0 40; -fx-border-color: #E2E8F0; -fx-border-width: 0 0 1 0;");
         topBar.setMinHeight(85);
@@ -101,7 +105,30 @@ public class ReportsView extends BaseView {
     }
 
     @Override protected void setStyle() {}
-    @Override protected void setLogic() {}
+    @Override protected void setLogic() {
+        if (!viewModel.hasAccessProperty().get()) {
+            GaussianBlur blur = new GaussianBlur(10);
+            contentArea.setEffect(blur);
+
+            Label lock = new Label("🔒");
+            lock.setStyle("-fx-font-size: 48px;");
+
+            Label msg = new Label("Access Denied");
+            msg.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+            VBox box = new VBox(10, lock, msg);
+            box.setAlignment(Pos.CENTER);
+
+            StackPane overlay = new StackPane();
+            overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
+            overlay.getChildren().add(box);
+
+            StackPane wrapper = new StackPane(contentArea, overlay);
+            VBox.setVgrow(wrapper, Priority.ALWAYS);
+            root.setCenter(new VBox(topBar, wrapper));
+            return;
+        }
+    }
 
     // --- Card Builder ---
     private VBox buildCard(String titleText, String mainVal, String subVal, boolean singleStat) {

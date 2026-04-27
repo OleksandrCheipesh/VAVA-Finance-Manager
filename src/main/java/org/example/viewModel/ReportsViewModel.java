@@ -10,6 +10,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import org.example.SessionManager;
+import org.example.model.database.entity.Position;
 
 public class ReportsViewModel {
 
@@ -156,4 +160,10 @@ public class ReportsViewModel {
     public ObservableList<IncomeBreakdownDTO> getIncomeBreakdown()       { return incomeBreakdown; }
     public BooleanProperty                    loadingProperty()          { return loading; }
     public StringProperty                     errorMessageProperty()     { return errorMessage; }
+
+    private final BooleanProperty hasAccess = new SimpleBooleanProperty(
+            SessionManager.getInstance().getPosition() == Position.Director ||
+                    SessionManager.getInstance().getPosition() == Position.Analyst
+    );
+    public BooleanProperty hasAccessProperty() { return hasAccess; }
 }

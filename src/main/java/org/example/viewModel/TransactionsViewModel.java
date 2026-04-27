@@ -1,5 +1,7 @@
 package org.example.viewModel;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -8,6 +10,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import org.example.SessionManager;
 import org.example.model.database.entity.Account;
+import org.example.model.database.entity.Position;
 import org.example.model.database.entity.Project;
 import org.example.model.database.entity.Transaction;
 import org.example.model.database.service.AccountService;
@@ -284,4 +287,9 @@ public class TransactionsViewModel {
     public StringProperty largestAmountProperty() { return largestAmount; }
     public StringProperty incomeSubtextProperty() { return incomeSubtext; }
     public StringProperty expensesSubtextProperty(){ return expensesSubtext; }
+    private final BooleanProperty hasAccess = new SimpleBooleanProperty(
+            SessionManager.getInstance().getPosition() == Position.Director ||
+                    SessionManager.getInstance().getPosition() == Position.Accountant
+    );
+    public BooleanProperty hasAccessProperty() { return hasAccess; }
 }

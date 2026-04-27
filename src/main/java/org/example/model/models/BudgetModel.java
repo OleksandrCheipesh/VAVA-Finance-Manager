@@ -1,6 +1,8 @@
 package org.example.model.models;
 
+import org.example.SessionManager;
 import org.example.model.database.entity.Account;
+import org.example.model.database.entity.Position;
 import org.example.model.database.entity.Transaction;
 import org.example.model.database.service.AccountService;
 import org.example.model.database.service.TransactionService;
@@ -64,5 +66,9 @@ public class BudgetModel {
 
     public BigDecimal getCurrentMonthTotal(int companyId) throws SQLException {
         return transactionService.getCurrentMonthTotalByCompanyId(companyId);
+    }
+
+    public boolean hasAccess() {
+        return SessionManager.getInstance().getPosition() == Position.Director;
     }
 }

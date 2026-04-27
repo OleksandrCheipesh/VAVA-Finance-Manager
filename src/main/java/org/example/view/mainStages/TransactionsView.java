@@ -19,6 +19,9 @@ import org.example.viewModel.TransactionsViewModel;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import javafx.scene.effect.GaussianBlur;
+import org.example.model.database.entity.Position;
+
 
 public class TransactionsView extends BaseView {
 
@@ -27,6 +30,7 @@ public class TransactionsView extends BaseView {
     private VBox contentArea;
     private AppTable<Transaction> table;
     private StateButton addBtn;
+    private HBox topBar;
 
     @Override
     protected void setContent() {
@@ -36,7 +40,7 @@ public class TransactionsView extends BaseView {
         VBox mainContainer = new VBox();
 
         // Top Bar
-        HBox topBar = new HBox(20);
+        topBar = new HBox(20);
         topBar.setAlignment(Pos.BOTTOM_LEFT);
         topBar.setStyle("-fx-background-color: white; -fx-padding: 0 40; -fx-border-color: #E5E7EB; -fx-border-width: 0 0 1 0;");
         topBar.setMinHeight(85);
@@ -354,6 +358,29 @@ public class TransactionsView extends BaseView {
 
     @Override
     protected void setLogic() {
+        if (!viewModel.hasAccessProperty().get()) {
+            GaussianBlur blur = new GaussianBlur(10);
+            contentArea.setEffect(blur);
+
+            Label lock = new Label("🔒");
+            lock.setStyle("-fx-font-size: 48px;");
+
+            Label msg = new Label("Access Denied");
+            msg.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+            VBox box = new VBox(10, lock, msg);
+            box.setAlignment(Pos.CENTER);
+
+            StackPane overlay = new StackPane();
+            overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
+            overlay.getChildren().add(box);
+
+            StackPane wrapper = new StackPane(contentArea, overlay);
+            VBox.setVgrow(wrapper, Priority.ALWAYS);
+            root.setCenter(new VBox(topBar, wrapper));
+            return;
+        }
+
         addBtn.setOnAction(e -> {
             AddTransactionDialog.show(stage, viewModel.getAccounts(), viewModel.getProjects(), newTx -> {
                 viewModel.addTransaction(newTx);
