@@ -141,7 +141,9 @@ public class ReportsView extends BaseView {
 
         // Placeholder Chart Region
         Region chartPlaceholder = new Region();
-        chartPlaceholder.setMinHeight(150);
+        // Increase this from 150 to 220 to scale the whole card up!
+        chartPlaceholder.setMinHeight(220);
+        chartPlaceholder.setPrefHeight(220);
         chartPlaceholder.setStyle("-fx-background-color: #F8FAFC; -fx-background-radius: 8;");
 
         HBox footer = new HBox(20);
@@ -205,6 +207,7 @@ public class ReportsView extends BaseView {
         Button filterBtn = new Button("Filters");
         filterBtn.setGraphic(IconFactory.getIcon("layout-dashboard", 14));
         filterBtn.setStyle("-fx-background-color: #F1F5F9; -fx-text-fill: #111827; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-insets: 0; -fx-padding: 8 16;");
+        filterBtn.setOnAction(e -> ReportModals.showQuickFilters(stage /*, viewModel */));
 
         Button exportBtn = new Button("Export CSV");
         exportBtn.setGraphic(IconFactory.getWhiteIcon("receipt", 14));

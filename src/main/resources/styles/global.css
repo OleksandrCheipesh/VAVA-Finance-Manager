@@ -192,23 +192,29 @@
     -fx-cursor: hand;
     -fx-graphic-text-gap: 8px;
 }
+
 .custom-radio .radio {
-    -fx-background-color: transparent;
+    -fx-background-color: white;
     -fx-border-color: #cbd5e1;
     -fx-border-width: 1.5px;
-    -fx-border-radius: 50%;
-    -fx-background-radius: 50%;
-    -fx-padding: 4px;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-padding: 3px;
+    -fx-background-insets: 0;
 }
+
 .custom-radio .dot {
     -fx-background-color: transparent;
-    -fx-background-radius: 50%;
+    -fx-background-radius: 12px;
     -fx-padding: 4px;
+    -fx-background-insets: 0;
 }
+
 .custom-radio:selected .radio {
     -fx-background-color: #14b8a6;
     -fx-border-color: #14b8a6;
 }
+
 .custom-radio:selected .dot {
     -fx-background-color: white;
 }
