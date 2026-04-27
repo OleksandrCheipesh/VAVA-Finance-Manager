@@ -67,6 +67,7 @@ public final class SessionManager {
             logger.info("User logout: id={} email={}", this.currentUser.getId(), this.currentUser.getEmail());
         }
         this.currentUser = null;
+        UserPreferences.getInstance().clear(); // додай це
         AppLog.clearSession();
     }
 
