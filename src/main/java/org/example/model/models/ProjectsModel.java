@@ -6,6 +6,6 @@ import org.example.model.database.entity.Position;
 public class ProjectsModel {
 
     public boolean hasAccess() {
-        return SessionManager.getInstance().getPosition() == Position.Director;
+        return SessionManager.getInstance().getPosition() == Position.Director || SessionManager.getInstance().getPosition() == Position.Analyst;
     }
 }
