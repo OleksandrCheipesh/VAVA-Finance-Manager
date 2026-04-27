@@ -142,4 +142,6 @@ public class BudgetViewModel {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
     public StringProperty messageProperty() { return message; }
+    public BooleanProperty hasAccessProperty() { return hasAccess; }
+
 }
