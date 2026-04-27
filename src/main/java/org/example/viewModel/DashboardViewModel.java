@@ -5,9 +5,11 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.example.SessionManager;
+import org.example.model.database.entity.Account;
 import org.example.model.database.entity.Client;
 import org.example.model.database.entity.Project;
 import org.example.model.database.entity.Transaction;
+import org.example.model.database.service.AccountService;
 import org.example.model.database.service.ClientService;
 import org.example.model.database.service.ProjectService;
 import org.example.model.database.service.TransactionService;
@@ -26,7 +28,7 @@ public class DashboardViewModel {
     private static final StringProperty revenueGrowth = new SimpleStringProperty("+12.5%");
     private static final IntegerProperty activeProjectsCount = new SimpleIntegerProperty(42);
     private static final TransactionService transactionService = new TransactionService();
-    private static final ClientService clientService = new ClientService();
+    private static final AccountService clientService = new AccountService();
     private static final ProjectService projectService = new ProjectService();
     private static final ObservableList<Project> projects = FXCollections.observableArrayList();
 
@@ -119,15 +121,12 @@ public class DashboardViewModel {
                     .limit(5)
                     .toList();
             for (int i = 0; i < sorted.size(); i++) {
-                if (sorted.get(i).getClientId() == null) {
-                    clientName = "No Client";
-                } else {
-                    clientName = clientService.getClientById(sorted.get(i).getClientId() )
-                            .map(Client::getName)
+                clientName = clientService.getAccountById(sorted.get(i).getAccountId() )
+                            .map(Account::getAccountName)
                             .orElse("Unknown");
-                }
                 fin.add(new TransactionDto(sorted.get(i).getDate(), sorted.get(i).getDescription(), clientName, sorted.get(i).getAmount().doubleValue()));
             }
+            recentTransactions.clear();
             recentTransactions.addAll(fin);
         } catch (SQLException e) {
             // TODO: logging
