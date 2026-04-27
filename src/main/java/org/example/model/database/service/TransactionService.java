@@ -331,6 +331,37 @@ public class TransactionService {
         return BigDecimal.ZERO;
     }
 
+    public BigDecimal getCreditUtilizationByAccountId(int accountId) throws SQLException {
+        var logger = org.example.logging.AppLog.getLogger(TransactionService.class);
+        if (accountId <= 0) {
+            throw new IllegalArgumentException("Account ID must be positive");
+        }
+
+        String sql = "SELECT COALESCE(SUM(t.amount), 0) " +
+                "FROM transactions t " +
+                "JOIN accounts a ON a.id = t.account_id " +
+                "WHERE t.account_id = ? " +
+                "AND t.type = 'PURCHASE' " +
+                "AND t.date >= CASE " +
+                "    WHEN a.cycle = 'WEEKLY'::account_cycle THEN DATE_TRUNC('week', CURRENT_DATE)::date " +
+                "    ELSE DATE_TRUNC('month', CURRENT_DATE)::date " +
+                "END";
+
+        try (Connection connection = ConnectionProvider.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, accountId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBigDecimal(1);
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Failed to compute credit utilization for accountId={}", accountId, e);
+            throw e;
+        }
+        return BigDecimal.ZERO;
+    }
+
     private Transaction mapRow(ResultSet resultSet) throws SQLException {
         Transaction transaction = new Transaction();
         transaction.setId(resultSet.getInt("id"));

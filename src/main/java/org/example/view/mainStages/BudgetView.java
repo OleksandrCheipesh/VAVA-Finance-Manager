@@ -13,6 +13,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import org.example.model.database.entity.Account;
+import org.example.model.database.entity.AccountCategory;
 import org.example.view.templates.*;
 import org.example.viewModel.BudgetViewModel;
 
@@ -33,11 +34,9 @@ public class BudgetView extends BaseView {
 
     private HBox topBar;
     private Label c1Value;
-    private Label c1Pill;
     private Label c2Value;
-    private Region barFillCard2;
-    private Label c2Sub;
     private Label c3Value;
+    private Label c3Sub;
 
     private final double GRID_GAP = 25.0;
 
@@ -97,66 +96,37 @@ public class BudgetView extends BaseView {
 
         VBox card1 = createBaseCard(false, cardWidthBinding);
 
-        Label c1Title = new Label("TOTAL COMBINED BALANCE");
+        Label c1Title = new Label("TOTAL ASSETS");
         c1Title.setStyle("-fx-text-fill: " + Themes.TEXT_GRAY + "; -fx-font-size: 11px; -fx-font-weight: bold; -fx-letter-spacing: 1px;");
 
-        BigDecimal totalBalance = viewModel.getTotalBalance();
-        c1Value = new Label(String.format(Locale.US, "$%,.2f", totalBalance));
+        BigDecimal totalAssets = viewModel.getTotalAssets();
+        c1Value = new Label(String.format(Locale.US, "$%,.2f", totalAssets));
         c1Value.setStyle("-fx-font-size: 34px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_GREEN + ";");
 
-        c1Pill = new Label();
-        c1Pill.setVisible(false);
-        c1Pill.setManaged(false);
-
-        updateBalancePill();
-
-        card1.getChildren().addAll(c1Title, c1Value, c1Pill);
+        card1.getChildren().addAll(c1Title, c1Value);
 
         VBox card2 = createBaseCard(false, cardWidthBinding);
 
-        Label c2Title = new Label("MONTHLY BUDGET LIMIT");
+        Label c2Title = new Label("TOTAL LIABILITIES");
         c2Title.setStyle("-fx-text-fill: " + Themes.TEXT_GRAY + "; -fx-font-size: 11px; -fx-font-weight: bold; -fx-letter-spacing: 1px;");
 
-        BigDecimal totalLimit = viewModel.getTotalLimit();
-        c2Value = new Label(String.format(Locale.US, "$%,.2f", totalLimit));
+        BigDecimal totalLiabilities = viewModel.getTotalLiabilities();
+        c2Value = new Label(String.format(Locale.US, "$%,.2f", totalLiabilities.abs()));
         c2Value.setStyle("-fx-font-size: 34px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
 
-        HBox progressBox = new HBox(15);
-        progressBox.setAlignment(Pos.CENTER_LEFT);
-
-        StackPane barContainer = new StackPane();
-        barContainer.setAlignment(Pos.CENTER_LEFT);
-
-        Region barBg = new Region();
-        barBg.setMinSize(120, 8); barBg.setMaxSize(120, 8);
-        barBg.setStyle("-fx-background-color: " + Themes.BORDER_LIGHT + "; -fx-background-radius: 10;");
-
-        barFillCard2 = new Region();
-        barFillCard2.setMinSize(0, 8); barFillCard2.setMaxSize(0, 8);
-        barFillCard2.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-background-radius: 10;");
-
-        barContainer.getChildren().addAll(barBg, barFillCard2);
-
-        c2Sub = new Label("0% Used");
-        c2Sub.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_GRAY + ";");
-
-        progressBox.getChildren().addAll(barContainer, c2Sub);
-        card2.getChildren().addAll(c2Title, c2Value, progressBox);
-
-        updateLimitCard(totalLimit);
+        card2.getChildren().addAll(c2Title, c2Value);
 
         VBox card3 = createBaseCard(true, cardWidthBinding);
 
-        Label c3Title = new Label("REMAINING BUDGET");
+        Label c3Title = new Label("NET POSITION");
         c3Title.setStyle("-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight: bold; -fx-letter-spacing: 1px;");
 
-        BigDecimal currentMonthTotal = viewModel.getCurrentMonthTotal();
-        BigDecimal remaining = totalLimit.subtract(currentMonthTotal);
-        c3Value = new Label(String.format(Locale.US, "$%,.2f", remaining));
-        c3Value.setStyle("-fx-font-size: 34px; -fx-font-weight: 900; -fx-text-fill: white;");
+        BigDecimal netPosition = viewModel.getNetPosition();
+        c3Value = new Label(String.format(Locale.US, "$%,.2f", netPosition));
+        c3Value.setStyle("-fx-font-size: 34px; -fx-font-weight: 900; -fx-text-fill: " + (netPosition.compareTo(BigDecimal.ZERO) >= 0 ? "white" : "#FECACA") + ";");
 
-        Label c3Sub = new Label("Available for allocation");
-        c3Sub.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + Themes.PRIMARY + ";");
+        c3Sub = new Label(netPosition.compareTo(BigDecimal.ZERO) >= 0 ? "Available for allocation" : "Deficit");
+        c3Sub.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + (netPosition.compareTo(BigDecimal.ZERO) >= 0 ? Themes.PRIMARY : "#FCA5A5") + ";");
         card3.getChildren().addAll(c3Title, c3Value, c3Sub);
 
         summaryContainer.getChildren().addAll(card1, card2, card3);
@@ -288,60 +258,29 @@ public class BudgetView extends BaseView {
         });
 
         addAccountBtnMid.setOnAction(e -> {
-            AddBudgetDialog.show(stage, newAccount -> viewModel.addAccount(newAccount));
+            AddBudgetDialog.show(stage, newAccount -> {
+                viewModel.addAccount(newAccount);
+                refreshDashboardState(cardWidthBinding);
+            });
         });
     }
 
+    private void refreshDashboardState(DoubleBinding cardWidthBinding) {
+        refreshSummaryCards();
+        updateGrid(cardWidthBinding);
+    }
+
     private void refreshSummaryCards() {
-        BigDecimal totalBalance = viewModel.getTotalBalance();
-        BigDecimal totalLimit = viewModel.getTotalLimit();
-        BigDecimal currentMonthTotal = viewModel.getCurrentMonthTotal();
-        BigDecimal remaining = totalLimit.subtract(currentMonthTotal);
+        BigDecimal totalAssets = viewModel.getTotalAssets();
+        BigDecimal totalLiabilities = viewModel.getTotalLiabilities();
+        BigDecimal netPosition = viewModel.getNetPosition();
 
-        c1Value.setText(String.format(Locale.US, "$%,.2f", totalBalance));
-        updateBalancePill();
-
-        c2Value.setText(String.format(Locale.US, "$%,.2f", totalLimit));
-        updateLimitCard(totalLimit);
-
-        c3Value.setText(String.format(Locale.US, "$%,.2f", remaining));
-    }
-
-    private void updateBalancePill() {
-        Optional<BigDecimal> prevMonth = viewModel.getPrevMonthTotal();
-        if (prevMonth.isEmpty()) {
-            c1Pill.setVisible(false);
-            c1Pill.setManaged(false);
-            return;
-        }
-
-        BigDecimal current = viewModel.getTotalBalance();
-        BigDecimal prev = prevMonth.get();
-        BigDecimal change = current.subtract(prev);
-
-        boolean positive = change.compareTo(BigDecimal.ZERO) >= 0;
-        String sign = positive ? "+" : "";
-        String bgColor = positive ? "#D1FAE5" : "#FEE2E2";
-        String textColor = positive ? "#059669" : "#DC2626";
-        String arrow = positive ? "📈" : "📉";
-
-        c1Pill.setText(arrow + " " + sign + String.format(Locale.US, "$%,.2f", change) + " from last month");
-        c1Pill.setStyle("-fx-background-color: " + bgColor + "; -fx-text-fill: " + textColor + "; -fx-padding: 6 12; -fx-background-radius: 20; -fx-font-size: 12px; -fx-font-weight: bold;");
-        c1Pill.setVisible(true);
-        c1Pill.setManaged(true);
-    }
-
-    private void updateLimitCard(BigDecimal totalLimit) {
-        BigDecimal currentMonthTotal = viewModel.getCurrentMonthTotal();
-        double limitD = totalLimit.doubleValue();
-        double monthD = currentMonthTotal.doubleValue();
-
-        double pct = (limitD > 0) ? Math.min((monthD / limitD) * 100.0, 100.0) : 0.0;
-        double fillWidth = (pct / 100.0) * 120.0;
-
-        barFillCard2.setMinWidth(fillWidth);
-        barFillCard2.setMaxWidth(fillWidth);
-        c2Sub.setText((int) pct + "% Used");
+        c1Value.setText(String.format(Locale.US, "$%,.2f", totalAssets));
+        c2Value.setText(String.format(Locale.US, "$%,.2f", totalLiabilities.abs()));
+        c3Value.setText(String.format(Locale.US, "$%,.2f", netPosition));
+        c3Value.setStyle("-fx-font-size: 34px; -fx-font-weight: 900; -fx-text-fill: " + (netPosition.compareTo(BigDecimal.ZERO) >= 0 ? "white" : "#FECACA") + ";");
+        c3Sub.setText(netPosition.compareTo(BigDecimal.ZERO) >= 0 ? "Available for allocation" : "Deficit");
+        c3Sub.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + (netPosition.compareTo(BigDecimal.ZERO) >= 0 ? Themes.PRIMARY : "#FCA5A5") + ";");
     }
 
     private void updateGrid(DoubleBinding widthBinding) {
@@ -435,58 +374,89 @@ public class BudgetView extends BaseView {
         categoryLabel.setStyle("-fx-font-size: 11px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_GRAY + "; -fx-letter-spacing: 1px;");
         texts.getChildren().addAll(nameLabel, categoryLabel);
 
-        double balance = account.getCurrentBalance() != null ? account.getCurrentBalance().doubleValue() : 0.0;
-        Label balanceLabel = new Label(String.format(Locale.US, "%s %,.2f", currency, balance));
-        balanceLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_GREEN + ";");
+        AccountCategory category = account.getCategory();
+        boolean isSavingsOrInvestment = category == AccountCategory.SAVINGS || category == AccountCategory.INVESTMENT;
+        boolean isCreditLine = category == AccountCategory.CREDIT_LINE;
+        boolean hasUsableLimit = account.getLimitAmount() != null && account.getLimitAmount() > 0;
 
-        double utilization = 0.0;
-        if (account.getLimitAmount() != null && account.getLimitAmount() > 0) {
-            utilization = Math.min((balance / account.getLimitAmount()) * 100.0, 100.0);
+        BigDecimal rawBalance = account.getCurrentBalance() != null ? account.getCurrentBalance() : BigDecimal.ZERO;
+        BigDecimal displayBalance = rawBalance;
+
+        double balance = displayBalance.doubleValue();
+        String balanceText = isCreditLine
+                ? String.format(Locale.US, "%s %,.2f", currency, Math.abs(balance))
+                : String.format(Locale.US, "%s %,.2f", currency, balance);
+        String balanceColor = isCreditLine
+                ? (balance < 0 ? Themes.TEXT_ERROR : Themes.DARK_GREEN)
+                : Themes.DARK_GREEN;
+        Label balanceLabel = new Label(balanceText);
+        balanceLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: " + balanceColor + ";");
+
+        VBox progressSection = null;
+
+        if ((isSavingsOrInvestment || isCreditLine) && hasUsableLimit) {
+            double utilization;
+            String progressLabelText;
+
+            if (isCreditLine) {
+                utilization = rawBalance.negate().max(BigDecimal.ZERO)
+                        .divide(BigDecimal.valueOf(account.getLimitAmount()), 4, java.math.RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100.0))
+                        .doubleValue();
+                progressLabelText = "CREDIT USED";
+            } else {
+                utilization = Math.min((rawBalance.doubleValue() / account.getLimitAmount()) * 100.0, 100.0);
+                progressLabelText = "GOAL PROGRESS";
+            }
+            utilization = Math.min(utilization, 100.0);
+
+            progressSection = new VBox(8);
+            HBox progressText = new HBox();
+
+            Label progressLabel = new Label(progressLabelText);
+            progressLabel.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_GRAY + ";");
+
+            Region pSpacer = new Region();
+            HBox.setHgrow(pSpacer, Priority.ALWAYS);
+
+            Label percentLabel = new Label((int) utilization + "%");
+            percentLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: 900; -fx-text-fill: " + Themes.PRIMARY + ";");
+            progressText.getChildren().addAll(progressLabel, pSpacer, percentLabel);
+
+            StackPane barContainer = new StackPane();
+            barContainer.setAlignment(Pos.CENTER_LEFT);
+
+            Region barBg = new Region();
+            barBg.setMinHeight(6); barBg.setMaxHeight(6);
+            barBg.setStyle("-fx-background-color: " + Themes.BORDER_LIGHT + "; -fx-background-radius: 10;");
+
+            Region barFill = new Region();
+            barFill.setMinHeight(6); barFill.setMaxHeight(6);
+            final double finalUtil = utilization;
+            barFill.prefWidthProperty().bind(barBg.widthProperty().multiply(finalUtil / 100.0));
+            barFill.maxWidthProperty().bind(barBg.widthProperty().multiply(finalUtil / 100.0));
+            barFill.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-background-radius: 10;");
+
+            barContainer.getChildren().addAll(barBg, barFill);
+            progressSection.getChildren().addAll(progressText, barContainer);
         }
 
-        VBox progressSection = new VBox(8);
-
-        HBox progressText = new HBox();
-
-        Label progressLabel = new Label(utilization < 50 ? "USAGE LIMIT" : "BUDGET UTILIZATION");
-        progressLabel.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_GRAY + ";");
-
-        Region pSpacer = new Region();
-
-        HBox.setHgrow(pSpacer, Priority.ALWAYS);
-
-        Label percentLabel = new Label((int) utilization + "%");
-        percentLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: 900; -fx-text-fill: " + Themes.PRIMARY + ";");
-        progressText.getChildren().addAll(progressLabel, pSpacer, percentLabel);
-
-        StackPane barContainer = new StackPane();
-        barContainer.setAlignment(Pos.CENTER_LEFT);
-
-        Region barBg = new Region();
-
-        barBg.setMinHeight(6); barBg.setMaxHeight(6);
-        barBg.setStyle("-fx-background-color: " + Themes.BORDER_LIGHT + "; -fx-background-radius: 10;");
-
-        Region barFill = new Region();
-
-        barFill.setMinHeight(6); barFill.setMaxHeight(6);
-        final double finalUtil = utilization;
-        barFill.prefWidthProperty().bind(barBg.widthProperty().multiply(finalUtil / 100.0));
-        barFill.maxWidthProperty().bind(barBg.widthProperty().multiply(finalUtil / 100.0));
-        barFill.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-background-radius: 10;");
-
-        barContainer.getChildren().addAll(barBg, barFill);
-        progressSection.getChildren().addAll(progressText, barContainer);
-
-        card.getChildren().addAll(cardHeader, texts, balanceLabel, progressSection);
+        card.getChildren().addAll(cardHeader, texts, balanceLabel);
+        if (progressSection != null) {
+            card.getChildren().add(progressSection);
+        }
 
         card.setCursor(Cursor.HAND);
         card.setOnMouseClicked(e -> {
             BudgetDetailDialog.show(
                     stage,
                     account,
+                    viewModel,
                     () -> ToastManager.showError(stage, "Edit functionality coming in the next task."),
-                    () -> viewModel.deleteAccount(account)
+                    () -> {
+                        viewModel.deleteAccount(account);
+                        refreshDashboardState(widthBinding);
+                    }
             );
         });
 

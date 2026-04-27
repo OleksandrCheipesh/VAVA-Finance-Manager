@@ -147,7 +147,10 @@ public class AddBudgetDialog {
         limitField.setPrefHeight(FIELD_HEIGHT);
         limitField.setMaxHeight(FIELD_HEIGHT);
 
-        VBox limitBox = createLabeledField("LIMIT AMOUNT", limitField);
+        Label limitLabel = new Label("Limit Amount");
+        limitLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-size: 13px;");
+        VBox limitBox = new VBox(5, limitLabel, limitField);
+        limitBox.setMaxWidth(Double.MAX_VALUE);
 
         GridPane row1Grid = new GridPane();
         row1Grid.setHgap(15);
@@ -158,6 +161,30 @@ public class AddBudgetDialog {
         row1Grid.getColumnConstraints().addAll(r1c1, r1c2);
         row1Grid.add(catBox, 0, 0);
         row1Grid.add(limitBox, 1, 0);
+
+        Runnable syncLimitFieldByCategory = () -> {
+            AccountCategory selectedCategory = parseCategoryLabel(catCombo.getValue());
+            boolean hideLimit = selectedCategory == AccountCategory.BANK_ACCOUNT || selectedCategory == AccountCategory.CASH;
+
+            limitBox.setVisible(!hideLimit);
+            limitBox.setManaged(!hideLimit);
+            if (hideLimit) {
+                limitField.clear();
+                GridPane.setColumnSpan(catBox, 2);
+            } else {
+                GridPane.setColumnSpan(catBox, 1);
+            }
+
+            if (selectedCategory == AccountCategory.SAVINGS || selectedCategory == AccountCategory.INVESTMENT) {
+                limitLabel.setText("Savings Goal");
+            } else if (selectedCategory == AccountCategory.CREDIT_LINE) {
+                limitLabel.setText("Credit Limit");
+            } else {
+                limitLabel.setText("Limit Amount");
+            }
+        };
+        catCombo.valueProperty().addListener((obs, oldVal, newVal) -> syncLimitFieldByCategory.run());
+        syncLimitFieldByCategory.run();
 
         TextField balanceField = UIFactory.inputField("0.00");
 
@@ -319,7 +346,7 @@ public class AddBudgetDialog {
             }
 
             Integer limitParsed = null;
-            if (!limitField.getText().trim().isEmpty()) {
+            if (limitBox.isManaged() && !limitField.getText().trim().isEmpty()) {
                 try {
                     double raw = Double.parseDouble(limitField.getText().replace(",", "").trim());
                     if (raw < 0) throw new NumberFormatException();
@@ -410,6 +437,18 @@ public class AddBudgetDialog {
         box.setMaxWidth(Double.MAX_VALUE);
 
         return box;
+    }
+
+    private static AccountCategory parseCategoryLabel(String selectedLabel) {
+        if (selectedLabel == null) {
+            return null;
+        }
+        for (AccountCategory c : AccountCategory.values()) {
+            if (formatCategory(c).equals(selectedLabel)) {
+                return c;
+            }
+        }
+        return null;
     }
 
     private static void closeWithAnimation(Stage modal, Node animatedNode) {

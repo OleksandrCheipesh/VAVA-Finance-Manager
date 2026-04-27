@@ -29,6 +29,9 @@ public class BudgetViewModel {
     private BigDecimal totalBalance = BigDecimal.ZERO;
     private Optional<BigDecimal> prevMonthTotal = Optional.empty();
     private BigDecimal currentMonthTotal = BigDecimal.ZERO;
+    private BigDecimal totalAssets = BigDecimal.ZERO;
+    private BigDecimal totalLiabilities = BigDecimal.ZERO;
+    private BigDecimal netPosition = BigDecimal.ZERO;
 
     public BudgetViewModel() {
         loadAccounts();
@@ -43,6 +46,9 @@ public class BudgetViewModel {
             totalBalance = budgetModel.getTotalBalance(companyId);
             prevMonthTotal = budgetModel.getPrevMonthTotal(companyId);
             currentMonthTotal = budgetModel.getCurrentMonthTotal(companyId);
+            totalAssets = budgetModel.getTotalAssets(companyId);
+            totalLiabilities = budgetModel.getTotalLiabilities(companyId);
+            netPosition = budgetModel.getNetPosition(companyId);
             logger.info("Loaded {} accounts, totalBalance={}", allAccounts.size(), totalBalance);
         } catch (SQLException e) {
             message.set("Error: Failed to load accounts.");
@@ -55,9 +61,7 @@ public class BudgetViewModel {
         account.setCompanyId(companyId);
         try {
             budgetModel.addAccount(account);
-            totalBalance = budgetModel.getTotalBalance(companyId);
-            currentMonthTotal = budgetModel.getCurrentMonthTotal(companyId);
-            allAccounts.add(account);
+            loadAccounts();
             message.set("Success: Account '" + account.getAccountName() + "' created successfully!");
             logger.info("Account created: id={} name={}", account.getId(), account.getAccountName());
         } catch (SQLException e) {
@@ -70,9 +74,7 @@ public class BudgetViewModel {
         var logger = org.example.logging.AppLog.getLogger(BudgetViewModel.class);
         try {
             budgetModel.deleteAccount(account.getId());
-            totalBalance = budgetModel.getTotalBalance(companyId);
-            currentMonthTotal = budgetModel.getCurrentMonthTotal(companyId);
-            allAccounts.remove(account);
+            loadAccounts();
             message.set("Success: Account successfully deleted.");
             logger.info("Account deleted: id={} name={}", account.getId(), account.getAccountName());
         } catch (SQLException e) {
@@ -85,11 +87,54 @@ public class BudgetViewModel {
         filteredAccounts.setPredicate(predicate == null ? a -> true : predicate);
     }
 
-    public FilteredList<Account> getFilteredAccounts() { return filteredAccounts; }
-    public BigDecimal getTotalBalance() { return totalBalance; }
-    public Optional<BigDecimal> getPrevMonthTotal() { return prevMonthTotal; }
-    public BigDecimal getCurrentMonthTotal() { return currentMonthTotal; }
-    public BooleanProperty hasAccessProperty() { return hasAccess; }
+    public FilteredList<Account> getFilteredAccounts() {
+        return filteredAccounts;
+    }
+
+    public BigDecimal getTotalBalance() {
+        return totalBalance;
+    }
+
+    public Optional<BigDecimal> getPrevMonthTotal() {
+        return prevMonthTotal;
+    }
+
+    public BigDecimal getCurrentMonthTotal() {
+        return currentMonthTotal;
+    }
+
+    public BigDecimal getTotalAssets() {
+        return totalAssets;
+    }
+
+    public BigDecimal getTotalLiabilities() {
+        return totalLiabilities;
+    }
+
+    public BigDecimal getNetPosition() {
+        return netPosition;
+    }
+
+    public BigDecimal getCreditUtilizationByAccountId(int accountId) {
+        try {
+            return budgetModel.getCreditUtilizationByAccountId(accountId);
+        } catch (SQLException e) {
+            var logger = org.example.logging.AppLog.getLogger(BudgetViewModel.class);
+            logger.error("Failed to load credit utilization for accountId={}", accountId, e);
+            return BigDecimal.ZERO;
+        }
+    }
+
+    public BigDecimal getRemainingCredit(Account account) {
+        try {
+            return budgetModel.getRemainingCredit(account);
+        } catch (SQLException e) {
+            var logger = org.example.logging.AppLog.getLogger(BudgetViewModel.class);
+            logger.error("Failed to load remaining credit for accountId={}", account != null ? account.getId() : null, e);
+            return null;
+        }
+    }
+
     public BigDecimal getTotalLimit() {
         return allAccounts.stream()
                 .filter(a -> a.getLimitAmount() != null)

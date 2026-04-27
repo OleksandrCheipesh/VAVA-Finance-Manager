@@ -3,6 +3,7 @@ package org.example.model.models;
 import org.example.SessionManager;
 import org.example.model.database.entity.Account;
 import org.example.model.database.entity.Position;
+import org.example.model.database.entity.AccountCategory;
 import org.example.model.database.entity.Transaction;
 import org.example.model.database.service.AccountService;
 import org.example.model.database.service.TransactionService;
@@ -70,5 +71,40 @@ public class BudgetModel {
 
     public boolean hasAccess() {
         return SessionManager.getInstance().getPosition() == Position.Director;
+    public BigDecimal getTotalAssets(int companyId) throws SQLException {
+        return getAccountsByCompanyId(companyId).stream()
+                .filter(a -> a.getCategory() == AccountCategory.BANK_ACCOUNT
+                        || a.getCategory() == AccountCategory.CASH
+                        || a.getCategory() == AccountCategory.SAVINGS
+                        || a.getCategory() == AccountCategory.INVESTMENT)
+                .map(a -> a.getCurrentBalance() != null ? a.getCurrentBalance() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getTotalLiabilities(int companyId) throws SQLException {
+        return getAccountsByCompanyId(companyId).stream()
+                .filter(a -> a.getCategory() == AccountCategory.CREDIT_LINE)
+                .filter(a -> a.getCurrentBalance() != null && a.getCurrentBalance().compareTo(BigDecimal.ZERO) < 0)
+                .map(a -> a.getCurrentBalance() != null ? a.getCurrentBalance() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getNetPosition(int companyId) throws SQLException {
+        return getTotalAssets(companyId).add(getTotalLiabilities(companyId));
+    }
+
+    public BigDecimal getCreditUtilizationByAccountId(int accountId) throws SQLException {
+        return transactionService.getCreditUtilizationByAccountId(accountId);
+    }
+
+    public BigDecimal getRemainingCredit(Account account) throws SQLException {
+        if (account == null || account.getLimitAmount() == null) {
+            return null;
+        }
+
+        BigDecimal limit = BigDecimal.valueOf(account.getLimitAmount());
+
+        BigDecimal balance = account.getCurrentBalance() != null ? account.getCurrentBalance() : BigDecimal.ZERO;
+        return limit.add(balance);
     }
 }
