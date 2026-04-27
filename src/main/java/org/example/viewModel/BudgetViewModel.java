@@ -1,5 +1,7 @@
 package org.example.viewModel;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -18,6 +20,7 @@ public class BudgetViewModel {
 
     private final BudgetModel budgetModel = new BudgetModel();
     private final int companyId = SessionManager.getInstance().getCurrentCompanyId();
+    private final BooleanProperty hasAccess = new SimpleBooleanProperty(budgetModel.hasAccess());
 
     private final ObservableList<Account> allAccounts = FXCollections.observableArrayList();
     private final FilteredList<Account> filteredAccounts = new FilteredList<>(allAccounts, p -> true);
@@ -138,8 +141,7 @@ public class BudgetViewModel {
                 .map(a -> BigDecimal.valueOf(a.getLimitAmount()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
+    public StringProperty messageProperty() { return message; }
+    public BooleanProperty hasAccessProperty() { return hasAccess; }
 
-    public StringProperty messageProperty() {
-        return message;
-    }
 }

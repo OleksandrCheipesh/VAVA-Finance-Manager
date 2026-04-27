@@ -13,11 +13,15 @@ import org.example.model.database.service.EmployeeService;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import org.example.model.database.entity.Position;
 
 public class EmployeesViewModel {
 
     // The list that the TableView will automatically watch for changes
     private final ObservableList<Employee> employees = FXCollections.observableArrayList();
+
 
     // For passing success/error messages to the View's Toasts
     private final StringProperty message = new SimpleStringProperty("");
@@ -116,4 +120,11 @@ public class EmployeesViewModel {
     public StringProperty messageProperty() {
         return message;
     }
+
+    private final BooleanProperty hasAccess = new SimpleBooleanProperty(
+            SessionManager.getInstance().getPosition() == Position.Director ||
+                    SessionManager.getInstance().getPosition() == Position.Accountant
+    );
+    public BooleanProperty hasAccessProperty() { return hasAccess; }
+
 }

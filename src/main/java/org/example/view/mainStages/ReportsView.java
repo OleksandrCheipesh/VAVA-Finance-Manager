@@ -6,16 +6,20 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import org.example.view.templates.*;
+import javafx.scene.effect.GaussianBlur;
+import org.example.viewModel.ReportsViewModel;
+
 // Import your actual ViewModel and DTOs here
 // import org.example.viewModel.ReportsViewModel;
 // import org.example.model.reports.MonthlySnapshotDTO;
 
 public class ReportsView extends BaseView {
 
-    // private final ReportsViewModel viewModel = new ReportsViewModel();
+    private final ReportsViewModel viewModel = new ReportsViewModel();
     private BorderPane root;
     private VBox contentArea;
     private TableView<Object> table; // Replace Object with MonthlySnapshotDTO
+    private HBox topBar;
 
     @Override
     protected void setContent() {

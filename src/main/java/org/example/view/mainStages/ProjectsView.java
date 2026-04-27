@@ -8,6 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -26,6 +27,7 @@ public class ProjectsView extends BaseView {
     private VBox contentArea;
     private FlowPane cardGrid;
     private StateButton addBtn;
+    private HBox topBar;
 
     private final DecimalFormat currencyFormat = new DecimalFormat("$#,##0");
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd");
@@ -38,7 +40,7 @@ public class ProjectsView extends BaseView {
         VBox mainContainer = new VBox();
 
         // --- 1. Top Bar ---
-        HBox topBar = new HBox(20);
+        topBar = new HBox(20);
         topBar.setAlignment(Pos.BOTTOM_LEFT);
         topBar.setStyle("-fx-background-color: " + Themes.BG_CARD + "; -fx-padding: 0 40; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-width: 0 0 1 0;");
         topBar.setMinHeight(85);
@@ -67,14 +69,13 @@ public class ProjectsView extends BaseView {
         contentArea.setStyle("-fx-background-color: " + Themes.BG_DASHBOARD + ";");
         VBox.setVgrow(contentArea, Priority.ALWAYS);
 
-        // Header Row (Title + Search + Summary Widgets)
+        // Header Row
         HBox contentHeader = new HBox(20);
         contentHeader.setAlignment(Pos.CENTER_LEFT);
 
         Label activeTitle = new Label("Active Projects");
         activeTitle.setStyle("-fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
-        // Leader requested Regex Search Bar
         HBox searchContainer = new HBox(8);
         searchContainer.setAlignment(Pos.CENTER_LEFT);
         searchContainer.setStyle("-fx-background-color: white; -fx-border-color: #E2E8F0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 0 15;");
@@ -105,16 +106,12 @@ public class ProjectsView extends BaseView {
 
         searchPane.getChildren().addAll(searchBar, searchPrompt);
         HBox.setHgrow(searchPane, Priority.ALWAYS);
-
         searchContainer.getChildren().addAll(searchIcon, searchPane);
 
         Region headerSpacer = new Region();
         HBox.setHgrow(headerSpacer, Priority.ALWAYS);
 
-        // Summary Widgets
         HBox summaryBox = new HBox(15);
-
-//        Мне нужно здесь подключить данные из view model
         summaryBox.getChildren().addAll(
                 createHeaderWidget("TOTAL BUDGET", viewModel.budgetProperty(), "wallet"),
                 createHeaderWidget("ACTIVE SPRINT", viewModel.activeProjectProperty(), "calendar")
@@ -126,16 +123,14 @@ public class ProjectsView extends BaseView {
         cardGrid = new FlowPane(25, 25);
         cardGrid.setAlignment(Pos.TOP_LEFT);
 
-        // Listen for data changes to redraw cards
         viewModel.getFilteredProjects().addListener((ListChangeListener<Project>) c -> refreshCards());
-        refreshCards(); // Initial draw
+        refreshCards();
 
         ScrollPane scroll = new ScrollPane(cardGrid);
         scroll.setFitToWidth(true);
         scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;");
         scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-
         VBox.setVgrow(scroll, Priority.ALWAYS);
 
         contentArea.getChildren().addAll(contentHeader, scroll);
@@ -151,6 +146,29 @@ public class ProjectsView extends BaseView {
 
     @Override
     protected void setLogic() {
+        if (!viewModel.hasAccessProperty().get()) {
+            GaussianBlur blur = new GaussianBlur(10);
+            contentArea.setEffect(blur);
+
+            Label lock = new Label("🔒");
+            lock.setStyle("-fx-font-size: 48px;");
+
+            Label msg = new Label("Access Denied");
+            msg.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+            VBox box = new VBox(10, lock, msg);
+            box.setAlignment(Pos.CENTER);
+
+            StackPane overlay = new StackPane();
+            overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
+            overlay.getChildren().add(box);
+
+            StackPane wrapper = new StackPane(contentArea, overlay);
+            VBox.setVgrow(wrapper, Priority.ALWAYS);
+            root.setCenter(new VBox(topBar, wrapper));
+            return;
+        }
+
         addBtn.setOnAction(e -> AddProjectDialog.show(stage, newProj -> viewModel.addProject(newProj)));
 
         addBtn.setOnMousePressed(e -> {
@@ -177,12 +195,8 @@ public class ProjectsView extends BaseView {
         for (Project p : viewModel.getFilteredProjects()) {
             cardGrid.getChildren().add(createProjectCard(p));
         }
-
-        // Always append the "Add New Project" dashed card at the end
         cardGrid.getChildren().add(createAddNewCard());
     }
-
-    // --- Card Builders ---
 
     private VBox createProjectCard(Project p) {
         VBox card = new VBox(15);
@@ -193,7 +207,6 @@ public class ProjectsView extends BaseView {
             viewModel.deleteProject(deletedProject);
         }));
 
-        // Top Row (Icon + Pill)
         HBox topRow = new HBox();
         topRow.setAlignment(Pos.CENTER_LEFT);
 
@@ -220,17 +233,15 @@ public class ProjectsView extends BaseView {
 
         topRow.getChildren().addAll(iconBox, spacer, statusPill);
 
-        // Titles
         VBox titleBox = new VBox(8);
         Label name = new Label(p.getName());
         name.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
         Label desc = new Label(p.getDescription());
         desc.setWrapText(true);
         desc.setStyle("-fx-font-size: 13px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
-        desc.setPrefHeight(45); // Force consistent height
+        desc.setPrefHeight(45);
         titleBox.getChildren().addAll(name, desc);
 
-        // Details (Timeline & Budget)
         HBox detailsBox = new HBox();
         detailsBox.setAlignment(Pos.CENTER_LEFT);
 
@@ -254,11 +265,8 @@ public class ProjectsView extends BaseView {
 
         detailsBox.getChildren().addAll(timelineBox, detailSpacer, capBox);
 
-        // Progress Bar
         double percentage = p.getSpendPercentage();
         int displayPercent = (int)(percentage * 100);
-
-        // Progress color logic based on leader requirements
         String barColor = percentage >= 0.9 ? Themes.TEXT_ERROR : (percentage >= 0.75 ? "#F59E0B" : Themes.PRIMARY);
 
         VBox progressBox = new VBox(8);
@@ -271,12 +279,10 @@ public class ProjectsView extends BaseView {
         pValue.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + barColor + ";");
         progressHeader.getChildren().addAll(pLabel, pSpacer, pValue);
 
-        // Custom drawn progress bar using HBox and Region for exact Figma styling
         HBox barTrack = new HBox();
         barTrack.setStyle("-fx-background-color: #F1F5F9; -fx-background-radius: 4; -fx-pref-height: 6px;");
         Region barFill = new Region();
         barFill.setStyle("-fx-background-color: " + barColor + "; -fx-background-radius: 4;");
-        // Bind width to percentage of parent
         barFill.prefWidthProperty().bind(barTrack.widthProperty().multiply(Math.min(percentage, 1.0)));
         barTrack.getChildren().add(barFill);
 
@@ -305,8 +311,6 @@ public class ProjectsView extends BaseView {
         subTitle.setStyle("-fx-font-size: 13px; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-text-alignment: center;");
 
         card.getChildren().addAll(icon, title, subTitle);
-
-        // Clicking the dashed card does the exact same thing as the top right button!
         card.setOnMouseClicked(e -> AddProjectDialog.show(stage, newProj -> viewModel.addProject(newProj)));
 
         return card;

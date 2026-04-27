@@ -20,6 +20,7 @@ import org.example.viewModel.BudgetViewModel;
 import java.math.BigDecimal;
 import java.util.Locale;
 import java.util.Optional;
+import javafx.scene.effect.GaussianBlur;
 
 public class BudgetView extends BaseView {
 
@@ -31,6 +32,7 @@ public class BudgetView extends BaseView {
     private StateButton addAccountBtnMid;
     private TextField searchField;
 
+    private HBox topBar;
     private Label c1Value;
     private Label c2Value;
     private Label c3Value;
@@ -57,7 +59,7 @@ public class BudgetView extends BaseView {
 
         VBox mainContainer = new VBox();
 
-        HBox topBar = new HBox(20);
+        topBar = new HBox(20);
 
         topBar.setAlignment(Pos.BOTTOM_LEFT);
         topBar.setStyle("-fx-background-color: white; -fx-padding: 0 40; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-width: 0 0 1 0;");
@@ -208,6 +210,29 @@ public class BudgetView extends BaseView {
 
     @Override
     protected void setLogic() {
+        if (!viewModel.hasAccessProperty().get()) {
+            GaussianBlur blur = new GaussianBlur(10);
+            contentArea.setEffect(blur);
+
+            Label lock = new Label("🔒");
+            lock.setStyle("-fx-font-size: 48px;");
+
+            Label msg = new Label("Access Denied");
+            msg.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+            VBox box = new VBox(10, lock, msg);
+            box.setAlignment(Pos.CENTER);
+
+            StackPane overlay = new StackPane();
+            overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
+            overlay.getChildren().add(box);
+
+            StackPane wrapper = new StackPane(contentArea, overlay);
+            VBox.setVgrow(wrapper, Priority.ALWAYS);
+            root.setCenter(new VBox(topBar, wrapper));
+            return;
+        }
+
         DoubleBinding cardWidthBinding = contentArea.widthProperty()
                 .subtract(80)
                 .subtract(GRID_GAP * 2)
