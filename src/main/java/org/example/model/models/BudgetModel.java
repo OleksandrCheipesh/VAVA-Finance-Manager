@@ -106,5 +106,6 @@ public class BudgetModel {
 
         BigDecimal balance = account.getCurrentBalance() != null ? account.getCurrentBalance() : BigDecimal.ZERO;
         return limit.add(balance);
+        return SessionManager.getInstance().getPosition() == Position.Director || SessionManager.getInstance().getPosition() == Position.Analyst;
     }
 }
