@@ -20,7 +20,10 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.example.model.database.entity.Account;
+import org.example.model.database.entity.AccountCategory;
+import org.example.viewModel.BudgetViewModel;
 
+import java.math.BigDecimal;
 import java.util.Locale;
 
 public class BudgetDetailDialog {
@@ -37,7 +40,7 @@ public class BudgetDetailDialog {
         };
     }
 
-    public static void show(Stage owner, Account account, Runnable onEdit, Runnable onDelete) {
+    public static void show(Stage owner, Account account, BudgetViewModel viewModel, Runnable onEdit, Runnable onDelete) {
         Stage modal = new Stage();
         modal.initOwner(owner);
         modal.initModality(Modality.APPLICATION_MODAL);
@@ -110,6 +113,16 @@ public class BudgetDetailDialog {
         headerBox.setAlignment(Pos.CENTER);
         headerBox.setPadding(new Insets(5, 0, 10, 0));
 
+        AccountCategory category = account.getCategory();
+        boolean isBankOrCash = category == AccountCategory.BANK_ACCOUNT || category == AccountCategory.CASH;
+        boolean isSavingsOrInvestment = category == AccountCategory.SAVINGS || category == AccountCategory.INVESTMENT;
+        boolean isCreditLine = category == AccountCategory.CREDIT_LINE;
+        BigDecimal limitAmount = account.getLimitAmount() != null ? BigDecimal.valueOf(account.getLimitAmount()) : null;
+        boolean hasUsableLimit = limitAmount != null && limitAmount.compareTo(BigDecimal.ZERO) > 0;
+
+        BigDecimal currentBalance = account.getCurrentBalance() != null ? account.getCurrentBalance() : BigDecimal.ZERO;
+        BigDecimal spentAmount = isCreditLine ? currentBalance : currentBalance;
+
         Label titleLabel = new Label(account.getAccountName());
         titleLabel.setStyle("-fx-font-size: 32px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
 
@@ -126,13 +139,19 @@ public class BudgetDetailDialog {
         ColumnConstraints col2 = new ColumnConstraints(); col2.setPercentWidth(60);
         infoGrid.getColumnConstraints().addAll(col1, col2);
 
-        Label balanceLabel = new Label("Current Balance");
+        Label balanceLabel = new Label(isCreditLine ? "Total" : "Current Balance");
         balanceLabel.setStyle("-fx-font-weight: 900; -fx-font-size: 14px; -fx-text-fill: " + Themes.DARK_TEXT + ";");
 
-        double balance = account.getCurrentBalance() != null ? account.getCurrentBalance().doubleValue() : 0.0;
+        double balance = spentAmount.doubleValue();
         String currency = account.getCurrency() != null ? account.getCurrency() : "USD";
-        Label balanceValue = new Label(String.format(Locale.US, "%s %,.2f", currency, balance));
-        balanceValue.setStyle("-fx-font-size: 34px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_GREEN + ";");
+        String balanceText = isCreditLine
+                ? String.format(Locale.US, "%s %s%,.2f", currency, balance >= 0 ? "+" : "-", Math.abs(balance))
+                : String.format(Locale.US, "%s %,.2f", currency, balance);
+        String balanceColor = isCreditLine
+                ? (balance < 0 ? Themes.TEXT_ERROR : Themes.DARK_GREEN)
+                : Themes.DARK_GREEN;
+        Label balanceValue = new Label(balanceText);
+        balanceValue.setStyle("-fx-font-size: 34px; -fx-font-weight: 900; -fx-text-fill: " + balanceColor + ";");
 
         infoGrid.add(balanceLabel, 0, 0); infoGrid.add(balanceValue, 1, 0);
         GridPane.setValignment(balanceLabel, javafx.geometry.VPos.CENTER);
@@ -172,61 +191,79 @@ public class BudgetDetailDialog {
         statusValBox.getChildren().addAll(statusIcon, statusVal);
         statusBox.getChildren().addAll(statusLbl, statusValBox);
 
-        infoGrid.add(limitBox, 0, 1); infoGrid.add(statusBox, 1, 1);
-        GridPane.setHalignment(statusBox, javafx.geometry.HPos.RIGHT);
+        if (!isBankOrCash) {
+            infoGrid.add(limitBox, 0, 1); infoGrid.add(statusBox, 1, 1);
+            GridPane.setHalignment(statusBox, javafx.geometry.HPos.RIGHT);
+        }
 
         Region separator = new Region();
         separator.setMinHeight(1);
         separator.setStyle("-fx-background-color: #E2E8F0;");
         VBox.setMargin(separator, new Insets(5, 0, 5, 0));
 
-        double utilization = 0.0;
-        if (account.getLimitAmount() != null && account.getLimitAmount() > 0) {
-            utilization = Math.min((balance / account.getLimitAmount()) * 100.0, 100.0);
+        VBox utilBox = null;
+        boolean isProgressEligibleCategory = isCreditLine || isSavingsOrInvestment;
+        boolean showUtilSection = isProgressEligibleCategory && hasUsableLimit;
+
+        if (showUtilSection) {
+            BigDecimal utilizedAmount = currentBalance;
+            String utilLabelText = isSavingsOrInvestment ? "Goal Progress" : "Credit Used";
+            if (isCreditLine) {
+                utilLabelText = "Credit Used";
+                utilizedAmount = spentAmount.negate().max(BigDecimal.ZERO);
+            }
+
+            double utilization = 0.0;
+            utilization = utilizedAmount
+                    .divide(limitAmount, 4, java.math.RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100.0))
+                    .doubleValue();
+            utilization = Math.min(utilization, 100.0);
+
+            BigDecimal remaining = viewModel.getRemainingCredit(account);
+
+            utilBox = new VBox(8);
+            GridPane utilGrid = new GridPane();
+            utilGrid.setMaxWidth(Double.MAX_VALUE);
+            utilGrid.setVgap(4);
+
+            ColumnConstraints utilLeftCol = new ColumnConstraints(); utilLeftCol.setPercentWidth(40); utilLeftCol.setHalignment(javafx.geometry.HPos.LEFT);
+            ColumnConstraints utilRightCol = new ColumnConstraints(); utilRightCol.setPercentWidth(60); utilRightCol.setHalignment(javafx.geometry.HPos.RIGHT);
+            utilGrid.getColumnConstraints().addAll(utilLeftCol, utilRightCol);
+
+            Label utilLbl = new Label(utilLabelText);
+            utilLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: #64748B; -fx-letter-spacing: 1px;");
+
+            Label remLbl = new Label("REMAINING CAPACITY");
+            remLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: #64748B; -fx-letter-spacing: 1px;");
+
+            Label utilVal = new Label((int) utilization + "%");
+            utilVal.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
+
+            Label remVal = new Label(remaining != null
+                    ? String.format(Locale.US, "%s %,.2f", currency, remaining.doubleValue())
+                    : "—");
+            remVal.setStyle("-fx-font-size: 22px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_GREEN + ";");
+
+            utilGrid.add(utilLbl, 0, 0); utilGrid.add(remLbl, 1, 0);
+            utilGrid.add(utilVal, 0, 1); utilGrid.add(remVal, 1, 1);
+            GridPane.setValignment(utilVal, javafx.geometry.VPos.BASELINE);
+            GridPane.setValignment(remVal, javafx.geometry.VPos.BASELINE);
+
+            StackPane barContainer = new StackPane();
+            barContainer.setAlignment(Pos.CENTER_LEFT);
+
+            Region barBg = new Region(); barBg.setMinHeight(8); barBg.setMaxHeight(8); barBg.setStyle("-fx-background-color: #E2E8F0; -fx-background-radius: 10;");
+            Region barFill = new Region(); barFill.setMinHeight(8); barFill.setMaxHeight(8);
+
+            final double finalUtil = utilization;
+            barFill.prefWidthProperty().bind(barBg.widthProperty().multiply(finalUtil / 100.0));
+            barFill.maxWidthProperty().bind(barBg.widthProperty().multiply(finalUtil / 100.0));
+            barFill.setStyle("-fx-background-color: " + Themes.DARK_GREEN + "; -fx-background-radius: 10;");
+
+            barContainer.getChildren().addAll(barBg, barFill);
+            utilBox.getChildren().addAll(utilGrid, barContainer);
         }
-        double remaining = account.getLimitAmount() != null ? account.getLimitAmount() - balance : 0.0;
-
-        VBox utilBox = new VBox(8);
-        GridPane utilGrid = new GridPane();
-        utilGrid.setMaxWidth(Double.MAX_VALUE);
-        utilGrid.setVgap(4);
-
-        ColumnConstraints utilLeftCol = new ColumnConstraints(); utilLeftCol.setPercentWidth(40); utilLeftCol.setHalignment(javafx.geometry.HPos.LEFT);
-        ColumnConstraints utilRightCol = new ColumnConstraints(); utilRightCol.setPercentWidth(60); utilRightCol.setHalignment(javafx.geometry.HPos.RIGHT);
-        utilGrid.getColumnConstraints().addAll(utilLeftCol, utilRightCol);
-
-        Label utilLbl = new Label("UTILIZATION");
-        utilLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: #64748B; -fx-letter-spacing: 1px;");
-
-        Label remLbl = new Label("REMAINING CAPACITY");
-        remLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: #64748B; -fx-letter-spacing: 1px;");
-
-        Label utilVal = new Label((int) utilization + "%");
-        utilVal.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
-
-        Label remVal = new Label(account.getLimitAmount() != null
-                ? String.format(Locale.US, "%s %,.2f", currency, remaining)
-                : "N/A");
-        remVal.setStyle("-fx-font-size: 22px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_GREEN + ";");
-
-        utilGrid.add(utilLbl, 0, 0); utilGrid.add(remLbl, 1, 0);
-        utilGrid.add(utilVal, 0, 1); utilGrid.add(remVal, 1, 1);
-        GridPane.setValignment(utilVal, javafx.geometry.VPos.BASELINE);
-        GridPane.setValignment(remVal, javafx.geometry.VPos.BASELINE);
-
-        StackPane barContainer = new StackPane();
-        barContainer.setAlignment(Pos.CENTER_LEFT);
-
-        Region barBg = new Region(); barBg.setMinHeight(8); barBg.setMaxHeight(8); barBg.setStyle("-fx-background-color: #E2E8F0; -fx-background-radius: 10;");
-        Region barFill = new Region(); barFill.setMinHeight(8); barFill.setMaxHeight(8);
-
-        final double finalUtil = utilization;
-        barFill.prefWidthProperty().bind(barBg.widthProperty().multiply(finalUtil / 100.0));
-        barFill.maxWidthProperty().bind(barBg.widthProperty().multiply(finalUtil / 100.0));
-        barFill.setStyle("-fx-background-color: " + Themes.DARK_GREEN + "; -fx-background-radius: 10;");
-
-        barContainer.getChildren().addAll(barBg, barFill);
-        utilBox.getChildren().addAll(utilGrid, barContainer);
 
         HBox footer = new HBox(15);
         footer.setPadding(new Insets(15, 0, 0, 0));
@@ -284,7 +321,14 @@ public class BudgetDetailDialog {
 
         footer.getChildren().addAll(editBtn, deleteBtn);
 
-        root.getChildren().addAll(topNav, headerBox, infoGrid, separator, utilBox, footer);
+        root.getChildren().addAll(topNav, headerBox, infoGrid);
+        if (!isBankOrCash) {
+            root.getChildren().add(separator);
+        }
+        if (utilBox != null) {
+            root.getChildren().add(utilBox);
+        }
+        root.getChildren().add(footer);
 
         Scene scene = new Scene(shadowWrapper);
         scene.setFill(null);
