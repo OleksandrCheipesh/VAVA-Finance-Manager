@@ -100,6 +100,114 @@ public class ReportModals {
         showBaseModal(owner, "Income VS Expenses", extraFilters /*, vm */);
     }
 
+    // --- Quick Filters (Table Section) ---
+    public static void showQuickFilters(Stage owner /*, ReportsViewModel vm */) {
+        Stage modal = new Stage();
+        modal.initOwner(owner);
+        modal.initModality(Modality.APPLICATION_MODAL);
+        modal.initStyle(StageStyle.TRANSPARENT);
+
+        // Background blur
+        javafx.scene.Node bgRoot = owner.getScene().getRoot();
+        GaussianBlur blur = new GaussianBlur(15);
+        ColorAdjust darken = new ColorAdjust();
+        darken.setBrightness(-0.2);
+        darken.setInput(blur);
+        bgRoot.setEffect(darken);
+        modal.setOnHidden(e -> bgRoot.setEffect(null));
+
+        StackPane container = new StackPane();
+        container.setStyle("-fx-background-color: transparent;");
+        container.setPadding(new Insets(40));
+
+        VBox root = new VBox(25);
+        root.setPadding(new Insets(25, 30, 25, 30));
+        root.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 30, 0, 0, 10);");
+        // Keep it narrow like the Figma design
+        root.setMaxWidth(380);
+
+        // 1. Header
+        HBox header = new HBox();
+        header.setAlignment(Pos.CENTER_LEFT);
+        Label title = new Label("Quick Filters");
+        title.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+        // Use your IconFactory for the tiny icon next to the title
+        Label titleIcon = new Label();
+        titleIcon.setGraphic(IconFactory.getIcon("sliders-vertical", 18));
+        titleIcon.setPadding(new Insets(0, 10, 0, 0));
+
+        Region spacer = new Region(); HBox.setHgrow(spacer, Priority.ALWAYS);
+        Button closeBtn = new Button("✕");
+        closeBtn.setStyle("-fx-background-color: transparent; -fx-font-size: 18px; -fx-cursor: hand; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+        closeBtn.setOnAction(e -> closeWithAnimation(modal, container));
+        header.getChildren().addAll(titleIcon, title, spacer, closeBtn);
+
+        // 2. Preset Toggles
+        HBox presetBtns = createSegmentedControl("This Month", "Last 6 Months");
+
+        // 3. Date Range
+        HBox dateBox = new HBox(15);
+        VBox startBox = new VBox(5);
+        Label startLbl = new Label("Start Date"); startLbl.setStyle("-fx-font-size: 10px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+        DatePicker startDP = UIFactory.inputDatePicker("Jan 01, 2024");
+        startBox.getChildren().addAll(startLbl, startDP);
+
+        VBox endBox = new VBox(5);
+        Label endLbl = new Label("End Date"); endLbl.setStyle("-fx-font-size: 10px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+        DatePicker endDP = UIFactory.inputDatePicker("Mar 31, 2024");
+        endBox.getChildren().addAll(endLbl, endDP);
+        dateBox.getChildren().addAll(startBox, endBox);
+
+        // 4. Projects List
+        VBox projBox = new VBox(10);
+        Label projLbl = new Label("PROJECTS");
+        projLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+
+        // Mocking the radio/checkbox list from Figma
+        RadioButton p1 = new RadioButton("Project Alpha"); p1.setSelected(true);
+        RadioButton p2 = new RadioButton("Project Beta");
+        RadioButton p3 = new RadioButton("Corporate Rebrand");
+        projBox.getChildren().addAll(projLbl, p1, p2, p3);
+
+        // 5. Footer Actions
+        HBox actions = new HBox();
+        actions.setAlignment(Pos.CENTER_LEFT);
+        actions.setPadding(new Insets(10, 0, 0, 0));
+
+        Button resetBtn = new Button("⟲ Reset");
+        resetBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-cursor: hand; -fx-font-weight: bold;");
+
+        Region actionSpacer = new Region(); HBox.setHgrow(actionSpacer, Priority.ALWAYS);
+
+        Button applyBtn = new Button("Apply Filters");
+        applyBtn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 24; -fx-cursor: hand;");
+
+        actions.getChildren().addAll(resetBtn, actionSpacer, applyBtn);
+
+        // Assemble
+        root.getChildren().addAll(header, presetBtns, dateBox, projBox, actions);
+        container.getChildren().add(root);
+
+        Scene scene = new Scene(container);
+        scene.setFill(Color.TRANSPARENT);
+        try { scene.getStylesheets().add(ReportModals.class.getResource("/styles/global.css").toExternalForm()); } catch (Exception ignored) {}
+        modal.setScene(scene);
+
+        // Entrance Animation
+        container.setOpacity(0);
+        container.setTranslateY(20);
+
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(300), container);
+        fadeIn.setToValue(1);
+
+        TranslateTransition slideUp = new TranslateTransition(Duration.millis(300), container);
+        slideUp.setToY(0);
+
+        new ParallelTransition(fadeIn, slideUp).play();
+
+        modal.show();
+    }
+
     // Net Profit Trend
     public static void showNetProfitTrend(Stage owner /*, ReportsViewModel vm */) {
         VBox extraFilters = new VBox(15);
@@ -182,7 +290,7 @@ public class ReportModals {
 
         root.setPadding(new Insets(30));
         root.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 30, 0, 0, 10);");
-        root.setMaxWidth(800);
+        root.setMaxWidth(1050);
 
         // Header
         HBox header = new HBox();
@@ -221,7 +329,7 @@ public class ReportModals {
         // Left: Chart Placeholder
         Region chartArea = new Region();
         chartArea.setStyle("-fx-background-color: #F8FAFC; -fx-background-radius: 12; -fx-border-color: #E2E8F0; -fx-border-radius: 12;");
-        chartArea.setPrefSize(400, 350);
+        chartArea.setPrefSize(650, 480);
 
         HBox.setHgrow(chartArea, Priority.ALWAYS);
 
