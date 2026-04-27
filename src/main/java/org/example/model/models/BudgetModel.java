@@ -70,7 +70,10 @@ public class BudgetModel {
     }
 
     public boolean hasAccess() {
-        return SessionManager.getInstance().getPosition() == Position.Director;
+        return SessionManager.getInstance().getPosition() == Position.Director
+        || SessionManager.getInstance().getPosition() == Position.Analyst;
+    }
+
     public BigDecimal getTotalAssets(int companyId) throws SQLException {
         return getAccountsByCompanyId(companyId).stream()
                 .filter(a -> a.getCategory() == AccountCategory.BANK_ACCOUNT
@@ -106,6 +109,5 @@ public class BudgetModel {
 
         BigDecimal balance = account.getCurrentBalance() != null ? account.getCurrentBalance() : BigDecimal.ZERO;
         return limit.add(balance);
-        return SessionManager.getInstance().getPosition() == Position.Director || SessionManager.getInstance().getPosition() == Position.Analyst;
     }
 }
