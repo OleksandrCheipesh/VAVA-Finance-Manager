@@ -3,10 +3,10 @@ package org.example.viewModel;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
 import java.io.File;
 import java.sql.SQLException;
 
+import org.example.SessionManager;
 import org.example.model.models.CreateCompanyModel;
 
 /**
@@ -41,7 +41,7 @@ public class CreateCompanyViewModel {
         // Currency suggestion based on selected country
 
         country.addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
+            if (observable != null && newValue != null && !newValue.equals(oldValue)) {
                 autoSelectCurrency(newValue);
             }
         });
@@ -78,7 +78,11 @@ public class CreateCompanyViewModel {
             return;
         }
 
-        CreateCompanyModel createCompanyModel = new CreateCompanyModel(this.companyName.get(),
+        SessionManager.PendingRegistration pendingRegistration = SessionManager.getInstance().requirePendingRegistration();
+
+        CreateCompanyModel createCompanyModel = new CreateCompanyModel(pendingRegistration,
+                this.companyName.get(),
+                this.industry.get(),
                 this.country.get(),
                 this.currency.get());
         createCompanyModel.createCompany();
