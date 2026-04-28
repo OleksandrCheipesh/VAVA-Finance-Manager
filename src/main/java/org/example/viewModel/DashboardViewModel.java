@@ -29,22 +29,19 @@ public class DashboardViewModel {
     private static final IntegerProperty activeProjectsCount = new SimpleIntegerProperty(42);
     private static final TransactionService transactionService = new TransactionService();
     private static final AccountService clientService = new AccountService();
-    private static final ProjectService projectService = new ProjectService();
     private static final ObservableList<Project> projects = FXCollections.observableArrayList();
 
     // Static List of recent transactions
     private static final ObservableList<TransactionDto> recentTransactions = FXCollections.observableArrayList();
 
     // Static block that fills in data
-    static {
-//        loadStubData();
-        loadProjects();
-        loadRealData();
-        loadRecentTransactions();
-        loadRevenueGrowth();
-    }
+//    static {
+////        loadStubData();
+//        loadRealData();
+//        loadRecentTransactions();
+//        loadRevenueGrowth();
+//    }
     public static void reload(){
-        loadProjects();
         loadRealData();
         loadRecentTransactions();
         loadRevenueGrowth();
@@ -130,17 +127,6 @@ public class DashboardViewModel {
             recentTransactions.addAll(fin);
         } catch (SQLException e) {
             // TODO: logging
-        }
-    }
-    private static void loadProjects() {
-        int companyId = SessionManager.getInstance().getCurrentCompanyId();
-
-        try {
-            List<Project> all = projectService.getProjectsByCompanyId(companyId);
-            projects.setAll(all);
-
-        } catch (SQLException e) {
-            // TODO logging
         }
     }
 
