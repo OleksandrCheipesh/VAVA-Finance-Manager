@@ -91,7 +91,7 @@ public class ToastManager {
 
         popup.getContent().add(wrapper);
 
-        // Position: bottom-right of the owner window
+        // Position: top-right of the owner window
         popup.setOnShown(e -> {
             double popupWidth = 440;
             double indentationRight = 35;
