@@ -29,6 +29,7 @@ public class DashboardViewModel {
     private static final IntegerProperty activeProjectsCount = new SimpleIntegerProperty(42);
     private static final TransactionService transactionService = new TransactionService();
     private static final AccountService clientService = new AccountService();
+    private static final ProjectService projectService = new ProjectService();
     private static final ObservableList<Project> projects = FXCollections.observableArrayList();
 
     // Static List of recent transactions
@@ -52,11 +53,14 @@ public class DashboardViewModel {
         try {
             BigDecimal balance = transactionService.getTotalBalanceByCompanyId(companyId);
             totalRevenue.set(formatCurrency(balance));
-                long count = projects.stream()
-                        .filter(Project::isActive)
-                        .count();
 
-                activeProjectsCount.set((int) count);
+            List<Project> loaded = projectService.getProjectsByCompanyId(companyId);
+            projects.setAll(loaded);
+
+            long count = projects.stream()
+                    .filter(Project::isActive)
+                    .count();
+            activeProjectsCount.set((int) count);
         } catch (SQLException e) {
             // TODO: logging
         }
@@ -121,7 +125,9 @@ public class DashboardViewModel {
                 clientName = clientService.getAccountById(sorted.get(i).getAccountId() )
                             .map(Account::getAccountName)
                             .orElse("Unknown");
-                fin.add(new TransactionDto(sorted.get(i).getDate(), sorted.get(i).getDescription(), clientName, sorted.get(i).getAmount().doubleValue()));
+                double amount = sorted.get(i).getAmount().doubleValue();
+                if ("PURCHASE".equalsIgnoreCase(sorted.get(i).getType())) amount = -amount;
+                fin.add(new TransactionDto(sorted.get(i).getDate(), sorted.get(i).getDescription(), clientName, amount));
             }
             recentTransactions.clear();
             recentTransactions.addAll(fin);
