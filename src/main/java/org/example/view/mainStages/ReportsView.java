@@ -136,7 +136,7 @@ public class ReportsView extends BaseView {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         Label expandIcon = new Label();
-        expandIcon.setGraphic(IconFactory.getIcon("layout-dashboard", 16));
+        expandIcon.setGraphic(IconFactory.getIcon("chart-column-big", 16));
         expandIcon.setOpacity(0.5);
         header.getChildren().addAll(titleLbl, spacer, expandIcon);
 
@@ -209,7 +209,7 @@ public class ReportsView extends BaseView {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         Button filterBtn = new Button("Filters");
-        filterBtn.setGraphic(IconFactory.getIcon("layout-dashboard", 14));
+        filterBtn.setGraphic(IconFactory.getIcon("funnel", 14));
         filterBtn.setStyle("-fx-background-color: #F1F5F9; -fx-text-fill: #111827; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-insets: 0; -fx-padding: 8 16;");
         filterBtn.setOnAction(e -> ReportModals.showQuickFilters(stage, viewModel));
 

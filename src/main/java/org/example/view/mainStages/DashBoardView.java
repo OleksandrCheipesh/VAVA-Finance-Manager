@@ -25,7 +25,6 @@ public class DashBoardView extends BaseView {
     private Label activeProjectsValueLabel;
     private VBox transactionsListContainer;
 
-    // Report ViewModel instance to get dummy data for charts
     private final ReportsViewModel reportsViewModel = new ReportsViewModel();
 
     @Override
@@ -156,9 +155,10 @@ public class DashBoardView extends BaseView {
         chartHeader.getChildren().addAll(chartTitleBox, chartSpacer, toggleBox);
 
         TrendLineChart trendChart = new TrendLineChart(reportsViewModel.getMonthlySummaries());
-        IncomeExpenseBarChart barChart = new IncomeExpenseBarChart(reportsViewModel.getMonthlySummaries());
+        VBox.setVgrow(trendChart, Priority.ALWAYS);
+        // IncomeExpenseBarChart intentionally removed — belongs on Reports screen only
 
-        VBox chartContainer = new VBox(15, trendChart, barChart);
+        VBox chartContainer = new VBox(15, trendChart);
         VBox.setVgrow(chartContainer, Priority.ALWAYS);
 
         revenueChartCard.getChildren().addAll(chartHeader, chartContainer);
