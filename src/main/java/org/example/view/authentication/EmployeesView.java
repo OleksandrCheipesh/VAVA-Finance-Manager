@@ -45,7 +45,7 @@ public class EmployeesView extends BaseView {
         StateButton addBtn = new StateButton("+ Add Employee", StateButton.ButtonType.PRIMARY);
         addBtn.setOnAction(e -> {
             // Open Modal. When it succeeds, pass the new employee to the ViewModel!
-            AddEmployeeDialog.show(stage, newEmployee -> {
+            AddEmployeeDialog.show(stage, null, newEmployee -> {
                 viewModel.addEmployee(newEmployee);
             });
         });

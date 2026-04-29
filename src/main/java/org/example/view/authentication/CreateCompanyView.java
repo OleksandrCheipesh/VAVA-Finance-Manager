@@ -15,6 +15,7 @@ import org.example.view.templates.BaseView;
 import org.example.view.templates.Themes;
 import org.example.view.templates.UIFactory;
 import org.example.viewModel.CreateCompanyViewModel;
+import org.example.logging.AppLog;
 
 import java.io.File;
 import java.sql.SQLException;
@@ -140,6 +141,8 @@ public class CreateCompanyView extends BaseView {
         scrollRoot = new ScrollPane(scrollContentWrapper);
         scrollRoot.setFitToWidth(true);
         scrollRoot.setFitToHeight(true);
+        scrollRoot.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollRoot.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
         // Background image with teal gradient overlay
         StackPane rootPane = new StackPane();
@@ -169,7 +172,8 @@ public class CreateCompanyView extends BaseView {
         try {
             scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());
         } catch (Exception e) {
-            System.err.println("Global CSS not found.");
+            var logger = AppLog.getLogger(CreateCompanyView.class);
+            logger.warn("Global CSS not found for CreateCompanyView: {}", e.getMessage());
         }
     }
 
@@ -226,12 +230,8 @@ public class CreateCompanyView extends BaseView {
                         "-fx-border-width: 1; -fx-border-radius: 18; -fx-background-radius: 18;"
         );
 
-        // Register button with hover effect
-        String base  = "-fx-background-color: " + Themes.BTN_PRIMARY + "; -fx-text-fill: white; -fx-font-size: " + Themes.FONT_BTN_LARGE + "px; -fx-font-weight: bold; -fx-background-radius: 60; -fx-padding: 12 80;";
-        String hover = "-fx-background-color: " + Themes.BTN_PRIMARY_HOVER + "; -fx-text-fill: white; -fx-font-size: " + Themes.FONT_BTN_LARGE + "px; -fx-font-weight: bold; -fx-background-radius: 60; -fx-padding: 12 80; -fx-cursor: hand;";
+        String base  = "-fx-background-color: " + Themes.BTN_PRIMARY + "; -fx-text-fill: white; -fx-font-size: " + Themes.FONT_BTN_LARGE + "px; -fx-font-weight: bold; -fx-background-radius: 60; -fx-padding: 12 80; -fx-cursor: hand;";
         registerBtn.setStyle(base);
-        registerBtn.setOnMouseEntered(e -> registerBtn.setStyle(hover));
-        registerBtn.setOnMouseExited(e -> registerBtn.setStyle(base));
     }
 
     @Override
@@ -259,6 +259,16 @@ public class CreateCompanyView extends BaseView {
                 descArea.setMinHeight(h);
             }
         }));
+
+        registerBtn.setOnMousePressed(e -> {
+            registerBtn.setScaleX(0.98);
+            registerBtn.setScaleY(0.98);
+        });
+
+        registerBtn.setOnMouseReleased(e -> {
+            registerBtn.setScaleX(1.0);
+            registerBtn.setScaleY(1.0);
+        });
 
         // Validate required fields on register
         registerBtn.setOnAction(e -> {

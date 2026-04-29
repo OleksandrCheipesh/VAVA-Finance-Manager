@@ -24,12 +24,18 @@
     -fx-text-fill: #6B7280;
     -fx-font-weight: 800;
     -fx-font-size: 11px;
+    -fx-min-width: 36px;
+    -fx-pref-width: 36px;
+    -fx-alignment: center;
 }
 
 .date-picker-popup .day-cell {
     -fx-background-color: white;
     -fx-text-fill: #111827;
     -fx-padding: 8;
+    -fx-min-width: 36px;
+    -fx-pref-width: 36px;
+    -fx-alignment: center;
 }
 
 .date-picker-popup .day-cell:hover {
@@ -117,6 +123,9 @@
     -fx-font-weight: bold;
     -fx-font-size: 12px;
     -fx-padding: 10 5;
+    -fx-min-width: 36px;
+    -fx-pref-width: 36px;
+    -fx-alignment: center;
 }
 
 /* Regular cells with days */
@@ -126,6 +135,9 @@
     -fx-padding: 8;
     -fx-cursor: hand;
     -fx-background-radius: 8;
+    -fx-min-width: 36px;
+    -fx-pref-width: 36px;
+    -fx-alignment: center;
 }
 
 .date-picker-popup .day-cell:hover {
@@ -171,4 +183,38 @@
     -fx-background-color: transparent;
     -fx-padding: 0 10 0 0;
     -fx-cursor: hand;
+}
+
+/* Radio buttons design */
+.custom-radio {
+    -fx-text-fill: #1e293b;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+    -fx-graphic-text-gap: 8px;
+}
+
+.custom-radio .radio {
+    -fx-background-color: white;
+    -fx-border-color: #cbd5e1;
+    -fx-border-width: 1.5px;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-padding: 3px;
+    -fx-background-insets: 0;
+}
+
+.custom-radio .dot {
+    -fx-background-color: transparent;
+    -fx-background-radius: 12px;
+    -fx-padding: 4px;
+    -fx-background-insets: 0;
+}
+
+.custom-radio:selected .radio {
+    -fx-background-color: #14b8a6;
+    -fx-border-color: #14b8a6;
+}
+
+.custom-radio:selected .dot {
+    -fx-background-color: white;
 }

@@ -2,15 +2,17 @@ package org.example.model.database.entity;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.time.LocalDate;
 
 public class Employee extends Person {
+    //TO DO: active and pasive status
     private int id;
     private int companyId;
     private Integer age;
     private BigDecimal salary;
     private String position;
     private OffsetDateTime hiredAt;
+    private String status = "ACTIVE";
+    private String department = "";
 
     public Employee() {}
 
@@ -97,5 +99,11 @@ public class Employee extends Person {
     public void setHiredAt(OffsetDateTime hiredAt) {
         this.hiredAt = hiredAt;
     }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public String getDepartment() { return department; }
+    public void setDepartment(String department) { this.department = department; }
 }
 

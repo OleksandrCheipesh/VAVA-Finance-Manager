@@ -68,4 +68,14 @@ public class Themes {
     public static final String SIDEBAR_PROFILE_BG = "#1A4041";
     public static final String SIDEBAR_LOGOUT_BG = "#255A5C";
     public static final String SIDEBAR_LOGOUT_HOVER = "#2E6D6F";
+
+    // Budget & Accounts Specific Colors
+    public static final String DARK_TEXT = "#0F172A";
+    public static final String DARK_GREEN = "#064E3B";
+    public static final String PRIMARY_TEAL = PRIMARY;
+
+    public static final String TEXT_GRAY = "#64748B";
+
+    // Dashboard
+    public static final String PURPLE_ICON = "#8B5CF6";
 }
