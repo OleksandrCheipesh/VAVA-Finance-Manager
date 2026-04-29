@@ -288,6 +288,9 @@ public class CreateCompanyView extends BaseView {
                 } catch (SQLException ex) {
                     errorLabel.setText("Failed to save company. Please try again.");
                     errorLabel.setVisible(true);
+                } catch (RuntimeException ex) {
+                    errorLabel.setText(ex.getMessage() == null ? "Failed to save company. Please try again." : ex.getMessage());
+                    errorLabel.setVisible(true);
                 }
             } else {
                 // Highlight invalid fields with red border

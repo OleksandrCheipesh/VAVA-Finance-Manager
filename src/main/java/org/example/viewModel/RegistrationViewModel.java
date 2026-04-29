@@ -4,8 +4,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.example.model.models.RegistrationModel;
 
-import java.sql.SQLException;
-
 public class RegistrationViewModel {
 
     private final RegistrationModel service = new RegistrationModel();
@@ -18,7 +16,7 @@ public class RegistrationViewModel {
             message.set("Registration successful!");
         } catch (IllegalArgumentException e) {
             message.set(e.getMessage());
-        } catch (SQLException e) {
+        } catch (RuntimeException e) {
             message.set("Registration failed: " + e.getMessage());
         }
     }
