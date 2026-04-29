@@ -6,9 +6,10 @@ import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.effect.ColorAdjust;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import org.example.SessionManager;
 import org.example.model.database.entity.User;
@@ -36,36 +37,43 @@ public class Sidebar {
         VBox sidebar = new VBox(20);
         sidebar.setPadding(new Insets(30, 20, 30, 20));
         sidebar.setPrefWidth(260);
+        sidebar.setMinWidth(260);
+        sidebar.setMaxWidth(260);
         sidebar.setStyle("-fx-background-color: " + Themes.SIDEBAR_BG + ";");
 
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        sidebar.getChildren().addAll(buildSidebarTitle(), buildMenuItems(), spacer, buildProfileCard());
+        sidebar.getChildren().addAll(buildSidebarTitle(), buildMenuItems(), spacer, buildBottomCard());
         return sidebar;
     }
 
     private HBox buildSidebarTitle() {
-        HBox logoBox = new HBox(15);
+        HBox logoBox = new HBox(12);
         logoBox.setAlignment(Pos.CENTER_LEFT);
-        logoBox.setPadding(new Insets(0, 0, 10, 0));
+        logoBox.setPadding(new Insets(0, 0, 10, 4
+        ));
 
-        Region logo = new Region();
-        logo.setPrefSize(36, 36);
-        logo.setMinSize(36, 36);
-        logo.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-background-radius: 10;");
-
-        String compName;
-        try {
-            compName = SessionManager.getInstance().getCurrentCompany().getName();
-        } catch (Exception e) {
-            compName = "Unknown";
-        }
-        Label adminLabel = new Label(compName);
-        adminLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: 900; -fx-text-fill: white;");
-
-        logoBox.getChildren().addAll(logo, adminLabel);
+        logoBox.getChildren().add(buildLogoIcon());
         return logoBox;
+    }
+
+    private ImageView buildLogoIcon() {
+        double width = 260 * 0.40;
+        ImageView imageView = new ImageView();
+        try {
+            Image img = new Image(Sidebar.class.getResourceAsStream("/icons/logo.png"));
+            imageView.setImage(img);
+            imageView.setFitWidth(width);
+            imageView.setPreserveRatio(true);
+            imageView.setSmooth(true);
+
+            double height = img.getWidth() > 0 ? (img.getHeight() / img.getWidth()) * width : width;
+            imageView.setClip(new Rectangle(width, height));
+        } catch (Exception e) {
+            System.err.println("Could not load logo.png");
+        }
+        return imageView;
     }
 
     private VBox buildMenuItems() {
@@ -127,60 +135,40 @@ public class Sidebar {
         return box;
     }
 
-    private VBox buildProfileCard() {
-        VBox profileCard = new VBox(15);
-        profileCard.setStyle("-fx-background-color: " + Themes.SIDEBAR_PROFILE_BG + "; -fx-background-radius: 12; -fx-padding: 16;");
-
-        VBox textContainer = new VBox(2);
+    private VBox buildBottomCard() {
+        VBox card = new VBox(12);
+        card.setStyle("-fx-background-color: " + Themes.SIDEBAR_PROFILE_BG + "; -fx-background-radius: 14; -fx-padding: 16;");
 
         User user = SessionManager.getInstance().getCurrentUser();
-        String fullName = (user != null)
-                ? user.getName() + " " + user.getSurname()
-                : "Unknown User";
-
-        String roleText = (user != null && user.getPosition() != null)
-                ? user.getPosition().name()
-                : "No Role";
+        String fullName = (user != null) ? user.getName() + " " + user.getSurname() : "Unknown User";
+        String roleText = (user != null && user.getPosition() != null) ? user.getPosition().name() : "No Role";
 
         Label name = new Label(fullName);
         name.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: white;");
         Label role = new Label(roleText);
         role.setStyle("-fx-font-size: 13px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
-        textContainer.getChildren().addAll(name, role);
+        VBox userInfo = new VBox(3, name, role);
 
         Button logoutBtn = new Button("Logout");
         logoutBtn.setMaxWidth(Double.MAX_VALUE);
 
-        String normalStyle = "-fx-background-color: " + Themes.SIDEBAR_LOGOUT_BG + "; -fx-text-fill: #D1D5DB; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;";
-        String hoverStyle = "-fx-background-color: " + Themes.SIDEBAR_LOGOUT_HOVER + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 8 0; -fx-cursor: hand;";
+        String normalStyle = "-fx-background-color: " + Themes.SIDEBAR_LOGOUT_BG + "; -fx-text-fill: #D1D5DB; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 0; -fx-cursor: hand;";
+        String hoverStyle  = "-fx-background-color: " + Themes.SIDEBAR_LOGOUT_HOVER + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 0; -fx-cursor: hand;";
 
         logoutBtn.setStyle(normalStyle);
         logoutBtn.setOnMouseEntered(e -> logoutBtn.setStyle(hoverStyle));
         logoutBtn.setOnMouseExited(e -> logoutBtn.setStyle(normalStyle));
-
-        logoutBtn.setOnMousePressed(e -> {
-            logoutBtn.setScaleX(0.95);
-            logoutBtn.setScaleY(0.95);
-        });
-
-        logoutBtn.setOnMouseReleased(e -> {
-            logoutBtn.setScaleX(1.0);
-            logoutBtn.setScaleY(1.0);
-        });
-
-     
+        logoutBtn.setOnMousePressed(e -> { logoutBtn.setScaleX(0.95); logoutBtn.setScaleY(0.95); });
+        logoutBtn.setOnMouseReleased(e -> { logoutBtn.setScaleX(1.0); logoutBtn.setScaleY(1.0); });
         logoutBtn.setOnMouseClicked(e -> {
             SessionManager.getInstance().logout();
             ToastManager.showSuccess(stage, "Logged out successfully");
-
-            BaseView loginView = new LoginView();
-            loginView.show(stage);
+            new LoginView().show(stage);
         });
 
-
-        profileCard.getChildren().addAll(textContainer, logoutBtn);
-        return profileCard;
+        card.getChildren().addAll(userInfo, logoutBtn);
+        return card;
     }
 
     private void navigateTo(String menuLabel) {
