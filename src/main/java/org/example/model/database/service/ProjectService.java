@@ -63,7 +63,11 @@ public class ProjectService {
         var logger = org.example.logging.AppLog.getLogger(ProjectService.class);
         String sql = "SELECT * FROM projects WHERE id = ?";
         try (Connection connection = ConnectionProvider.getConnection();
+             PreparedStatement refreshStatement = connection.prepareStatement(
+                     "UPDATE projects SET is_active = false WHERE end_date IS NOT NULL AND end_date < CURRENT_DATE AND is_active = true"
+             );
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            refreshExpiredProjects(refreshStatement);
             preparedStatement.setInt(1, id);
 
             try (ResultSet rs = preparedStatement.executeQuery()) {
@@ -86,7 +90,11 @@ public class ProjectService {
         List<Project> list = new ArrayList<>();
 
         try (Connection connection = ConnectionProvider.getConnection();
+             PreparedStatement refreshStatement = connection.prepareStatement(
+                     "UPDATE projects SET is_active = false WHERE company_id = ? AND end_date IS NOT NULL AND end_date < CURRENT_DATE AND is_active = true"
+             );
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            refreshExpiredProjects(refreshStatement, companyId);
             preparedStatement.setInt(1, companyId);
 
             try (ResultSet rs = preparedStatement.executeQuery()) {
@@ -108,7 +116,11 @@ public class ProjectService {
         List<Project> list = new ArrayList<>();
 
         try (Connection connection = ConnectionProvider.getConnection();
+             PreparedStatement refreshStatement = connection.prepareStatement(
+                     "UPDATE projects SET is_active = false WHERE company_id = ? AND end_date IS NOT NULL AND end_date < CURRENT_DATE AND is_active = true"
+             );
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            refreshExpiredProjects(refreshStatement, companyId);
             preparedStatement.setInt(1, companyId);
 
             try (ResultSet rs = preparedStatement.executeQuery()) {
@@ -128,10 +140,15 @@ public class ProjectService {
         List<Project> list = new ArrayList<>();
 
         try (Connection connection = ConnectionProvider.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
+             PreparedStatement refreshStatement = connection.prepareStatement(
+                     "UPDATE projects SET is_active = false WHERE end_date IS NOT NULL AND end_date < CURRENT_DATE AND is_active = true"
+             );
+             Statement statement = connection.createStatement()) {
+            refreshExpiredProjects(refreshStatement);
+            try (ResultSet resultSet = statement.executeQuery(sql)) {
             while (resultSet.next())
                 list.add(mapRow(resultSet));
+            }
         } catch (SQLException e) {
             logger.error("Failed to load all projects", e);
             throw e;
@@ -233,6 +250,19 @@ public class ProjectService {
         project.setActive(resultSet.getBoolean("is_active"));
         project.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
         return project;
+    }
+
+    private void refreshExpiredProjects(PreparedStatement refreshStatement, Object... params) throws SQLException {
+        for (int i = 0; i < params.length; i++) {
+            Object param = params[i];
+            int index = i + 1;
+            if (param instanceof Integer value) {
+                refreshStatement.setInt(index, value);
+            } else {
+                refreshStatement.setObject(index, param);
+            }
+        }
+        refreshStatement.executeUpdate();
     }
 }
 

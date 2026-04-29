@@ -8,8 +8,6 @@ import org.example.logging.AppLog;
 import org.example.model.database.service.CompanyService;
 
 import java.sql.SQLException;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 
 
 public final class SessionManager {
@@ -17,6 +15,7 @@ public final class SessionManager {
     private static SessionManager instance;
     private User currentUser;
     private Company currentCompany;
+    private PendingRegistration pendingRegistration;
 
     private SessionManager() {
         this.currentUser = null;
@@ -58,6 +57,18 @@ public final class SessionManager {
         AppLog.pushSession(getStatus());
     }
 
+    public synchronized void login(User user, Company currentCompany) {
+        var logger = AppLog.getLogger(SessionManager.class);
+        if (user == null) {
+            logger.warn("Cannot login with null user");
+            throw new IllegalArgumentException("Cannot login with null user");
+        }
+        this.currentUser = user;
+        this.currentCompany = currentCompany;
+        logger.info("User login: id={} email={}", user.getId(), user.getEmail());
+        AppLog.pushSession(getStatus());
+    }
+
     /**
      * Terminate the current session.
      */
@@ -67,6 +78,8 @@ public final class SessionManager {
             logger.info("User logout: id={} email={}", this.currentUser.getId(), this.currentUser.getEmail());
         }
         this.currentUser = null;
+        this.currentCompany = null;
+        this.pendingRegistration = null;
         AppLog.clearSession();
     }
 
@@ -97,6 +110,21 @@ public final class SessionManager {
         this.currentCompany = currentCompany;
     }
 
+    public synchronized void setPendingRegistration(String name, String surname, String email, String passwordHash) {
+        this.pendingRegistration = new PendingRegistration(name, surname, email, passwordHash);
+    }
+
+    public synchronized PendingRegistration requirePendingRegistration() {
+        if (pendingRegistration == null) {
+            throw new IllegalStateException("No pending registration data available");
+        }
+        return pendingRegistration;
+    }
+
+    public synchronized void clearPendingRegistration() {
+        this.pendingRegistration = null;
+    }
+
     public synchronized SessionStatus getStatus() {
         return new SessionStatus(
                 currentUser != null ? currentUser.getId() : -1,
@@ -119,10 +147,17 @@ public final class SessionManager {
         }
     }
 
-    public static record SessionStatus(
+    public record SessionStatus(
             int userId,
             String email,
             Integer companyId
+    ) {}
+
+    public record PendingRegistration(
+            String name,
+            String surname,
+            String email,
+            String passwordHash
     ) {}
 
     public Company getCurrentCompany() {
