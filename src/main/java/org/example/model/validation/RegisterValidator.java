@@ -16,6 +16,19 @@ public class RegisterValidator {
             throw new IllegalArgumentException("Password must be at least 8 characters, have upper and lowercase letters and a special symbol");
     }
 
+    public static void validatePassword(String password) {
+        if (password == null || password.isBlank())
+            throw new IllegalArgumentException("New password is required.");
+        if (password.length() < 8)
+            throw new IllegalArgumentException("Password must be at least 8 characters long.");
+        if (!password.matches(".*[A-Z].*"))
+            throw new IllegalArgumentException("Password must contain at least one uppercase letter.");
+        if (!password.matches(".*[a-z].*"))
+            throw new IllegalArgumentException("Password must contain at least one lowercase letter.");
+        if (!password.matches(".*[^A-Za-z0-9].*"))
+            throw new IllegalArgumentException("Password must contain at least one special character.");
+    }
+
     private static boolean isValidPassword(String password) {
         if (password == null || password.length() < 8) return false;
         return password.matches(".*[A-Z].*")
