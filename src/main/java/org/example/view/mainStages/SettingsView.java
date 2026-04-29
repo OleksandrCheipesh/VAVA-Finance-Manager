@@ -153,12 +153,7 @@ public class SettingsView extends BaseView {
 
                 viewModel.saveCompanyProfile(this.companyNameField.getText(),this.industryBox.getValue(),this.countryBox.getValue(),this.currencyBox.getValue());
 
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Success");
-                alert.setHeaderText(null);
-                alert.setContentText("Current company successfully updated");
-                alert.initOwner(stage);
-                alert.showAndWait();
+                ToastManager.showSuccess(stage, "Company profile updated successfully.");
             } catch (CompanyValExept ex) {
                 switch (ex.getCode()) {
                     case NAME_ERR:
@@ -174,13 +169,7 @@ public class SettingsView extends BaseView {
                         currencyBox.setStyle(errorStyleCombo);
                         break;
                 }
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-
-                alert.setTitle("Error");
-                alert.setHeaderText(null);
-                alert.setContentText(ex.getMessage());
-                alert.initOwner(stage);
-                alert.showAndWait();
+                ToastManager.showError(stage, ex.getMessage());
             }
         });
         applyPrefsBtn.setOnAction(e -> viewModel.applyPreferences());
@@ -191,20 +180,9 @@ public class SettingsView extends BaseView {
             try {
                 viewModel.changePassword(currentPassField.getText(), newPassField.getText(), confirmPassField.getText());
                 currentPassField.clear(); newPassField.clear(); confirmPassField.clear();
-
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Success");
-                alert.setHeaderText(null);
-                alert.setContentText("Password has been changed successfully.");
-                alert.initOwner(stage);
-                alert.showAndWait();
+                ToastManager.showSuccess(stage, "Password changed successfully.");
             } catch (Exception ex) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText("Password Change Failed");
-                alert.setContentText(ex.getMessage());
-                alert.initOwner(stage);
-                alert.showAndWait();
+                ToastManager.showError(stage, ex.getMessage());
             }
         });
 

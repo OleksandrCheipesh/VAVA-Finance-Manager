@@ -211,25 +211,7 @@ public class BudgetView extends BaseView {
     @Override
     protected void setLogic() {
         if (!viewModel.hasAccessProperty().get()) {
-            GaussianBlur blur = new GaussianBlur(10);
-            contentArea.setEffect(blur);
-
-            Label lock = new Label("🔒");
-            lock.setStyle("-fx-font-size: 48px;");
-
-            Label msg = new Label("Access Denied");
-            msg.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;");
-
-            VBox box = new VBox(10, lock, msg);
-            box.setAlignment(Pos.CENTER);
-
-            StackPane overlay = new StackPane();
-            overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
-            overlay.getChildren().add(box);
-
-            StackPane wrapper = new StackPane(contentArea, overlay);
-            VBox.setVgrow(wrapper, Priority.ALWAYS);
-            root.setCenter(new VBox(topBar, wrapper));
+            showAccessDenied();
             return;
         }
 
@@ -343,16 +325,15 @@ public class BudgetView extends BaseView {
         cardHeader.setAlignment(Pos.CENTER_LEFT);
 
         StackPane iconBox = new StackPane();
-
         iconBox.setPrefSize(42, 42);
         iconBox.setStyle("-fx-background-color: " + Themes.PRIMARY + "22; -fx-background-radius: 10;");
 
-        SVGPath icon = new SVGPath();
-
-        icon.setContent("M20 7h-4V5c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zM10 5h4v2h-4V5z");
-        icon.setFill(Color.web(Themes.PRIMARY));
-        icon.setScaleX(0.7); icon.setScaleY(0.7);
-        iconBox.getChildren().add(icon);
+        String iconName = switch (account.getCategory()) {
+            case CASH -> "banknote";
+            case CREDIT_LINE -> "credit-card";
+            default -> "landmark"; // BANK_ACCOUNT and anything else
+        };
+        iconBox.getChildren().add(IconFactory.getIcon(iconName, 22));
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
