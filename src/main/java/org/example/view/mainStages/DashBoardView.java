@@ -203,6 +203,9 @@ public class DashBoardView extends BaseView {
             viewAllBtn.setScaleX(1.0);
             viewAllBtn.setScaleY(1.0);
         });
+        viewAllBtn.setOnAction(e -> {
+            navigateTo(new TransactionsView());
+        });
 
         VBox.setMargin(viewAllBtn, new Insets(20, 0, 0, 0));
 
@@ -237,6 +240,7 @@ public class DashBoardView extends BaseView {
 
     @Override
     protected void setLogic() {
+        DashboardViewModel.reload();
         revenueValueLabel.textProperty().bind(DashboardViewModel.totalRevenueProperty());
         revenueBadgeLabel.textProperty().bind(DashboardViewModel.revenueGrowthProperty());
         activeProjectsValueLabel.textProperty().bind(DashboardViewModel.activeProjectsCountProperty().asString());
