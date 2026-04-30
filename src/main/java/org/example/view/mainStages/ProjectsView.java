@@ -47,10 +47,12 @@ public class ProjectsView extends BaseView {
 
         VBox titleBox = new VBox(2);
         titleBox.setAlignment(Pos.BOTTOM_LEFT);
-        Label title = new Label("Projects");
+        Label title = new Label(I18n.t("Projects"));
         title.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
-        Label subTitle = new Label("Monitoring capital allocation and architectural milestones.");
+        I18n.language.addListener((obs, o, v) -> title.setText(I18n.t("Projects")));
+        Label subTitle = new Label(I18n.t("Monitoring capital allocation and architectural milestones."));
         subTitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 14px;");
+        I18n.language.addListener((obs, o, v) -> subTitle.setText(I18n.t("Monitoring capital allocation and architectural milestones.")));
         titleBox.getChildren().addAll(title, subTitle);
 
         HBox.setMargin(titleBox, new Insets(0, 0, 15, 0));
@@ -58,7 +60,8 @@ public class ProjectsView extends BaseView {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        addBtn = new StateButton("+ Add New Project", StateButton.ButtonType.PRIMARY);
+        addBtn = new StateButton(I18n.t("+ Add New Project"), StateButton.ButtonType.PRIMARY);
+        I18n.language.addListener((obs, o, v) -> addBtn.setText(I18n.t("+ Add New Project")));
         HBox.setMargin(addBtn, new Insets(0, 0, 20, 0));
 
         topBar.getChildren().addAll(titleBox, spacer, addBtn);
@@ -73,8 +76,9 @@ public class ProjectsView extends BaseView {
         HBox contentHeader = new HBox(20);
         contentHeader.setAlignment(Pos.CENTER_LEFT);
 
-        Label activeTitle = new Label("Active Projects");
+        Label activeTitle = new Label(I18n.t("Active Projects"));
         activeTitle.setStyle("-fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+        I18n.language.addListener((obs, o, v) -> activeTitle.setText(I18n.t("Active Projects")));
 
         HBox searchContainer = new HBox(8);
         searchContainer.setAlignment(Pos.CENTER_LEFT);
@@ -95,9 +99,10 @@ public class ProjectsView extends BaseView {
 
         StackPane searchPane = new StackPane();
         searchPane.setAlignment(Pos.CENTER_LEFT);
-        Label searchPrompt = new Label("Search by name...");
+        Label searchPrompt = new Label(I18n.t("Search by name..."));
         searchPrompt.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 14px;");
         searchPrompt.setMouseTransparent(true);
+        I18n.language.addListener((obs, o, v) -> searchPrompt.setText(I18n.t("Search by name...")));
 
         searchBar.textProperty().addListener((obs, old, val) -> {
             searchPrompt.setVisible(val.isEmpty());
@@ -116,6 +121,10 @@ public class ProjectsView extends BaseView {
                 createHeaderWidget("TOTAL BUDGET", viewModel.budgetProperty(), "wallet"),
                 createHeaderWidget("ACTIVE SPRINT", viewModel.activeProjectProperty(), "calendar")
         );
+        I18n.language.addListener((obs, o, v) -> summaryBox.getChildren().setAll(
+                createHeaderWidget("TOTAL BUDGET", viewModel.budgetProperty(), "wallet"),
+                createHeaderWidget("ACTIVE SPRINT", viewModel.activeProjectProperty(), "calendar")
+        ));
 
         contentHeader.getChildren().addAll(activeTitle, searchContainer, headerSpacer, summaryBox);
 
@@ -299,7 +308,7 @@ public class ProjectsView extends BaseView {
         return card;
     }
 
-    private HBox createHeaderWidget(String title, StringProperty valueProperty, String iconName) {
+    private HBox createHeaderWidget(String titleKey, StringProperty valueProperty, String iconName) {
         HBox widget = new HBox(15);
         widget.setAlignment(Pos.CENTER_LEFT);
         widget.setStyle("-fx-background-color: white; -fx-border-color: #E2E8F0; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12 20;");
@@ -312,7 +321,7 @@ public class ProjectsView extends BaseView {
         iconBox.getChildren().add(iconView);
 
         VBox textBox = new VBox(2);
-        Label lblTitle = new Label(title);
+        Label lblTitle = new Label(I18n.t(titleKey));
         lblTitle.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
         Label lblValue = new Label();
         lblValue.textProperty().bind(valueProperty);

@@ -16,6 +16,9 @@ public final class SessionManager {
     private User currentUser;
     private Company currentCompany;
     private PendingRegistration pendingRegistration;
+    private String language = "English";
+    private String currency = "";
+    private String currencySymbol = "$";
 
     private SessionManager() {
         this.currentUser = null;
@@ -80,6 +83,9 @@ public final class SessionManager {
         this.currentUser = null;
         this.currentCompany = null;
         this.pendingRegistration = null;
+        this.language = "English";
+        this.currency = "";
+        this.currencySymbol = "$";
         AppLog.clearSession();
     }
 
@@ -166,4 +172,13 @@ public final class SessionManager {
         }
         return currentCompany;
     }
+
+    public synchronized String getLanguage() { return language; }
+    public synchronized void setLanguage(String language) { this.language = language; }
+
+    public synchronized String getCurrency() { return currency; }
+    public synchronized void setCurrency(String currency) { this.currency = currency; }
+
+    public synchronized String getCurrencySymbol() { return currencySymbol; }
+    public synchronized void setCurrencySymbol(String currencySymbol) { this.currencySymbol = currencySymbol; }
 }

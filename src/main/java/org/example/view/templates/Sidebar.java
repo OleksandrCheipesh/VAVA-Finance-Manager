@@ -117,7 +117,8 @@ public class Sidebar {
         // Load the PNG image
         ImageView iconView = IconFactory.getIcon(iconName, 24);
 
-        Label label = new Label(text);
+        Label label = new Label(I18n.t(text));
+        I18n.language.addListener((obs, old, lang) -> label.setText(I18n.t(text)));
         box.getChildren().addAll(iconView, label);
 
         applyDefaultMenuStyle(box);
@@ -151,7 +152,8 @@ public class Sidebar {
 
         VBox userInfo = new VBox(3, name, role);
 
-        Button logoutBtn = new Button("Logout");
+        Button logoutBtn = new Button(I18n.t("Logout"));
+        I18n.language.addListener((obs, old, lang) -> logoutBtn.setText(I18n.t("Logout")));
         logoutBtn.setMaxWidth(Double.MAX_VALUE);
 
         String normalStyle = "-fx-background-color: " + Themes.SIDEBAR_LOGOUT_BG + "; -fx-text-fill: #D1D5DB; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 0; -fx-cursor: hand;";

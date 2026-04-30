@@ -4,6 +4,7 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.example.SessionManager;
+import org.example.view.templates.I18n;
 import org.example.model.database.entity.Company;
 import org.example.model.database.entity.User;
 import org.example.model.PasswordUtil;
@@ -23,7 +24,7 @@ public class SettingsViewModel {
     private final StringProperty currency = new SimpleStringProperty("");
     private final StringProperty industry = new SimpleStringProperty("");
 
-    private final StringProperty language = new SimpleStringProperty("English");
+    private final StringProperty language = new SimpleStringProperty(SessionManager.getInstance().getLanguage());
     private final StringProperty dateFormat = new SimpleStringProperty("DD/MM/YYYY");
 
     private final ObservableList<User> users = FXCollections.observableArrayList();
@@ -75,7 +76,7 @@ public class SettingsViewModel {
     }
 
     public void applyPreferences() {
-        System.out.println("Applying preferences...");
+        I18n.setLanguage(language.get());
     }
 
     public void addUser(User user) {

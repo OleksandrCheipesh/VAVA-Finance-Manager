@@ -7,6 +7,7 @@ import javafx.scene.layout.VBox;
 
 public class SummaryCard extends VBox {
 
+    private final Label titleLabel;
     private final Label valueLabel;
     private final Label subLabel;
 
@@ -26,7 +27,7 @@ public class SummaryCard extends VBox {
         HBox.setHgrow(this, Priority.ALWAYS);
 
         // Title
-        Label titleLabel = new Label(title);
+        titleLabel = new Label(title);
         titleLabel.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 15px; -fx-font-weight: bold;");
 
         // Main value
@@ -39,6 +40,10 @@ public class SummaryCard extends VBox {
 
         // Add text to cards
         this.getChildren().addAll(titleLabel, valueLabel, subLabel);
+    }
+
+    public void setTitle(String title) {
+        titleLabel.setText(title);
     }
 
     public void setValue(String value) {

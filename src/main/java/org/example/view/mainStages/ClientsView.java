@@ -64,18 +64,21 @@ public class ClientsView extends BaseView {
         titleBox.setAlignment(Pos.BOTTOM_LEFT);
         HBox.setMargin(titleBox, new Insets(0, 0, 15, 0));
 
-        Label title = new Label("Clients");
+        Label title = new Label(I18n.t("Clients"));
         title.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+        I18n.language.addListener((obs, o, v) -> title.setText(I18n.t("Clients")));
 
-        Label subtitle = new Label("Manage your clients and their profiles.");
+        Label subtitle = new Label(I18n.t("Manage your clients and their profiles."));
         subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 14px;");
+        I18n.language.addListener((obs, o, v) -> subtitle.setText(I18n.t("Manage your clients and their profiles.")));
 
         titleBox.getChildren().addAll(title, subtitle);
 
         Region topSpacer = new Region();
         HBox.setHgrow(topSpacer, Priority.ALWAYS);
 
-        addBtn = new StateButton("+ Add Client", StateButton.ButtonType.PRIMARY);
+        addBtn = new StateButton(I18n.t("+ Add Client"), StateButton.ButtonType.PRIMARY);
+        I18n.language.addListener((obs, o, v) -> addBtn.setText(I18n.t("+ Add Client")));
         HBox.setMargin(addBtn, new Insets(0, 0, 20, 0));
         addBtn.setOnMousePressed(e -> { addBtn.setScaleX(0.95); addBtn.setScaleY(0.95); });
         addBtn.setOnMouseReleased(e -> { addBtn.setScaleX(1.0); addBtn.setScaleY(1.0); });
@@ -95,10 +98,12 @@ public class ClientsView extends BaseView {
 
         VBox emptyState = new VBox(5);
         emptyState.setAlignment(Pos.CENTER);
-        Label emptyTitle = new Label("No Clients Yet");
+        Label emptyTitle = new Label(I18n.t("No Clients Yet"));
         emptyTitle.setStyle("-fx-font-size: 36px; -fx-font-weight: 900; -fx-text-fill: #111827;");
-        Label emptySub = new Label("Register your first client");
+        I18n.language.addListener((obs, o, v) -> emptyTitle.setText(I18n.t("No Clients Yet")));
+        Label emptySub = new Label(I18n.t("Register your first client"));
         emptySub.setStyle("-fx-font-size: 18px; -fx-text-fill: #869F9B;");
+        I18n.language.addListener((obs, o, v) -> emptySub.setText(I18n.t("Register your first client")));
         emptyState.getChildren().addAll(emptyTitle, emptySub);
         table.setPlaceholder(emptyState);
 
@@ -229,19 +234,23 @@ public class ClientsView extends BaseView {
         idCol.setStyle("-fx-alignment: CENTER-RIGHT;");
         idCol.prefWidthProperty().bind(table.widthProperty().multiply(0.06));
 
-        TableColumn<Client, String> nameCol = new TableColumn<>("NAME");
+        TableColumn<Client, String> nameCol = new TableColumn<>(I18n.t("NAME"));
+        I18n.language.addListener((obs, o, v) -> nameCol.setText(I18n.t("NAME")));
         nameCol.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getName() + " " + cd.getValue().getSurname()));
         nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.20));
 
-        TableColumn<Client, String> emailCol = new TableColumn<>("EMAIL");
+        TableColumn<Client, String> emailCol = new TableColumn<>(I18n.t("EMAIL"));
+        I18n.language.addListener((obs, o, v) -> emailCol.setText(I18n.t("EMAIL")));
         emailCol.setCellValueFactory(cd -> new SimpleStringProperty(orDash(cd.getValue().getEmail())));
         emailCol.prefWidthProperty().bind(table.widthProperty().multiply(0.22));
 
-        TableColumn<Client, String> phoneCol = new TableColumn<>("PHONE");
+        TableColumn<Client, String> phoneCol = new TableColumn<>(I18n.t("PHONE"));
+        I18n.language.addListener((obs, o, v) -> phoneCol.setText(I18n.t("PHONE")));
         phoneCol.setCellValueFactory(cd -> new SimpleStringProperty(orDash(cd.getValue().getPhone())));
         phoneCol.prefWidthProperty().bind(table.widthProperty().multiply(0.14));
 
-        TableColumn<Client, String> incomeCol = new TableColumn<>("MONTHLY INCOME");
+        TableColumn<Client, String> incomeCol = new TableColumn<>(I18n.t("MONTHLY INCOME"));
+        I18n.language.addListener((obs, o, v) -> incomeCol.setText(I18n.t("MONTHLY INCOME")));
         incomeCol.setCellValueFactory(cd -> {
             BigDecimal income = cd.getValue().getMonthlyIncome();
             String text = income != null ? String.format(Locale.US, "$%,.2f", income.doubleValue()) : "—";
@@ -250,14 +259,16 @@ public class ClientsView extends BaseView {
         incomeCol.setStyle("-fx-alignment: CENTER-RIGHT;");
         incomeCol.prefWidthProperty().bind(table.widthProperty().multiply(0.14));
 
-        TableColumn<Client, String> sinceCol = new TableColumn<>("MEMBER SINCE");
+        TableColumn<Client, String> sinceCol = new TableColumn<>(I18n.t("MEMBER SINCE"));
+        I18n.language.addListener((obs, o, v) -> sinceCol.setText(I18n.t("MEMBER SINCE")));
         sinceCol.setCellValueFactory(cd -> {
             var dt = cd.getValue().getCreatedAt();
             return new SimpleStringProperty(dt != null ? dt.toLocalDate().format(DATE_FMT) : "—");
         });
         sinceCol.prefWidthProperty().bind(table.widthProperty().multiply(0.13));
 
-        TableColumn<Client, Void> actionCol = new TableColumn<>("ACTION");
+        TableColumn<Client, Void> actionCol = new TableColumn<>(I18n.t("ACTION"));
+        I18n.language.addListener((obs, o, v) -> actionCol.setText(I18n.t("ACTION")));
         actionCol.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(Void item, boolean empty) {
@@ -294,9 +305,14 @@ public class ClientsView extends BaseView {
         Label totalIncomeVal = new Label();
         Label avgIncomeVal = new Label();
 
-        Label totalCountSub = new Label("registered clients");
-        Label totalIncomeSub = new Label("combined monthly");
-        Label avgIncomeSub = new Label("per client avg.");
+        Label totalCountSub = new Label(I18n.t("registered clients"));
+        Label totalIncomeSub = new Label(I18n.t("combined monthly"));
+        Label avgIncomeSub = new Label(I18n.t("per client avg."));
+        I18n.language.addListener((obs, o, v) -> {
+            totalCountSub.setText(I18n.t("registered clients"));
+            totalIncomeSub.setText(I18n.t("combined monthly"));
+            avgIncomeSub.setText(I18n.t("per client avg."));
+        });
 
         Runnable updateStats = () -> {
             var list = viewModel.getClients();
@@ -317,9 +333,9 @@ public class ClientsView extends BaseView {
         viewModel.getClients().addListener((javafx.collections.ListChangeListener<Client>) c -> updateStats.run());
 
         row.getChildren().addAll(
-                createSummaryCard("TOTAL CLIENTS", totalCountVal, totalCountSub, Themes.TEXT_SUCCESS),
-                createSummaryCard("TOTAL MONTHLY INCOME", totalIncomeVal, totalIncomeSub, Themes.TEXT_MUTED),
-                createSummaryCard("AVERAGE MONTHLY INCOME", avgIncomeVal, avgIncomeSub, Themes.TEXT_MUTED)
+                createSummaryCard(I18n.t("TOTAL CLIENTS"), totalCountVal, totalCountSub, Themes.TEXT_SUCCESS),
+                createSummaryCard(I18n.t("TOTAL MONTHLY INCOME"), totalIncomeVal, totalIncomeSub, Themes.TEXT_MUTED),
+                createSummaryCard(I18n.t("AVERAGE MONTHLY INCOME"), avgIncomeVal, avgIncomeSub, Themes.TEXT_MUTED)
         );
         return row;
     }
@@ -376,9 +392,10 @@ public class ClientsView extends BaseView {
 
         StackPane searchPane = new StackPane();
         searchPane.setAlignment(Pos.CENTER_LEFT);
-        Label searchPrompt = new Label("Search by name, email, phone...");
+        Label searchPrompt = new Label(I18n.t("Search by name, email, phone..."));
         searchPrompt.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 14px;");
         searchPrompt.setMouseTransparent(true);
+        I18n.language.addListener((obs, o, v) -> searchPrompt.setText(I18n.t("Search by name, email, phone...")));
         searchField.textProperty().addListener((obs, old, val) -> {
             searchPrompt.setVisible(val.isEmpty());
             updateFilter();
@@ -390,8 +407,8 @@ public class ClientsView extends BaseView {
 
         // ── Income sort ───────────────────────────────────────────────────────
         incomeSortCombo = new ComboBox<>();
-        incomeSortCombo.getItems().addAll("Income (default)", "Income ↑", "Income ↓");
-        incomeSortCombo.setValue("Income (default)");
+        incomeSortCombo.getItems().addAll(I18n.t("Income (default)"), I18n.t("Income ↑"), I18n.t("Income ↓"));
+        incomeSortCombo.setValue(I18n.t("Income (default)"));
         incomeSortCombo.setStyle(comboStyle);
         incomeSortCombo.setPrefHeight(40);
         incomeSortCombo.setPrefWidth(155);
@@ -405,8 +422,8 @@ public class ClientsView extends BaseView {
 
         // ── Date sort ─────────────────────────────────────────────────────────
         dateSortCombo = new ComboBox<>();
-        dateSortCombo.getItems().addAll("Date (default)", "Newest first", "Oldest first");
-        dateSortCombo.setValue("Date (default)");
+        dateSortCombo.getItems().addAll(I18n.t("Date (default)"), I18n.t("Newest first"), I18n.t("Oldest first"));
+        dateSortCombo.setValue(I18n.t("Date (default)"));
         dateSortCombo.setStyle(comboStyle);
         dateSortCombo.setPrefHeight(40);
         dateSortCombo.setPrefWidth(145);

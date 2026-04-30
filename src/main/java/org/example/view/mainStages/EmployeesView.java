@@ -49,11 +49,13 @@ public class EmployeesView extends BaseView {
         titleBox.setAlignment(Pos.BOTTOM_LEFT);
         HBox.setMargin(titleBox, new Insets(0, 0, 15, 0));
 
-        Label title = new Label("Employees");
+        Label title = new Label(I18n.t("Employees"));
         title.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+        I18n.language.addListener((obs, o, v) -> title.setText(I18n.t("Employees")));
 
-        Label subtitle = new Label("Manage your team members and their roles.");
+        Label subtitle = new Label(I18n.t("Manage your team members and their roles."));
         subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 14px;");
+        I18n.language.addListener((obs, o, v) -> subtitle.setText(I18n.t("Manage your team members and their roles.")));
 
         titleBox.getChildren().addAll(title, subtitle);
 
@@ -69,10 +71,14 @@ public class EmployeesView extends BaseView {
         String activeTab = "-fx-font-weight: bold; -fx-text-fill: " + Themes.PRIMARY + "; -fx-border-color: " + Themes.PRIMARY + "; -fx-border-width: 0 0 3 0; -fx-padding: 0 0 20 0; -fx-cursor: hand;";
         String inactiveTab = "-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-padding: 0 0 20 0; -fx-cursor: hand;";
 
-        Label tabAll = new Label("All Staff");
-        Label tabActive = new Label("Active");
-        Label tabInactive = new Label("Inactive");
-        Label tabContractors = new Label("Contractors");
+        Label tabAll = new Label(I18n.t("All Staff"));
+        Label tabActive = new Label(I18n.t("Active"));
+        Label tabInactive = new Label(I18n.t("Inactive"));
+        Label tabContractors = new Label(I18n.t("Contractors"));
+        I18n.language.addListener((obs, o, v) -> {
+            tabAll.setText(I18n.t("All Staff")); tabActive.setText(I18n.t("Active"));
+            tabInactive.setText(I18n.t("Inactive")); tabContractors.setText(I18n.t("Contractors"));
+        });
 
         tabAll.setStyle(activeTab);
         tabActive.setStyle(inactiveTab);
@@ -89,7 +95,8 @@ public class EmployeesView extends BaseView {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        addBtn = new StateButton("+ Add Employee", StateButton.ButtonType.PRIMARY);
+        addBtn = new StateButton(I18n.t("+ Add Employee"), StateButton.ButtonType.PRIMARY);
+        I18n.language.addListener((obs, o, v) -> addBtn.setText(I18n.t("+ Add Employee")));
         HBox.setMargin(addBtn, new Insets(0, 0, 20, 0));
 
         addBtn.setOnMousePressed(e -> {
@@ -128,9 +135,9 @@ public class EmployeesView extends BaseView {
         onboardingLabelSub.textProperty().bind(viewModel.onboardingEmployeesActionTextProperty());
 
         summaryContainer.getChildren().addAll(
-                createSummaryCard("TOTAL EMPLOYEES", totalEmpLabel, totalEmpLabelSub, Themes.TEXT_SUCCESS),
-                createSummaryCard("ACTIVE", activeLabel, activeLabelSub, Themes.TEXT_MUTED),
-                createSummaryCard("ONBOARDING", onboardingLabel, onboardingLabelSub, "#F59E0B")
+                createSummaryCard(I18n.t("TOTAL EMPLOYEES"), totalEmpLabel, totalEmpLabelSub, Themes.TEXT_SUCCESS),
+                createSummaryCard(I18n.t("ACTIVE"), activeLabel, activeLabelSub, Themes.TEXT_MUTED),
+                createSummaryCard(I18n.t("ONBOARDING"), onboardingLabel, onboardingLabelSub, "#F59E0B")
         );
 
         table = new AppTable<>("");
@@ -140,28 +147,35 @@ public class EmployeesView extends BaseView {
         VBox emptyStateBox = new VBox(5);
         emptyStateBox.setAlignment(Pos.CENTER);
 
-        Label emptyTitle = new Label("No Employees Yet");
+        Label emptyTitle = new Label(I18n.t("No Employees Yet"));
         emptyTitle.setStyle("-fx-font-size: 36px; -fx-font-weight: 900; -fx-text-fill: #111827;");
+        I18n.language.addListener((obs, o, v) -> emptyTitle.setText(I18n.t("No Employees Yet")));
 
-        Label emptySub = new Label("Register your first employee");
+        Label emptySub = new Label(I18n.t("Register your first employee"));
         emptySub.setStyle("-fx-font-size: 18px; -fx-text-fill: #869F9B;");
+        I18n.language.addListener((obs, o, v) -> emptySub.setText(I18n.t("Register your first employee")));
         emptyStateBox.getChildren().addAll(emptyTitle, emptySub);
 
         table.setPlaceholder(emptyStateBox);
 
-        TableColumn<Employee, String> nameCol = new TableColumn<>("NAME");
+        TableColumn<Employee, String> nameCol = new TableColumn<>(I18n.t("NAME"));
+        I18n.language.addListener((obs, o, v) -> nameCol.setText(I18n.t("NAME")));
         nameCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getName() + " " + cellData.getValue().getSurname()));
 
-        TableColumn<Employee, String> roleCol = new TableColumn<>("ROLE");
+        TableColumn<Employee, String> roleCol = new TableColumn<>(I18n.t("ROLE"));
+        I18n.language.addListener((obs, o, v) -> roleCol.setText(I18n.t("ROLE")));
         roleCol.setCellValueFactory(new PropertyValueFactory<>("position"));
 
-        TableColumn<Employee, String> deptCol = new TableColumn<>("DEPARTMENT");
+        TableColumn<Employee, String> deptCol = new TableColumn<>(I18n.t("DEPARTMENT"));
+        I18n.language.addListener((obs, o, v) -> deptCol.setText(I18n.t("DEPARTMENT")));
         deptCol.setCellValueFactory(new PropertyValueFactory<>("department"));
 
-        TableColumn<Employee, String> emailCol = new TableColumn<>("EMAIL");
+        TableColumn<Employee, String> emailCol = new TableColumn<>(I18n.t("EMAIL"));
+        I18n.language.addListener((obs, o, v) -> emailCol.setText(I18n.t("EMAIL")));
         emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
 
-        TableColumn<Employee, String> statusCol = new TableColumn<>("STATUS");
+        TableColumn<Employee, String> statusCol = new TableColumn<>(I18n.t("STATUS"));
+        I18n.language.addListener((obs, o, v) -> statusCol.setText(I18n.t("STATUS")));
         statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
         statusCol.setCellFactory(column -> new TableCell<>() {
             @Override
@@ -184,7 +198,8 @@ public class EmployeesView extends BaseView {
             }
         });
 
-        TableColumn<Employee, Void> actionCol = new TableColumn<>("ACTION");
+        TableColumn<Employee, Void> actionCol = new TableColumn<>(I18n.t("ACTION"));
+        I18n.language.addListener((obs, o, v) -> actionCol.setText(I18n.t("ACTION")));
         actionCol.setCellFactory(column -> new TableCell<>() {
             private final Button actionBtn = new Button("⋮");
             {

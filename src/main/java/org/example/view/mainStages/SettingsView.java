@@ -55,11 +55,13 @@ public class SettingsView extends BaseView {
         VBox titleBox = new VBox(2);
         titleBox.setAlignment(Pos.BOTTOM_LEFT);
 
-        Label title = new Label("Settings");
+        Label title = new Label(I18n.t("Settings"));
         title.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: #111827;");
+        I18n.language.addListener((obs, o, v) -> title.setText(I18n.t("Settings")));
 
-        Label subtitle = new Label("Configure your organization's parameters and customize your portal experience.");
+        Label subtitle = new Label(I18n.t("Configure your organization's parameters and customize your portal experience."));
         subtitle.setStyle("-fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+        I18n.language.addListener((obs, o, v) -> subtitle.setText(I18n.t("Configure your organization's parameters and customize your portal experience.")));
 
         titleBox.getChildren().addAll(title, subtitle);
         HBox.setMargin(titleBox, new Insets(0, 0, 15, 0));
@@ -175,6 +177,7 @@ public class SettingsView extends BaseView {
         applyPrefsBtn.setOnAction(e -> viewModel.applyPreferences());
 
         addUserBtn.setOnAction(e -> AddUserDialog.show(stage, viewModel.getUsers(), viewModel::addUser));
+        I18n.language.addListener((obs, o, v) -> table.refresh());
 
         savePassBtn.setOnAction(e -> {
             try {
@@ -211,13 +214,15 @@ public class SettingsView extends BaseView {
 
         StackPane icon = createIcon("fas-building", Themes.PRIMARY, Themes.PRIMARY + "22");
 
-        Label title = new Label("Company Profile");
+        Label title = new Label(I18n.t("Company Profile"));
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #111827;");
+        I18n.language.addListener((obs, o, v) -> title.setText(I18n.t("Company Profile")));
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        saveCompanyBtn = new Button("Save Changes");
+        saveCompanyBtn = new Button(I18n.t("Save Changes"));
+        I18n.language.addListener((obs, o, v) -> saveCompanyBtn.setText(I18n.t("Save Changes")));
         saveCompanyBtn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-insets: 0;");
 
         header.getChildren().addAll(icon, title, spacer, saveCompanyBtn);
@@ -250,23 +255,27 @@ public class SettingsView extends BaseView {
 
         StackPane icon = createIcon("fas-sliders-h", Themes.TEXT_MUTED, "#F3F4F6");
 
-        Label title = new Label("Preferences");
+        Label title = new Label(I18n.t("Preferences"));
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #111827;");
+        I18n.language.addListener((obs, o, v) -> title.setText(I18n.t("Preferences")));
         header.getChildren().addAll(icon, title);
 
-        Label langLabel = new Label("LANGUAGE");
+        Label langLabel = new Label(I18n.t("LANGUAGE"));
         langLabel.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+        I18n.language.addListener((obs, o, v) -> langLabel.setText(I18n.t("LANGUAGE")));
 
         HBox langToggle = new HBox();
         langToggle.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 20; -fx-padding: 4;");
-        enBtn = new Button("English"); skBtn = new Button("Slovak");
+        enBtn = new Button(I18n.t("English")); skBtn = new Button(I18n.t("Slovak"));
+        I18n.language.addListener((obs, o, v) -> { enBtn.setText(I18n.t("English")); skBtn.setText(I18n.t("Slovak")); });
         enBtn.setMaxWidth(Double.MAX_VALUE); skBtn.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(enBtn, Priority.ALWAYS); HBox.setHgrow(skBtn, Priority.ALWAYS);
         langToggle.getChildren().addAll(enBtn, skBtn);
 
         dateBox = createComboBox("DD/MM/YYYY", "DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD");
 
-        applyPrefsBtn = new Button("Apply Settings");
+        applyPrefsBtn = new Button(I18n.t("Apply Settings"));
+        I18n.language.addListener((obs, o, v) -> applyPrefsBtn.setText(I18n.t("Apply Settings")));
         applyPrefsBtn.setMaxWidth(Double.MAX_VALUE);
         applyPrefsBtn.setMinHeight(44);
         applyPrefsBtn.setStyle("-fx-background-color: #E5E7EB; -fx-text-fill: #374151; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-insets: 0;");
@@ -284,13 +293,15 @@ public class SettingsView extends BaseView {
 
         StackPane icon = createIcon("fas-users", Themes.PRIMARY, Themes.PRIMARY + "22");
 
-        Label title = new Label("User Management");
+        Label title = new Label(I18n.t("User Management"));
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #111827;");
+        I18n.language.addListener((obs, o, v) -> title.setText(I18n.t("User Management")));
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        addUserBtn = new Button("+ Add User");
+        addUserBtn = new Button(I18n.t("+ Add User"));
+        I18n.language.addListener((obs, o, v) -> addUserBtn.setText(I18n.t("+ Add User")));
         addUserBtn.setStyle("-fx-background-color: #111827; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 20; -fx-cursor: hand; -fx-background-insets: 0;");
 
         header.getChildren().addAll(icon, title, spacer, addUserBtn);
@@ -301,19 +312,23 @@ public class SettingsView extends BaseView {
 
         String headerStyle = "-fx-font-weight: bold; -fx-alignment: center-left; -fx-padding: 0 0 0 10;";
 
-        TableColumn<User, String> nameCol = new TableColumn<>("NAME");
+        TableColumn<User, String> nameCol = new TableColumn<>(I18n.t("NAME"));
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         nameCol.setStyle(headerStyle + " -fx-text-fill: #111827;");
+        I18n.language.addListener((obs, o, v) -> nameCol.setText(I18n.t("NAME")));
 
-        TableColumn<User, String> surnameCol = new TableColumn<>("SURNAME");
+        TableColumn<User, String> surnameCol = new TableColumn<>(I18n.t("SURNAME"));
         surnameCol.setCellValueFactory(new PropertyValueFactory<>("surname"));
         surnameCol.setStyle(headerStyle + " -fx-text-fill: #111827;");
+        I18n.language.addListener((obs, o, v) -> surnameCol.setText(I18n.t("SURNAME")));
 
-        TableColumn<User, String> emailCol = new TableColumn<>("EMAIL");
+        TableColumn<User, String> emailCol = new TableColumn<>(I18n.t("EMAIL"));
         emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
         emailCol.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-alignment: center-left; -fx-padding: 0 0 0 10;");
+        I18n.language.addListener((obs, o, v) -> emailCol.setText(I18n.t("EMAIL")));
 
-        TableColumn<User, Position> roleCol = new TableColumn<>("POSITION");
+        TableColumn<User, Position> roleCol = new TableColumn<>(I18n.t("POSITION"));
+        I18n.language.addListener((obs, o, v) -> roleCol.setText(I18n.t("POSITION")));
         roleCol.setCellValueFactory(new PropertyValueFactory<>("position"));
         roleCol.setStyle("-fx-alignment: center-left; -fx-padding: 0 0 0 10;");
         roleCol.setCellFactory(col -> new TableCell<User, Position>() {
@@ -328,7 +343,8 @@ public class SettingsView extends BaseView {
             }
         });
 
-        TableColumn<User, Void> actionCol = new TableColumn<>("ACTION");
+        TableColumn<User, Void> actionCol = new TableColumn<>(I18n.t("ACTION"));
+        I18n.language.addListener((obs, o, v) -> actionCol.setText(I18n.t("ACTION")));
         actionCol.setStyle("-fx-alignment: center-left; -fx-padding: 0 0 0 10;");
         actionCol.setCellFactory(col -> new TableCell<User, Void>() {
             @Override protected void updateItem(Void item, boolean empty) {
@@ -340,7 +356,7 @@ public class SettingsView extends BaseView {
                 actionContainer.setAlignment(Pos.CENTER_LEFT);
 
                 if (rowUser.getPosition() == Position.Director) {
-                    Label protectedLbl = new Label("Protected");
+                    Label protectedLbl = new Label(I18n.t("Protected"));
                     protectedLbl.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 12px;");
                     actionContainer.getChildren().add(protectedLbl);
                 } else {
@@ -402,8 +418,9 @@ public class SettingsView extends BaseView {
 
         StackPane icon = createIcon("fas-shield-alt", Themes.TEXT_ERROR, Themes.TEXT_ERROR + "22");
 
-        Label title = new Label("Security");
+        Label title = new Label(I18n.t("Security"));
         title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #111827;");
+        I18n.language.addListener((obs, o, v) -> title.setText(I18n.t("Security")));
         header.getChildren().addAll(icon, title);
 
         currentPassField = new PasswordField();
@@ -417,7 +434,8 @@ public class SettingsView extends BaseView {
         HBox.setHgrow(newPass, Priority.ALWAYS); HBox.setHgrow(confPass, Priority.ALWAYS);
         newPassRow.getChildren().addAll(newPass, confPass);
 
-        savePassBtn = new Button("Save New Password");
+        savePassBtn = new Button(I18n.t("Save New Password"));
+        I18n.language.addListener((obs, o, v) -> savePassBtn.setText(I18n.t("Save New Password")));
         savePassBtn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-insets: 0;");
 
         HBox btnContainer = new HBox(savePassBtn);
@@ -462,8 +480,9 @@ public class SettingsView extends BaseView {
     private VBox createField(String labelText, Control inputControl) {
         VBox box = new VBox(8);
 
-        Label label = new Label(labelText);
+        Label label = new Label(I18n.t(labelText));
         label.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+        I18n.language.addListener((obs, o, v) -> label.setText(I18n.t(labelText)));
 
         inputControl.setMaxWidth(Double.MAX_VALUE);
         box.getChildren().addAll(label, inputControl);
@@ -495,8 +514,9 @@ public class SettingsView extends BaseView {
 
     private VBox createSecurePasswordFieldWrapper(String labelText, String prompt, PasswordField pf) {
         VBox box = new VBox(8);
-        Label label = new Label(labelText);
+        Label label = new Label(I18n.t(labelText));
         label.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+        I18n.language.addListener((obs, o, v) -> label.setText(I18n.t(labelText)));
 
         StackPane pane = new StackPane();
         pane.setAlignment(Pos.CENTER_RIGHT);

@@ -49,11 +49,13 @@ public class TransactionsView extends BaseView {
         titleBox.setAlignment(Pos.BOTTOM_LEFT);
         HBox.setMargin(titleBox, new Insets(0, 0, 15, 0));
 
-        Label title = new Label("Transactions");
+        Label title = new Label(I18n.t("Transactions"));
         title.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: #111827;");
+        I18n.language.addListener((obs, o, v) -> title.setText(I18n.t("Transactions")));
 
-        Label subtitle = new Label("Monitor your income, expenses, and financial records.");
+        Label subtitle = new Label(I18n.t("Monitor your income, expenses, and financial records."));
         subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 14px;");
+        I18n.language.addListener((obs, o, v) -> subtitle.setText(I18n.t("Monitor your income, expenses, and financial records.")));
 
         titleBox.getChildren().addAll(title, subtitle);
 
@@ -73,9 +75,10 @@ public class TransactionsView extends BaseView {
         String activeTab = "-fx-font-weight: bold; -fx-text-fill: " + Themes.PRIMARY + "; -fx-border-color: " + Themes.PRIMARY + "; -fx-border-width: 0 0 3 0; -fx-padding: 0 0 20 0; -fx-cursor: hand;";
         String inactiveTab = "-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-padding: 0 0 20 0; -fx-cursor: hand;";
 
-        Label tabAll = new Label("All");
-        Label tabSales = new Label("Sales");
-        Label tabPurchases = new Label("Purchase");
+        Label tabAll = new Label(I18n.t("All"));
+        Label tabSales = new Label(I18n.t("Sales"));
+        Label tabPurchases = new Label(I18n.t("Purchase"));
+        I18n.language.addListener((obs, o, v) -> { tabAll.setText(I18n.t("All")); tabSales.setText(I18n.t("Sales")); tabPurchases.setText(I18n.t("Purchase")); });
 
         // Default state
         tabAll.setStyle(activeTab);
@@ -109,7 +112,8 @@ public class TransactionsView extends BaseView {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        addBtn = new StateButton("+ Add Transaction", StateButton.ButtonType.PRIMARY);
+        addBtn = new StateButton(I18n.t("+ Add Transaction"), StateButton.ButtonType.PRIMARY);
+        I18n.language.addListener((obs, o, v) -> addBtn.setText(I18n.t("+ Add Transaction")));
         HBox.setMargin(addBtn, new Insets(0, 0, 20, 0));
 
         addBtn.setOnMousePressed(e -> {
@@ -133,10 +137,14 @@ public class TransactionsView extends BaseView {
         HBox filterBar = createCustomFilterBar();
 
         // Summary Cards
-        SummaryCard incomeCard   = new SummaryCard("INCOME",      "0.00$", "0 sales",     Themes.TEXT_SUCCESS);
-        SummaryCard expensesCard = new SummaryCard("EXPENSES",    "0.00$", "0 purchases", Themes.TEXT_ERROR);
-        SummaryCard netCard      = new SummaryCard("NET BALANCE", "0.00$", "",            Themes.TEXT_SUCCESS);
-        SummaryCard largestCard  = new SummaryCard("LARGEST",     "0.00$", "",            Themes.TEXT_SUCCESS);
+        SummaryCard incomeCard   = new SummaryCard(I18n.t("INCOME"),      "0.00$", "0 sales",     Themes.TEXT_SUCCESS);
+        SummaryCard expensesCard = new SummaryCard(I18n.t("EXPENSES"),    "0.00$", "0 purchases", Themes.TEXT_ERROR);
+        SummaryCard netCard      = new SummaryCard(I18n.t("NET BALANCE"), "0.00$", "",            Themes.TEXT_SUCCESS);
+        SummaryCard largestCard  = new SummaryCard(I18n.t("LARGEST"),     "0.00$", "",            Themes.TEXT_SUCCESS);
+        I18n.language.addListener((obs, o, v) -> {
+            incomeCard.setTitle(I18n.t("INCOME")); expensesCard.setTitle(I18n.t("EXPENSES"));
+            netCard.setTitle(I18n.t("NET BALANCE")); largestCard.setTitle(I18n.t("LARGEST"));
+        });
 
         viewModel.totalIncomeProperty()   .addListener((obs, o, v) -> incomeCard.setValue(v));
         viewModel.incomeSubtextProperty() .addListener((obs, o, v) -> incomeCard.setSubText(v));
@@ -166,18 +174,21 @@ public class TransactionsView extends BaseView {
         VBox emptyStateBox = new VBox(5);
         emptyStateBox.setAlignment(Pos.CENTER);
 
-        Label emptyTitle = new Label("No Transactions Yet");
+        Label emptyTitle = new Label(I18n.t("No Transactions Yet"));
         emptyTitle.setStyle("-fx-font-size: 36px; -fx-font-weight: 900; -fx-text-fill: #111827;");
+        I18n.language.addListener((obs, o, v) -> emptyTitle.setText(I18n.t("No Transactions Yet")));
 
-        Label emptySub = new Label("Register your first sale or purchase");
+        Label emptySub = new Label(I18n.t("Register your first sale or purchase"));
         emptySub.setStyle("-fx-font-size: 18px; -fx-text-fill: #869F9B;");
+        I18n.language.addListener((obs, o, v) -> emptySub.setText(I18n.t("Register your first sale or purchase")));
         emptyStateBox.getChildren().addAll(emptyTitle, emptySub);
 
         table.setPlaceholder(emptyStateBox);
 
         String headerStyle = "-fx-alignment: center-left; -fx-padding: 0 0 0 20;";
 
-        TableColumn<Transaction, LocalDate> dateCol = new TableColumn<>("DATE");
+        TableColumn<Transaction, LocalDate> dateCol = new TableColumn<>(I18n.t("DATE"));
+        I18n.language.addListener((obs, o, v) -> dateCol.setText(I18n.t("DATE")));
         dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
         dateCol.setStyle(headerStyle);
         dateCol.setCellFactory(col -> new TableCell<>() {
@@ -193,7 +204,8 @@ public class TransactionsView extends BaseView {
             }
         });
 
-        TableColumn<Transaction, BigDecimal> amountCol = new TableColumn<>("AMOUNT");
+        TableColumn<Transaction, BigDecimal> amountCol = new TableColumn<>(I18n.t("AMOUNT"));
+        I18n.language.addListener((obs, o, v) -> amountCol.setText(I18n.t("AMOUNT")));
         amountCol.setCellValueFactory(new PropertyValueFactory<>("amount"));
         amountCol.setStyle(headerStyle);
         amountCol.setCellFactory(col -> new TableCell<>() {
@@ -221,7 +233,8 @@ public class TransactionsView extends BaseView {
             }
         });
 
-        TableColumn<Transaction, Integer> projectCol = new TableColumn<>("PROJECT");
+        TableColumn<Transaction, Integer> projectCol = new TableColumn<>(I18n.t("PROJECT"));
+        I18n.language.addListener((obs, o, v) -> projectCol.setText(I18n.t("PROJECT")));
         projectCol.setCellValueFactory(new PropertyValueFactory<>("projectId"));
         projectCol.setStyle(headerStyle);
         projectCol.setCellFactory(col -> new TableCell<>() {
@@ -240,7 +253,8 @@ public class TransactionsView extends BaseView {
             }
         });
 
-        TableColumn<Transaction, Integer> clientCol = new TableColumn<>("CLIENT");
+        TableColumn<Transaction, Integer> clientCol = new TableColumn<>(I18n.t("CLIENT"));
+        I18n.language.addListener((obs, o, v) -> clientCol.setText(I18n.t("CLIENT")));
         clientCol.setCellValueFactory(new PropertyValueFactory<>("clientId"));
         clientCol.setStyle(headerStyle);
         clientCol.setCellFactory(col -> new TableCell<>() {
@@ -259,7 +273,8 @@ public class TransactionsView extends BaseView {
             }
         });
 
-        TableColumn<Transaction, String> descCol = new TableColumn<>("DESCRIPTION");
+        TableColumn<Transaction, String> descCol = new TableColumn<>(I18n.t("DESCRIPTION"));
+        I18n.language.addListener((obs, o, v) -> descCol.setText(I18n.t("DESCRIPTION")));
         descCol.setCellValueFactory(new PropertyValueFactory<>("description"));
         descCol.setStyle(headerStyle);
         descCol.setCellFactory(col -> new TableCell<>() {
@@ -279,7 +294,8 @@ public class TransactionsView extends BaseView {
             }
         });
 
-        TableColumn<Transaction, String> typeCol = new TableColumn<>("TYPE");
+        TableColumn<Transaction, String> typeCol = new TableColumn<>(I18n.t("TYPE"));
+        I18n.language.addListener((obs, o, v) -> typeCol.setText(I18n.t("TYPE")));
         typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
         typeCol.setStyle(headerStyle);
         typeCol.setCellFactory(col -> new TableCell<>() {
@@ -399,9 +415,10 @@ public class TransactionsView extends BaseView {
 
         StackPane searchPane = new StackPane();
         searchPane.setAlignment(Pos.CENTER_LEFT);
-        Label searchPrompt = new Label("Search by name...");
+        Label searchPrompt = new Label(I18n.t("Search by name..."));
         searchPrompt.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 14px;");
         searchPrompt.setMouseTransparent(true);
+        I18n.language.addListener((obs, o, v) -> searchPrompt.setText(I18n.t("Search by name...")));
         search.textProperty().addListener((obs, old, val) -> searchPrompt.setVisible(val.isEmpty()));
 
         searchPane.getChildren().addAll(search, searchPrompt);
@@ -412,7 +429,8 @@ public class TransactionsView extends BaseView {
         searchContainer.getChildren().addAll(searchIcon, searchPane);
 
         ComboBox<Project> proj = new ComboBox<>();
-        proj.setPromptText("Project");
+        proj.setPromptText(I18n.t("Project"));
+        I18n.language.addListener((obs, o, v) -> proj.setPromptText(I18n.t("Project")));
         proj.setStyle(filterStyle);
         proj.getStyleClass().add("filter-item");
         proj.setPrefHeight(40);
@@ -434,7 +452,8 @@ public class TransactionsView extends BaseView {
                 viewModel.filterByProject(val == null ? null : val.getId()));
 
         ComboBox<String> type = new ComboBox<>();
-        type.setPromptText("Type");
+        type.setPromptText(I18n.t("Type"));
+        I18n.language.addListener((obs, o, v) -> type.setPromptText(I18n.t("Type")));
         type.setStyle(filterStyle);
         type.getStyleClass().add("filter-item");
         type.setPrefHeight(40);
@@ -486,8 +505,9 @@ public class TransactionsView extends BaseView {
         StackPane d1Pane = createPromptWrapper(d1, "01/01/01");
         StackPane d2Pane = createPromptWrapper(d2, "01/01/01");
 
-        Button clear = new Button("Clear");
+        Button clear = new Button(I18n.t("Clear"));
         clear.setStyle("-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-weight: bold; -fx-cursor: hand;");
+        I18n.language.addListener((obs, o, v) -> clear.setText(I18n.t("Clear")));
         clear.setOnAction(e -> {
             search.clear();
             proj.setValue(null);
