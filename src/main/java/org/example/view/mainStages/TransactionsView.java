@@ -301,56 +301,32 @@ public class TransactionsView extends BaseView {
             }
         });
 
-        TableColumn<Transaction, Void> actionCol = new TableColumn<>("ACTION");
-        actionCol.setCellFactory(col -> new TableCell<>() {
-            @Override protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    Label dots = new Label("⋮");
-                    dots.setPadding(Insets.EMPTY);
-                    dots.setStyle(
-                            "-fx-text-fill: #9CA3AF; " +
-                                    "-fx-font-size: 24px; " +
-                                    "-fx-font-weight: bold; " +
-                                    "-fx-cursor: hand; " +
-                                    "-fx-background-color: transparent;"
-                    );
-                    dots.setOnMouseClicked(e -> {
-                        Transaction tx = getTableView().getItems().get(getIndex());
-                        TransactionDetailDialog.show(
-                                stage,
-                                tx,
-                                viewModel.getProjectName(tx.getProjectId()),
-                                viewModel.getClientName(tx.getClientId()),
-                                () -> {
-                                    EditTransactionDialog.show(stage, tx, viewModel.getAccounts(), viewModel.getProjects(), viewModel.getClients(), updatedTx -> {
-                                        viewModel.updateTransaction(updatedTx);
-                                    });
-                                },
-                                () -> {
-                                    viewModel.deleteTransaction(tx);
-                                }
-                        );
-                    });
-
-                    setGraphic(dots);
-                    setAlignment(Pos.CENTER_LEFT);
-                }
-            }
-        });
-
-        table.getColumns().addAll(dateCol, amountCol, projectCol, clientCol, descCol, typeCol, actionCol);
+        table.getColumns().addAll(dateCol, amountCol, projectCol, clientCol, descCol, typeCol);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        dateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.12));
-        amountCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
-        projectCol.prefWidthProperty().bind(table.widthProperty().multiply(0.13));
-        clientCol.prefWidthProperty().bind(table.widthProperty().multiply(0.13));
-        descCol.prefWidthProperty().bind(table.widthProperty().multiply(0.20));
-        typeCol.prefWidthProperty().bind(table.widthProperty().multiply(0.17));
-        actionCol.prefWidthProperty().bind(table.widthProperty().multiply(0.10));
+        dateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.13));
+        amountCol.prefWidthProperty().bind(table.widthProperty().multiply(0.17));
+        projectCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
+        clientCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
+        descCol.prefWidthProperty().bind(table.widthProperty().multiply(0.22));
+        typeCol.prefWidthProperty().bind(table.widthProperty().multiply(0.18));
+
+        table.setOnMouseClicked(e -> {
+            Transaction tx = table.getSelectionModel().getSelectedItem();
+            table.getSelectionModel().clearSelection();
+            if (tx != null) {
+                TransactionDetailDialog.show(
+                        stage,
+                        tx,
+                        viewModel.getProjectName(tx.getProjectId()),
+                        viewModel.getClientName(tx.getClientId()),
+                        () -> EditTransactionDialog.show(stage, tx, viewModel.getAccounts(), viewModel.getProjects(), viewModel.getClients(), updatedTx -> {
+                            viewModel.updateTransaction(updatedTx);
+                        }),
+                        () -> viewModel.deleteTransaction(tx)
+                );
+            }
+        });
 
         // Merge layout
         contentArea.getChildren().addAll(filterBar, cardsBox, table);

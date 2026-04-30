@@ -106,6 +106,7 @@ public class ClientsView extends BaseView {
 
         table.setOnMouseClicked(e -> {
             Client selected = table.getSelectionModel().getSelectedItem();
+            table.getSelectionModel().clearSelection();
             if (selected != null) openDetailDialog(selected);
         });
 
@@ -273,10 +274,7 @@ public class ClientsView extends BaseView {
                             "-fx-cursor: hand;" +
                             "-fx-background-color: transparent;"
                     );
-                    dots.setOnMouseClicked(e -> {
-                        Client client = getTableView().getItems().get(getIndex());
-                        openDetailDialog(client);
-                    });
+                    
                     setGraphic(dots);
                     setAlignment(Pos.CENTER_LEFT);
                 }

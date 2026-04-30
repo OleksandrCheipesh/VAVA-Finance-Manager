@@ -106,7 +106,7 @@ public class Sidebar {
             case "Dashboard" -> "layout-dashboard";
             case "Transactions" -> "receipt";
             case "Employees" -> "users-round";
-            case "Clients" -> "users-round";
+            case "Clients" -> "book-user";
             case "Projects" -> "folder";
             case "Budget" -> "wallet";
             case "Reports" -> "chart-column-big";

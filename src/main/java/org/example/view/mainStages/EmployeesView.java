@@ -199,9 +199,9 @@ public class EmployeesView extends BaseView {
         });
 
         table.setOnMouseClicked(e -> {
-            if (table.getSelectionModel().getSelectedItem() != null) {
-                openDetailsModal(table.getSelectionModel().getSelectedItem());
-            }
+            var selected = table.getSelectionModel().getSelectedItem();
+            table.getSelectionModel().clearSelection();
+            if (selected != null) openDetailsModal(selected);
         });
 
         nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.18));
