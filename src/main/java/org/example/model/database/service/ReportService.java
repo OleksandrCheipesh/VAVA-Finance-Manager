@@ -33,8 +33,8 @@ public class ReportService {
                 " COALESCE(SUM(CASE WHEN tf.type = 'PURCHASE' AND tf.date BETWEEN params.date_from AND params.date_to THEN tf.amount ELSE 0 END), 0) AS total_expense, " +
                 " COALESCE(SUM(CASE WHEN tf.type = 'SALE' AND tf.date BETWEEN params.prev_from AND params.prev_to THEN tf.amount ELSE 0 END), 0) AS prev_income, " +
                 " COALESCE(SUM(CASE WHEN tf.type = 'PURCHASE' AND tf.date BETWEEN params.prev_from AND params.prev_to THEN tf.amount ELSE 0 END), 0) AS prev_expense " +
-                " FROM projects p, params LEFT JOIN t_filtered tf ON p.id = tf.project_id " +
-                " WHERE p.company_id = params.company_id AND (params.project_id IS NULL OR p.id = params.project_id) AND (params.project_status IS NULL OR p.status = params.project_status) " +
+                " FROM projects p CROSS JOIN params LEFT JOIN t_filtered tf ON p.id = tf.project_id " +
+                " WHERE p.company_id = params.company_id AND (params.project_id IS NULL OR p.id = params.project_id) AND (params.project_status IS NULL OR (params.project_status = 'Active' AND p.is_active = true) OR (params.project_status = 'Inactive' AND p.is_active = false)) " +
                 " GROUP BY p.id, p.name " +
                 " ORDER BY (COALESCE(SUM(CASE WHEN tf.type = 'SALE' AND tf.date BETWEEN params.date_from AND params.date_to THEN tf.amount ELSE 0 END),0) - COALESCE(SUM(CASE WHEN tf.type = 'PURCHASE' AND tf.date BETWEEN params.date_from AND params.date_to THEN tf.amount ELSE 0 END),0)) DESC";
 
@@ -70,8 +70,8 @@ public class ReportService {
                 "SELECT DATE_TRUNC('month', tf.date)::date AS period, " +
                 "COALESCE(SUM(CASE WHEN tf.type = 'SALE' THEN tf.amount ELSE 0 END),0) AS income, " +
                 "COALESCE(SUM(CASE WHEN tf.type = 'PURCHASE' THEN tf.amount ELSE 0 END),0) AS expense " +
-                "FROM t_filtered tf LEFT JOIN projects pr ON pr.id = tf.project_id, params " +
-                "WHERE (params.project_status IS NULL OR pr.status = params.project_status) " +
+                "FROM t_filtered tf CROSS JOIN params LEFT JOIN projects pr ON pr.id = tf.project_id " +
+                "WHERE (params.project_status IS NULL OR (params.project_status = 'Active' AND pr.is_active = true) OR (params.project_status = 'Inactive' AND pr.is_active = false)) " +
                 "GROUP BY period ORDER BY period ASC";
 
         List<MonthlySnapshotDTO> list = new ArrayList<>();
@@ -135,8 +135,8 @@ public class ReportService {
         String sql = "WITH params AS (SELECT ?::int AS company_id, ?::date AS date_from, ?::date AS date_to, ?::int AS project_id, ?::text AS project_status), " +
                 "t_filtered AS (SELECT t.* FROM transactions t, params p WHERE t.company_id = p.company_id AND t.type = 'SALE' AND t.date BETWEEN p.date_from AND p.date_to AND (p.project_id IS NULL OR t.project_id = p.project_id)) " +
                 "SELECT COALESCE(p.name, 'Unassigned') AS project_name, SUM(t_filtered.amount) AS amount, SUM(SUM(t_filtered.amount)) OVER () AS total " +
-                "FROM t_filtered LEFT JOIN projects p ON p.id = t_filtered.project_id, params " +
-                "WHERE (params.project_status IS NULL OR p.status = params.project_status) " +
+                "FROM t_filtered CROSS JOIN params LEFT JOIN projects p ON p.id = t_filtered.project_id " +
+                "WHERE (params.project_status IS NULL OR (params.project_status = 'Active' AND p.is_active = true) OR (params.project_status = 'Inactive' AND p.is_active = false)) " +
                 "GROUP BY COALESCE(p.name, 'Unassigned') ORDER BY amount DESC";
 
         List<IncomeBreakdownDTO> list = new ArrayList<>();
