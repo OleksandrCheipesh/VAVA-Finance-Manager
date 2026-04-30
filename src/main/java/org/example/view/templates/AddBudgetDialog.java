@@ -41,7 +41,8 @@ public class AddBudgetDialog {
         };
     }
 
-    public static void show(Stage owner, Consumer<Account> onSuccess) {
+    public static void show(Stage owner, Account accountToEdit, Consumer<Account> onSuccess) {
+        boolean isEditMode = (accountToEdit != null);
         Stage modal = new Stage();
 
         modal.initOwner(owner);
@@ -89,10 +90,10 @@ public class AddBudgetDialog {
         header.setAlignment(Pos.CENTER_LEFT);
 
         VBox titleBox = new VBox(2);
-        Label title = new Label("New Account");
+        Label title = new Label(isEditMode ? "Edit Account" : "New Account");
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
-        Label subtitle = new Label("Define the parameters for your new financial account.");
+        Label subtitle = new Label(isEditMode ? "Update the details for this account." : "Define the parameters for your new financial account.");
         subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
         titleBox.getChildren().addAll(title, subtitle);
 
@@ -193,7 +194,10 @@ public class AddBudgetDialog {
         balanceField.setPrefHeight(FIELD_HEIGHT);
         balanceField.setMaxHeight(FIELD_HEIGHT);
 
+        // Balance is computed from transactions — hide when editing an existing account
         VBox balanceBox = createLabeledField("INITIAL BALANCE", balanceField);
+        balanceBox.setVisible(!isEditMode);
+        balanceBox.setManaged(!isEditMode);
 
         ComboBox<String> currencyCombo = UIFactory.inputComboBox("Select Currency");
 
@@ -260,6 +264,23 @@ public class AddBudgetDialog {
         freqBoxMain.getChildren().addAll(freqLabel, toggleBox);
         freqBoxMain.setMaxWidth(Double.MAX_VALUE);
 
+        // Pre-fill all fields when editing an existing account.
+        // Placed here so every control (currencyCombo, toggles, styles) is already declared.
+        if (isEditMode) {
+            nameField.setText(accountToEdit.getAccountName() != null ? accountToEdit.getAccountName() : "");
+            if (accountToEdit.getCategory() != null)
+                catCombo.setValue(formatCategory(accountToEdit.getCategory()));
+            if (accountToEdit.getLimitAmount() != null)
+                limitField.setText(String.valueOf(accountToEdit.getLimitAmount()));
+            if (accountToEdit.getCurrency() != null)
+                currencyCombo.setValue(accountToEdit.getCurrency());
+            if (accountToEdit.getCycle() != null) {
+                selectedFreq = accountToEdit.getCycle().name();
+                monthlyBtn.setStyle(selectedFreq.equals("MONTHLY") ? activeStyle : inactiveStyle);
+                weeklyBtn.setStyle(selectedFreq.equals("WEEKLY") ? activeStyle : inactiveStyle);
+            }
+        }
+
         form.getChildren().addAll(nameBox, row1Grid, row2Grid, freqBoxMain);
 
         HBox actionBox = new HBox(20);
@@ -283,7 +304,7 @@ public class AddBudgetDialog {
             cancelBtn.setScaleY(1.0);
         });
 
-        StateButton saveBtn = new StateButton("Save Account", StateButton.ButtonType.PRIMARY);
+        StateButton saveBtn = new StateButton(isEditMode ? "Save Changes" : "Save Account", StateButton.ButtonType.PRIMARY);
 
         saveBtn.setMinHeight(50);
         saveBtn.setMaxWidth(Double.MAX_VALUE);
@@ -376,8 +397,12 @@ public class AddBudgetDialog {
                 try { Thread.sleep(800); } catch (InterruptedException ex) {}
                 javafx.application.Platform.runLater(() -> {
                     Account account = new Account();
+                    if (isEditMode) {
+                        account.setId(accountToEdit.getId());
+                        account.setCompanyId(accountToEdit.getCompanyId());
+                    }
                     account.setAccountName(nameField.getText().trim());
-                    account.setCurrentBalance(finalBalance);
+                    account.setCurrentBalance(isEditMode ? accountToEdit.getCurrentBalance() : finalBalance);
                     account.setCurrency(currencyCombo.getValue());
                     account.setLimitAmount(finalLimit);
 

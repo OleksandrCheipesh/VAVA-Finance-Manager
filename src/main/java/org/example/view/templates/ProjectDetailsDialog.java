@@ -31,7 +31,7 @@ public class ProjectDetailsDialog {
     private static final DecimalFormat currencyFormat = new DecimalFormat("$#,##0");
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
-    public static void show(Stage owner, Project project, Consumer<Project> onSuccess) {
+    public static void show(Stage owner, Project project, Consumer<Project> onUpdate, Consumer<Project> onDelete) {
         Stage modal = new Stage();
 
         modal.initOwner(owner);
@@ -228,7 +228,7 @@ public class ProjectDetailsDialog {
         HBox bottomButtons = new HBox(15);
         bottomButtons.setPadding(new Insets(10, 0, 0, 0));
 
-        Button editBtn = new Button("Edit Budget");
+        Button editBtn = new Button("Edit Project");
 
         editBtn.setGraphic(IconFactory.getWhiteIcon("square-pen", 18));
         editBtn.setMinHeight(52);
@@ -245,7 +245,11 @@ public class ProjectDetailsDialog {
                         "-fx-cursor: hand;" +
                         "-fx-icon-text-gap: 10px;"
         );
-        editBtn.setOnAction(e -> System.out.println("Edit Budget clicked"));
+        editBtn.setOnAction(e ->
+            closeWithAnimation(modal, shadowWrapper, () ->
+                AddProjectDialog.show(owner, project, updatedProject -> onUpdate.accept(updatedProject))
+            )
+        );
 
         editBtn.setOnMousePressed(e -> {
             editBtn.setScaleX(0.98);
@@ -267,7 +271,10 @@ public class ProjectDetailsDialog {
         deleteBtn.setOnMouseEntered(e -> deleteBtn.setStyle(hoverDeleteStyle));
         deleteBtn.setOnMouseExited(e -> deleteBtn.setStyle(normalDeleteStyle));
 
-        deleteBtn.setOnAction(e -> System.out.println("Delete Project clicked"));
+        deleteBtn.setOnAction(e -> {
+            closeWithAnimation(modal, shadowWrapper);
+            onDelete.accept(project);
+        });
 
         deleteBtn.setOnMousePressed(e -> {
             deleteBtn.setScaleX(0.95);
@@ -317,6 +324,13 @@ public class ProjectDetailsDialog {
     }
 
     private static void closeWithAnimation(Stage modal, Node animatedNode) {
+        closeWithAnimation(modal, animatedNode, null);
+    }
+
+    // Overload that runs a callback AFTER the modal is fully closed.
+    // This ensures any follow-up dialog (e.g. AddProjectDialog) applies
+    // its own blur AFTER this dialog's setOnHidden has cleared its blur.
+    private static void closeWithAnimation(Stage modal, Node animatedNode, Runnable onClosed) {
         FadeTransition fadeOut = new FadeTransition(Duration.millis(200), animatedNode);
         fadeOut.setToValue(0);
 
@@ -324,7 +338,10 @@ public class ProjectDetailsDialog {
         slideDown.setToY(30);
 
         ParallelTransition exitAnimation = new ParallelTransition(fadeOut, slideDown);
-        exitAnimation.setOnFinished(e -> modal.close());
+        exitAnimation.setOnFinished(e -> {
+            modal.close();          // setOnHidden fires here — clears this dialog's blur
+            if (onClosed != null) onClosed.run();  // then open next dialog with fresh blur
+        });
 
         exitAnimation.play();
     }

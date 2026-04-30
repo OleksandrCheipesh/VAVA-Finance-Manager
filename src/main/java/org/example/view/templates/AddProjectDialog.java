@@ -33,7 +33,8 @@ import static org.example.model.validation.ProjValExept.ProjErrorCode.*;
 
 public class AddProjectDialog {
 
-    public static void show(Stage owner, Consumer<Project> onSuccess) {
+    public static void show(Stage owner, Project projectToEdit, Consumer<Project> onSuccess) {
+        boolean isEditMode = (projectToEdit != null);
         Stage modal = new Stage();
 
         modal.initOwner(owner);
@@ -81,10 +82,10 @@ public class AddProjectDialog {
 
         VBox titleBox = new VBox(4);
 
-        Label title = new Label("Add New Project");
+        Label title = new Label(isEditMode ? "Edit Project" : "Add New Project");
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
-        Label subtitle = new Label("Define the scope and resources for your next initiative.");
+        Label subtitle = new Label(isEditMode ? "Update the project details below." : "Define the scope and resources for your next initiative.");
         subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
         titleBox.getChildren().addAll(title, subtitle);
 
@@ -149,6 +150,16 @@ public class AddProjectDialog {
 
         form.getChildren().addAll(nameBox, descBox, budgetBox, splitDates);
 
+        // Pre-fill fields when editing an existing project
+        if (isEditMode) {
+            nameField.setText(projectToEdit.getName() != null ? projectToEdit.getName() : "");
+            descField.setText(projectToEdit.getDescription() != null ? projectToEdit.getDescription() : "");
+            if (projectToEdit.getBudgetLimit() != null)
+                budgetField.setText(projectToEdit.getBudgetLimit().toPlainString());
+            startDateField.setValue(projectToEdit.getStartDate());
+            endDateField.setValue(projectToEdit.getEndDate());
+        }
+
         // Bottom Buttons
         HBox actionBox = new HBox(20);
         actionBox.setAlignment(Pos.CENTER_RIGHT);
@@ -161,7 +172,7 @@ public class AddProjectDialog {
 
         setupScaleEffect(cancelBtn, 0.98);
 
-        StateButton saveBtn = new StateButton("Add New Project", StateButton.ButtonType.PRIMARY);
+        StateButton saveBtn = new StateButton(isEditMode ? "Save Changes" : "Add New Project", StateButton.ButtonType.PRIMARY);
         saveBtn.setMinHeight(50);
         saveBtn.setMaxWidth(Double.MAX_VALUE);
 
@@ -198,7 +209,11 @@ public class AddProjectDialog {
                         LocalDate start = startDateField.getValue() != null ? startDateField.getValue() : LocalDate.now();
                         LocalDate end = endDateField.getValue() != null ? endDateField.getValue() : LocalDate.now().plusMonths(3);
 
-                        Project newProj = new Project(SessionManager.getInstance().getCurrentCompanyId(), name, desc, budget, start, end, true);
+                        int companyId = isEditMode
+                                ? projectToEdit.getCompanyId()
+                                : SessionManager.getInstance().getCurrentCompanyId();
+                        Project newProj = new Project(companyId, name, desc, budget, start, end, true);
+                        if (isEditMode) newProj.setId(projectToEdit.getId());
                         try {
                             ProjectValidator.validate(newProj);
                         } catch (ProjValExept pe) {
