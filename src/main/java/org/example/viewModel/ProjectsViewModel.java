@@ -65,11 +65,24 @@ public class ProjectsViewModel {
         }
     }
 
+    public void updateProject(Project p) {
+        try {
+            db.updateProject(p);
+            projects.replaceAll(existing -> existing.getId() == p.getId() ? p : existing);
+            message.set("Success: Project '" + p.getName() + "' updated successfully!");
+        } catch (Exception e) {
+            message.set("Error: Failed to update project.");
+        } finally {
+            activeProject.set(projects.stream().filter(Project::isActive).count() + " Units");
+            budget.set(formatBudget());
+        }
+    }
+
     public void deleteProject(Project p) {
         try {
             projects.removeIf(project -> project.getId() == p.getId());
             db.deleteProject(p.getId());
-            message.set("Success: Project '" + p.getName() + "' delete successfully!");
+            message.set("Success: Project '" + p.getName() + "' deleted successfully!");
         } catch (Exception e) {
             message.set("Error: Failed to delete project.");
         } finally {

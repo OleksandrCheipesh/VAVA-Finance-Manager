@@ -151,7 +151,7 @@ public class ProjectsView extends BaseView {
             return;
         }
 
-        addBtn.setOnAction(e -> AddProjectDialog.show(stage, newProj -> viewModel.addProject(newProj)));
+        addBtn.setOnAction(e -> AddProjectDialog.show(stage, null, newProj -> viewModel.addProject(newProj)));
 
         addBtn.setOnMousePressed(e -> {
             addBtn.setScaleX(0.95);
@@ -185,9 +185,10 @@ public class ProjectsView extends BaseView {
         card.setPrefSize(320, 300);
         card.setPadding(new Insets(25));
         card.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-border-color: #E2E8F0; -fx-border-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 4); -fx-cursor: hand;");
-        card.setOnMouseClicked(e -> ProjectDetailsDialog.show(stage, p, deletedProject -> {
-            viewModel.deleteProject(deletedProject);
-        }));
+        card.setOnMouseClicked(e -> ProjectDetailsDialog.show(stage, p,
+                updatedProject -> viewModel.updateProject(updatedProject),
+                deletedProject -> viewModel.deleteProject(deletedProject)
+        ));
 
         HBox topRow = new HBox();
         topRow.setAlignment(Pos.CENTER_LEFT);
@@ -293,7 +294,7 @@ public class ProjectsView extends BaseView {
         subTitle.setStyle("-fx-font-size: 13px; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-text-alignment: center;");
 
         card.getChildren().addAll(icon, title, subTitle);
-        card.setOnMouseClicked(e -> AddProjectDialog.show(stage, newProj -> viewModel.addProject(newProj)));
+        card.setOnMouseClicked(e -> AddProjectDialog.show(stage, null, newProj -> viewModel.addProject(newProj)));
 
         return card;
     }
