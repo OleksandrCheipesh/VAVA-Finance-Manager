@@ -28,7 +28,7 @@ public class DashboardViewModel {
     private static final StringProperty revenueGrowth = new SimpleStringProperty("+12.5%");
     private static final IntegerProperty activeProjectsCount = new SimpleIntegerProperty(42);
     private static final TransactionService transactionService = new TransactionService();
-    private static final AccountService clientService = new AccountService();
+    private static final AccountService accountService = new AccountService();
     private static final ProjectService projectService = new ProjectService();
     private static final ObservableList<Project> projects = FXCollections.observableArrayList();
 
@@ -122,7 +122,7 @@ public class DashboardViewModel {
                     .limit(5)
                     .toList();
             for (int i = 0; i < sorted.size(); i++) {
-                clientName = clientService.getAccountById(sorted.get(i).getAccountId() )
+                clientName = accountService.getAccountById(sorted.get(i).getAccountId())
                             .map(Account::getAccountName)
                             .orElse("Unknown");
                 double amount = sorted.get(i).getAmount().doubleValue();

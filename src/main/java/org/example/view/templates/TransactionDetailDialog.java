@@ -28,7 +28,7 @@ import java.util.Locale;
 
 public class TransactionDetailDialog {
 
-    public static void show(Stage owner, Transaction transaction, Runnable onEdit, Runnable onDelete) {
+    public static void show(Stage owner, Transaction transaction, String projectName, String clientName, Runnable onEdit, Runnable onDelete) {
         Stage modal = new Stage();
         modal.initOwner(owner);
         modal.initModality(Modality.APPLICATION_MODAL);
@@ -142,11 +142,15 @@ public class TransactionDetailDialog {
         ColumnConstraints col2 = new ColumnConstraints(); col2.setPercentWidth(50);
         detailsGrid.getColumnConstraints().addAll(col1, col2);
 
-        // NEW: Load grid icons from factory
-        detailsGrid.add(createDetailItem("PROJECT", "folder", "Project Nova"), 0, 0);
-        detailsGrid.add(createDetailItem("DATE", "calendar", transaction.getDate().format(DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.US))), 1, 0);
-        detailsGrid.add(createDetailItem("PAYMENT METHOD", "wallet", "Corporate Visa **** 9012"), 0, 1);
-        detailsGrid.add(createDetailItem("VENDOR", "users-round", "Azure Cloud Services"), 1, 1);
+        String projDisplay   = (projectName != null && !projectName.isBlank()) ? projectName : "—";
+        String clientDisplay = (clientName  != null && !clientName.isBlank())  ? clientName  : "—";
+        String dateDisplay   = transaction.getDate() != null
+                ? transaction.getDate().format(DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.US)) : "—";
+
+        detailsGrid.add(createDetailItem("PROJECT", "folder",      projDisplay),   0, 0);
+        detailsGrid.add(createDetailItem("DATE",    "calendar",    dateDisplay),   1, 0);
+        detailsGrid.add(createDetailItem("CLIENT",  "users-round", clientDisplay), 0, 1);
+        detailsGrid.add(createDetailItem("ACCOUNT", "wallet", "#" + transaction.getAccountId()), 1, 1);
 
         card.getChildren().addAll(mainTitleBox, amountBox, divider1, detailsGrid);
 

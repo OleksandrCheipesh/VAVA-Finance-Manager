@@ -227,15 +227,33 @@ public class TransactionsView extends BaseView {
         projectCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(Integer item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
+                if (empty) {
                     setText(null);
-                    setFont(Font.getDefault());
-                    setTextFill(Color.BLACK);
                     setAlignment(Pos.CENTER_LEFT);
                 } else {
-                    setText(viewModel.getProjectName(item));
+                    String name = viewModel.getProjectName(item);
+                    setText(name.isBlank() ? "—" : name);
                     setFont(Font.font("System", FontWeight.NORMAL, 15));
-                    setTextFill(Color.web(Themes.TEXT_MUTED));
+                    setTextFill(Color.web(name.isBlank() ? Themes.TEXT_MUTED : Themes.TEXT_DARK));
+                    setAlignment(Pos.CENTER_LEFT);
+                }
+            }
+        });
+
+        TableColumn<Transaction, Integer> clientCol = new TableColumn<>("CLIENT");
+        clientCol.setCellValueFactory(new PropertyValueFactory<>("clientId"));
+        clientCol.setStyle(headerStyle);
+        clientCol.setCellFactory(col -> new TableCell<>() {
+            @Override protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setText(null);
+                    setAlignment(Pos.CENTER_LEFT);
+                } else {
+                    String name = viewModel.getClientName(item);
+                    setText(name.isBlank() ? "—" : name);
+                    setFont(Font.font("System", FontWeight.NORMAL, 15));
+                    setTextFill(Color.web(name.isBlank() ? Themes.TEXT_MUTED : Themes.TEXT_DARK));
                     setAlignment(Pos.CENTER_LEFT);
                 }
             }
@@ -304,8 +322,10 @@ public class TransactionsView extends BaseView {
                         TransactionDetailDialog.show(
                                 stage,
                                 tx,
+                                viewModel.getProjectName(tx.getProjectId()),
+                                viewModel.getClientName(tx.getClientId()),
                                 () -> {
-                                    EditTransactionDialog.show(stage, tx, viewModel.getAccounts(), viewModel.getProjects(), updatedTx -> {
+                                    EditTransactionDialog.show(stage, tx, viewModel.getAccounts(), viewModel.getProjects(), viewModel.getClients(), updatedTx -> {
                                         viewModel.updateTransaction(updatedTx);
                                     });
                                 },
@@ -321,14 +341,15 @@ public class TransactionsView extends BaseView {
             }
         });
 
-        table.getColumns().addAll(dateCol, amountCol, projectCol, descCol, typeCol, actionCol);
+        table.getColumns().addAll(dateCol, amountCol, projectCol, clientCol, descCol, typeCol, actionCol);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        dateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
-        amountCol.prefWidthProperty().bind(table.widthProperty().multiply(0.18));
-        projectCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
-        descCol.prefWidthProperty().bind(table.widthProperty().multiply(0.22));
-        typeCol.prefWidthProperty().bind(table.widthProperty().multiply(0.20));
+        dateCol.prefWidthProperty().bind(table.widthProperty().multiply(0.12));
+        amountCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
+        projectCol.prefWidthProperty().bind(table.widthProperty().multiply(0.13));
+        clientCol.prefWidthProperty().bind(table.widthProperty().multiply(0.13));
+        descCol.prefWidthProperty().bind(table.widthProperty().multiply(0.20));
+        typeCol.prefWidthProperty().bind(table.widthProperty().multiply(0.17));
         actionCol.prefWidthProperty().bind(table.widthProperty().multiply(0.10));
 
         // Merge layout
@@ -364,7 +385,7 @@ public class TransactionsView extends BaseView {
         }
 
         addBtn.setOnAction(e -> {
-            AddTransactionDialog.show(stage, viewModel.getAccounts(), viewModel.getProjects(), newTx -> {
+            AddTransactionDialog.show(stage, viewModel.getAccounts(), viewModel.getProjects(), viewModel.getClients(), newTx -> {
                 viewModel.addTransaction(newTx);
             });
         });

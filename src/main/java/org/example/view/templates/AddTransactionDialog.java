@@ -19,6 +19,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.example.model.database.entity.Account;
+import org.example.model.database.entity.Client;
 import org.example.model.database.entity.Project;
 import org.example.logging.AppLog;
 import org.example.model.database.entity.Transaction;
@@ -32,7 +33,7 @@ public class AddTransactionDialog {
 
     private static String selectedType = "SALE";
 
-    public static void show(Stage owner, ObservableList<Account> accounts, ObservableList<Project> projects, Consumer<Transaction> onSuccess) {
+    public static void show(Stage owner, ObservableList<Account> accounts, ObservableList<Project> projects, ObservableList<Client> clients, Consumer<Transaction> onSuccess) {
         Stage modal = new Stage();
         modal.initOwner(owner);
         modal.initModality(Modality.APPLICATION_MODAL);
@@ -211,6 +212,33 @@ public class AddTransactionDialog {
         splitBox.add(createLabeledField("ACCOUNT", accountCombo, accountError), 0, 0);
         splitBox.add(createLabeledField("PROJECT", projectCombo, projectError), 1, 0);
 
+        ComboBox<Client> clientCombo = UIFactory.inputComboBox("Select Client (optional)");
+        clientCombo.setMaxWidth(Double.MAX_VALUE);
+        clientCombo.setMinHeight(44);
+        clientCombo.setPrefHeight(44);
+        clientCombo.setMaxHeight(44);
+        clientCombo.setItems(clients);
+        clientCombo.setCellFactory(lv -> new ListCell<>() {
+            @Override protected void updateItem(Client item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getName() + " " + item.getSurname());
+            }
+        });
+        clientCombo.setButtonCell(new ListCell<>() {
+            @Override protected void updateItem(Client item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item != null) {
+                    setText(item.getName() + " " + item.getSurname());
+                    setStyle("-fx-text-fill: " + Themes.TEXT_DARK + ";");
+                } else {
+                    setText("Select Client (optional)");
+                    setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + ";");
+                }
+            }
+        });
+        Label clientError = errorLabel();
+        VBox clientBox = createLabeledField("CLIENT (OPTIONAL)", clientCombo, clientError);
+
         DatePicker datePicker = UIFactory.inputDatePicker("Select date");
 
         datePicker.setValue(java.time.LocalDate.now());
@@ -231,7 +259,7 @@ public class AddTransactionDialog {
         Label dateError = errorLabel();
         VBox dateBox = createLabeledField("DATE", datePicker, dateError);
 
-        form.getChildren().addAll(amountBox, descBox, splitBox, dateBox);
+        form.getChildren().addAll(amountBox, descBox, splitBox, clientBox, dateBox);
 
         HBox actionBox = new HBox(20);
         actionBox.setAlignment(Pos.CENTER_RIGHT);
@@ -331,7 +359,7 @@ public class AddTransactionDialog {
                     try {
                         String desc = descField.getText().trim();
                         java.time.LocalDate date = datePicker.getValue();
-                        Integer clientId = null;
+                        Integer clientId = clientCombo.getValue() != null ? clientCombo.getValue().getId() : null;
                         Integer projectId = projectNameToId.get(projectCombo.getValue());
                         int accountId = accountCombo.getValue().getId();
 
