@@ -27,7 +27,9 @@ public class AddEmployeeDialog {
 
     public static void show(Stage owner, Employee employeeToEdit, Consumer<Employee> onSuccess) {
         boolean isEditMode = (employeeToEdit != null);
-
+        TextField salaryField = UIFactory.inputField("Salary");
+        salaryField.setMinHeight(44);
+        salaryField.setPrefHeight(44);
         Stage modal = new Stage();
         modal.initOwner(owner);
         modal.initModality(Modality.APPLICATION_MODAL);
@@ -143,7 +145,9 @@ public class AddEmployeeDialog {
         splitBottom.add(createLabeledField("DEPARTMENT", deptField), 0, 0);
         splitBottom.add(createLabeledField("STATUS", statusCombo), 1, 0);
 
-        form.getChildren().addAll(splitName, emailBox, roleBox, splitBottom);
+        VBox salaryBox = createLabeledField("SALARY", salaryField);
+
+        form.getChildren().addAll(splitName, emailBox, roleBox, salaryBox, splitBottom);
 
         if (isEditMode) {
             nameField.setText(employeeToEdit.getName());
@@ -152,6 +156,9 @@ public class AddEmployeeDialog {
             roleField.setText(employeeToEdit.getPosition());
             deptField.setText(employeeToEdit.getDepartment());
             statusCombo.setValue(employeeToEdit.getStatus());
+            if (employeeToEdit.getSalary() != null) {
+                salaryField.setText(employeeToEdit.getSalary().toString());
+            }
         }
 
         HBox actionBox = new HBox(20);
@@ -214,6 +221,21 @@ public class AddEmployeeDialog {
                     emp.setPosition(roleField.getText().trim());
                     emp.setDepartment(deptField.getText().trim());
                     emp.setStatus(statusCombo.getValue());
+
+                    java.math.BigDecimal salary = null;
+
+                    String salaryText = salaryField.getText();
+                    if (salaryText != null && !salaryText.isBlank()) {
+                        try {
+                            salary = new java.math.BigDecimal(salaryText);
+                        } catch (NumberFormatException ex) {
+                            salaryField.setStyle(salaryField.getStyle() + errorBorder);
+                            saveBtn.setLoading(false);
+                            return;
+                        }
+                    }
+
+                    emp.setSalary(salary);
 
                     onSuccess.accept(emp);
 

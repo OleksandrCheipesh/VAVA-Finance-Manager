@@ -181,6 +181,12 @@ public class EmployeesView extends BaseView {
         nameCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getName() + " " + cellData.getValue().getSurname()));
 
         TableColumn<Employee, String> roleCol = new TableColumn<>("ROLE");
+        TableColumn<Employee, String> salaryCol = new TableColumn<>("SALARY");
+
+        salaryCol.setCellValueFactory(cellData -> {
+            var salary = cellData.getValue().getSalary();
+            return new SimpleStringProperty(salary != null ? salary.toString() : "");
+        });
         roleCol.setCellValueFactory(new PropertyValueFactory<>("position"));
 
         TableColumn<Employee, String> deptCol = new TableColumn<>("DEPARTMENT");
@@ -212,6 +218,7 @@ public class EmployeesView extends BaseView {
             }
         });
 
+
         TableColumn<Employee, Void> actionCol = new TableColumn<>("ACTION");
         actionCol.setCellFactory(column -> new TableCell<>() {
             private final Button actionBtn = new Button("⋮");
@@ -226,20 +233,42 @@ public class EmployeesView extends BaseView {
             }
         });
 
+        salaryCol.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null || item.isBlank()) {
+                    setText(null);
+                } else {
+                    setText(item);
+                    setStyle(""); // сбрасываем стиль ячейки
+                }
+            }
+        });
         table.setOnMouseClicked(e -> {
             if (table.getSelectionModel().getSelectedItem() != null) {
                 openDetailsModal(table.getSelectionModel().getSelectedItem());
             }
         });
 
-        nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.18));
-        roleCol.prefWidthProperty().bind(table.widthProperty().multiply(0.18));
+        nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.17));
+        roleCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
+        salaryCol.prefWidthProperty().bind(table.widthProperty().multiply(0.12));
         deptCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
-        emailCol.prefWidthProperty().bind(table.widthProperty().multiply(0.25));
-        statusCol.prefWidthProperty().bind(table.widthProperty().multiply(0.12));
-        actionCol.prefWidthProperty().bind(table.widthProperty().multiply(0.10));
+        emailCol.prefWidthProperty().bind(table.widthProperty().multiply(0.24));
+        statusCol.prefWidthProperty().bind(table.widthProperty().multiply(0.09));
+        actionCol.prefWidthProperty().bind(table.widthProperty().multiply(0.8));
 
-        table.getColumns().addAll(nameCol, roleCol, deptCol, emailCol, statusCol, actionCol);
+        table.getColumns().addAll(
+                nameCol,
+                roleCol,
+                salaryCol,
+                deptCol,
+                emailCol,
+                statusCol,
+                actionCol
+        );
 
         contentArea.getChildren().addAll(filterBar, summaryContainer, table);
         mainContainer.getChildren().addAll(topBar, contentArea);
