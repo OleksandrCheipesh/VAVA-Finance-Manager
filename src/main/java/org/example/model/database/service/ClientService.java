@@ -23,9 +23,9 @@ public class ClientService {
             preparedStatement.setString(5, client.getPhone());
 
             if (client.getMonthlyIncome() != null)
-                preparedStatement.setBigDecimal(5, client.getMonthlyIncome());
+                preparedStatement.setBigDecimal(6, client.getMonthlyIncome());
             else
-                 preparedStatement.setNull(5, Types.NUMERIC);
+                preparedStatement.setNull(6, Types.NUMERIC);
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {

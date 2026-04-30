@@ -80,7 +80,7 @@ public class Sidebar {
         menuItems = new VBox(5);
         menuItems.setAlignment(Pos.TOP_LEFT);
 
-        String[] menuLabels = {"Dashboard", "Transactions", "Employees", "Projects", "Budget", "Reports", "Settings"};
+        String[] menuLabels = {"Dashboard", "Transactions", "Employees", "Clients", "Projects", "Budget", "Reports", "Settings"};
 
         for (String label : menuLabels) {
             HBox menuItem = createMenuItem(label);
@@ -106,6 +106,7 @@ public class Sidebar {
             case "Dashboard" -> "layout-dashboard";
             case "Transactions" -> "receipt";
             case "Employees" -> "users-round";
+            case "Clients" -> "book-user";
             case "Projects" -> "folder";
             case "Budget" -> "wallet";
             case "Reports" -> "chart-column-big";
@@ -180,6 +181,7 @@ public class Sidebar {
             case "Dashboard"      -> new DashBoardView();
             case "Settings"       -> new SettingsView();
             case "Employees"      -> new EmployeesView();
+            case "Clients"        -> new ClientsView();
             case "Projects"       -> new ProjectsView();
             case "Budget"         -> new BudgetView();
             case "Reports"        -> new ReportsView();

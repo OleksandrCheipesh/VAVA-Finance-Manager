@@ -10,10 +10,12 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import org.example.SessionManager;
 import org.example.model.database.entity.Account;
+import org.example.model.database.entity.Client;
 import org.example.model.database.entity.Position;
 import org.example.model.database.entity.Project;
 import org.example.model.database.entity.Transaction;
 import org.example.model.database.service.AccountService;
+import org.example.model.database.service.ClientService;
 import org.example.model.database.service.ProjectService;
 import org.example.model.database.service.TransactionService;
 
@@ -32,12 +34,15 @@ public class TransactionsViewModel {
     private final TransactionService transactionService = new TransactionService();
     private final ProjectService projectService = new ProjectService();
     private final AccountService accountService = new AccountService();
+    private final ClientService clientService = new ClientService();
 
     private final ObservableList<Transaction> transactions = FXCollections.observableArrayList();
     private final FilteredList<Transaction> filteredTransactions = new FilteredList<>(transactions, p -> true);
     private final ObservableList<Project> projects = FXCollections.observableArrayList();
     private final ObservableList<Account> accounts = FXCollections.observableArrayList();
+    private final ObservableList<Client> clients = FXCollections.observableArrayList();
     private final Map<Integer, String> projectNameMap = new HashMap<>();
+    private final Map<Integer, String> clientNameMap = new HashMap<>();
     private final StringProperty message = new SimpleStringProperty("");
 
     // Summary card properties
@@ -59,7 +64,23 @@ public class TransactionsViewModel {
         transactions.addListener((ListChangeListener<Transaction>) change -> recomputeStats());
         loadProjects();
         loadAccounts();
+        loadClients();
         loadTransactions();
+    }
+
+    public void loadClients() {
+        var logger = org.example.logging.AppLog.getLogger(TransactionsViewModel.class);
+        try {
+            int companyId = SessionManager.getInstance().getCurrentCompanyId();
+            List<Client> list = clientService.getClientsByCompanyId(companyId);
+            clients.setAll(list);
+            clientNameMap.clear();
+            for (Client c : list) {
+                clientNameMap.put(c.getId(), c.getName() + " " + c.getSurname());
+            }
+        } catch (Exception e) {
+            logger.warn("Could not load clients: {}", e.getMessage());
+        }
     }
 
     public void loadAccounts() {
@@ -247,6 +268,11 @@ public class TransactionsViewModel {
         return projectNameMap.getOrDefault(projectId, "#" + projectId);
     }
 
+    public String getClientName(Integer clientId) {
+        if (clientId == null) return "";
+        return clientNameMap.getOrDefault(clientId, "#" + clientId);
+    }
+
     private void recomputeStats() {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
         DecimalFormat df = new DecimalFormat("#,##0.00", symbols);
@@ -279,6 +305,7 @@ public class TransactionsViewModel {
 
     public ObservableList<Account> getAccounts() { return accounts; }
     public ObservableList<Project> getProjects() { return projects; }
+    public ObservableList<Client> getClients() { return clients; }
     public FilteredList<Transaction> getFilteredTransactions() { return filteredTransactions; }
     public StringProperty messageProperty() { return message; }
     public StringProperty totalIncomeProperty() { return totalIncome; }
