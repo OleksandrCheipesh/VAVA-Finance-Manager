@@ -234,11 +234,11 @@ public class EmployeesView extends BaseView {
     private void openDetailsModal(Employee emp) {
         EmployeeDetailsDialog.show(stage, emp,
                 updatedEmp -> {
-                    table.refresh();
+                    viewModel.updateEmployee(updatedEmp);
                     ToastManager.showSuccess(stage, "Employee profile updated!");
                 },
                 deletedEmp -> {
-                    viewModel.getEmployees().remove(deletedEmp);
+                    viewModel.deleteEmployee(deletedEmp);
                     ToastManager.showSuccess(stage, "Employee deleted.");
                 }
         );

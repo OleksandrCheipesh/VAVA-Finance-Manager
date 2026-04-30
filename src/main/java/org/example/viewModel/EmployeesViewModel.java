@@ -45,6 +45,37 @@ public class EmployeesViewModel {
         loadEmployees();
     }
 
+
+    private void recalculateSummary() {
+        totalEmployees.set(employees.size());
+
+        activeEmployees.set(
+                (int) employees.stream()
+                        .filter(e -> "ACTIVE".equals(e.getStatus()))
+                        .count()
+        );
+
+        onboardingEmployees.set(
+                (int) employees.stream()
+                        .filter(e -> e.getHiredAt() != null)
+                        .filter(e -> e.getHiredAt().isAfter(OffsetDateTime.now().minusMonths(1)))
+                        .count()
+        );
+
+        long addedThisMonth = onboardingEmployees.get();
+
+        totalEmployeesChangeText.set("+" + addedThisMonth + " this month");
+
+        double rate = totalEmployees.get() == 0
+                ? 0
+                : (double) activeEmployees.get() / totalEmployees.get() * 100;
+
+        activeEmployeesRate.set((int) rate + "% rate");
+
+        onboardingEmployeesActionText.set(
+                onboardingEmployees.get() > 0 ? "Action needed" : "No action needed"
+        );
+    }
     public void loadEmployees() {
         var logger = org.example.logging.AppLog.getLogger(EmployeesViewModel.class);
         int companyId = SessionManager.getInstance().getCurrentCompanyId();
@@ -63,23 +94,43 @@ public class EmployeesViewModel {
             logger.error("Failed to load employees for companyId={}", companyId, e);
         }
         finally {
-//            TO DO: active and pasive status
-            totalEmployees.set(employees.size());
-            activeEmployees.set(employees.size());
-            onboardingEmployees.set(0);
-            long addedThisMonth = employees.stream()
-                    .filter(e -> e.getHiredAt() != null)
-                    .filter(e -> e.getHiredAt().isAfter(OffsetDateTime.now().minusMonths(1)))
-                    .count();
-            totalEmployeesChangeText.set("+" + addedThisMonth + " this month");
-            double rate = totalEmployees.get() == 0
-                    ? 0
-                    : (double) activeEmployees.get() / totalEmployees.get() * 100;
-            activeEmployeesRate.set((int)rate + "% rate");
-            onboardingEmployeesActionText.set("Action needed");
+            recalculateSummary();
+        }
+    }
+    public void updateEmployee(Employee updatedEmployee) {
+        try {
+            db.updateEmployee(updatedEmployee);
+            for (int i = 0; i < employees.size(); i++) {
+                if (employees.get(i).getId() == updatedEmployee.getId()) {
+                    employees.set(i, updatedEmployee);
+                    break;
+                }
+            }
+
+            message.set("Success: Employee updated successfully!");
+
+        } catch (Exception e) {
+            message.set("Error: Failed to update employee. " + e.getMessage());
+        }
+        finally {
+            recalculateSummary();
         }
     }
 
+    public void deleteEmployee(Employee employee) {
+        try {
+            db.deleteEmployee(employee.getId());
+            employees.removeIf(e -> e.getId() == employee.getId());
+
+            message.set("Success: Employee deleted successfully!");
+
+        } catch (Exception e) {
+            message.set("Error: Failed to delete employee. " + e.getMessage());
+        }
+        finally {
+            recalculateSummary();
+        }
+    }
     // 2. Add a new employee to the database and the UI
     public void addEmployee(Employee newEmployee) {
         try {
@@ -96,20 +147,7 @@ public class EmployeesViewModel {
             message.set("Error: Failed to add employee. " + e.getMessage());
         }
         finally {
-//            TO DO: active and pasive status
-            totalEmployees.set(employees.size());
-            activeEmployees.set(employees.size());
-            onboardingEmployees.set(0);
-            long addedThisMonth = employees.stream()
-                    .filter(e -> e.getHiredAt() != null)
-                    .filter(e -> e.getHiredAt().isAfter(OffsetDateTime.now().minusMonths(1)))
-                    .count();
-            totalEmployeesChangeText.set("+" + addedThisMonth + " this month");
-            double rate = totalEmployees.get() == 0
-                    ? 0
-                    : (double) activeEmployees.get() / totalEmployees.get() * 100;
-            activeEmployeesRate.set((int)rate + "% rate");
-            onboardingEmployeesActionText.set("Action needed");
+            recalculateSummary();
         }
     }
 
