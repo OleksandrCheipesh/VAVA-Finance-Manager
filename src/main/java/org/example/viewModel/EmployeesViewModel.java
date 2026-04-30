@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import org.example.SessionManager;
 import org.example.model.database.entity.Employee;
 import org.example.model.database.service.EmployeeService;
@@ -40,7 +41,42 @@ public class EmployeesViewModel {
     public StringProperty totalEmployeesChangeTextProperty() { return totalEmployeesChangeText; }
     public StringProperty activeEmployeesRateProperty() { return activeEmployeesRate; }
     public StringProperty onboardingEmployeesActionTextProperty() { return onboardingEmployeesActionText; }
+    private final FilteredList<Employee> filteredEmployees =
+            new FilteredList<>(employees, p -> true);
+    private String currentSearch = "";
+    private String currentStatus = null;
+    public void filterBySearch(String query) {
+        currentSearch = query == null ? "" : query;
+        updateFilter();
+    }
 
+    public void filterByStatus(String status) {
+        currentStatus = status;
+        updateFilter();
+    }
+
+    private void updateFilter() {
+        filteredEmployees.setPredicate(employee -> {
+
+            boolean matchesSearch = true;
+            if (!currentSearch.isEmpty()) {
+                String lower = currentSearch.toLowerCase();
+
+                matchesSearch =
+                        (employee.getName() != null && employee.getName().toLowerCase().contains(lower)) ||
+                                (employee.getSurname() != null && employee.getSurname().toLowerCase().contains(lower)) ||
+                                (employee.getEmail() != null && employee.getEmail().toLowerCase().contains(lower)) ||
+                                (employee.getPosition() != null && employee.getPosition().toLowerCase().contains(lower));
+            }
+
+            boolean matchesStatus = true;
+            if (currentStatus != null) {
+                matchesStatus = currentStatus.equalsIgnoreCase(employee.getStatus());
+            }
+
+            return matchesSearch && matchesStatus;
+        });
+    }
     public EmployeesViewModel() {
         loadEmployees();
     }
@@ -153,8 +189,8 @@ public class EmployeesViewModel {
         }
     }
 
-    public ObservableList<Employee> getEmployees() {
-        return employees;
+    public FilteredList<Employee> getEmployees() {
+        return filteredEmployees;
     }
 
     public StringProperty messageProperty() {

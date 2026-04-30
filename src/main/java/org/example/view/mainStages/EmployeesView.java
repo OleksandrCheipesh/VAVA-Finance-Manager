@@ -32,7 +32,7 @@ public class EmployeesView extends BaseView {
     private StateButton addBtn;
     private HBox filterBar;
     private HBox topBar;
-
+    private TextField search;
     @Override
     protected void setContent() {
         root = new BorderPane();
@@ -79,10 +79,38 @@ public class EmployeesView extends BaseView {
         tabInactive.setStyle(inactiveTab);
         tabContractors.setStyle(inactiveTab);
 
-        tabAll.setOnMouseClicked(e -> { tabAll.setStyle(activeTab); tabActive.setStyle(inactiveTab); tabInactive.setStyle(inactiveTab); tabContractors.setStyle(inactiveTab); });
-        tabActive.setOnMouseClicked(e -> { tabActive.setStyle(activeTab); tabAll.setStyle(inactiveTab); tabInactive.setStyle(inactiveTab); tabContractors.setStyle(inactiveTab); });
-        tabInactive.setOnMouseClicked(e -> { tabInactive.setStyle(activeTab); tabAll.setStyle(inactiveTab); tabActive.setStyle(inactiveTab); tabContractors.setStyle(inactiveTab); });
-        tabContractors.setOnMouseClicked(e -> { tabContractors.setStyle(activeTab); tabAll.setStyle(inactiveTab); tabActive.setStyle(inactiveTab); tabInactive.setStyle(inactiveTab); });
+        tabAll.setOnMouseClicked(e -> {
+            tabAll.setStyle(activeTab);
+            tabActive.setStyle(inactiveTab);
+            tabInactive.setStyle(inactiveTab);
+            tabContractors.setStyle(inactiveTab);
+
+            viewModel.filterByStatus(null);
+        });
+        tabActive.setOnMouseClicked(e -> {
+            tabActive.setStyle(activeTab);
+            tabAll.setStyle(inactiveTab);
+            tabInactive.setStyle(inactiveTab);
+            tabContractors.setStyle(inactiveTab);
+
+            viewModel.filterByStatus("ACTIVE");
+        });
+        tabInactive.setOnMouseClicked(e -> {
+            tabInactive.setStyle(activeTab);
+            tabAll.setStyle(inactiveTab);
+            tabActive.setStyle(inactiveTab);
+            tabContractors.setStyle(inactiveTab);
+
+            viewModel.filterByStatus("INACTIVE");
+        });
+        tabContractors.setOnMouseClicked(e -> {
+            tabContractors.setStyle(activeTab);
+            tabAll.setStyle(inactiveTab);
+            tabActive.setStyle(inactiveTab);
+            tabInactive.setStyle(inactiveTab);
+
+            viewModel.filterByStatus("CONTRACTOR");
+        });
 
         tabs.getChildren().addAll(tabAll, tabActive, tabInactive, tabContractors);
 
@@ -266,6 +294,9 @@ public class EmployeesView extends BaseView {
                 ToastManager.showError(stage, newVal.replace("Error: ", ""));
             }
         });
+        search.textProperty().addListener((obs, oldVal, newVal) -> {
+            viewModel.filterBySearch(newVal);
+        });
     }
 
     private VBox createSummaryCard(String title, Label valueLabel, Label subText, String subTextColor) {
@@ -308,7 +339,7 @@ public class EmployeesView extends BaseView {
         searchIcon.setScaleX(0.8);
         searchIcon.setScaleY(0.8);
 
-        TextField search = new TextField();
+        search = new TextField();
         search.setStyle("-fx-background-color: transparent; -fx-border-width: 0; -fx-padding: 0; -fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
         StackPane searchPane = new StackPane();
