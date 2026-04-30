@@ -4,7 +4,10 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.example.model.database.entity.Project;
+import org.example.model.database.service.ProjectService;
 import org.example.model.reports.*;
+import org.example.model.models.ReportsModel;
+import javafx.concurrent.Task;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -32,25 +35,14 @@ public class ReportsViewModel {
     private final StringProperty selectedStatus = new SimpleStringProperty(null);
     private       String         selectedProjectName = null;
 
-    // ----------------------------------------------------------------
-    // Master dummy data — never modified, always filtered from
-    // ----------------------------------------------------------------
-    private static final List<MonthlySnapshotDTO> ALL_MONTHLY = List.of(
-            new MonthlySnapshotDTO(YearMonth.of(2025, 11), bd(22500), bd(24000), bd(-1500)),
-            new MonthlySnapshotDTO(YearMonth.of(2025, 12), bd(31200), bd(25050), bd(6150)),
-            new MonthlySnapshotDTO(YearMonth.of(2026,  1), bd(46000), bd(28050), bd(17950)),
-            new MonthlySnapshotDTO(YearMonth.of(2026,  2), bd(41300), bd(28400), bd(12900)),
-            new MonthlySnapshotDTO(YearMonth.of(2026,  3), bd(44500), bd(30000), bd(14500)),
-            new MonthlySnapshotDTO(YearMonth.of(2026,  4), bd(41000), bd(29700), bd(11300))
-    );
+    private final StringProperty totalProfit = new SimpleStringProperty("$0.00");
+    private final StringProperty grossIncome = new SimpleStringProperty("$0.00");
+    private final StringProperty netExpense  = new SimpleStringProperty("$0.00");
+    private final StringProperty netProfitTrend = new SimpleStringProperty("$0.00");
 
-    private static final List<ProjectSummaryDTO> ALL_PROJECTS = List.of(
-            new ProjectSummaryDTO(1, "ERP Implementation",  bd(44000), bd(16100), bd(27900),  12.5),
-            new ProjectSummaryDTO(2, "Website Redesign",    bd(22500), bd(7600),  bd(14900),  -3.2),
-            new ProjectSummaryDTO(3, "Data Migration",      bd(28700), bd(8400),  bd(20300),   8.1),
-            new ProjectSummaryDTO(4, "Mobile App",          bd(75000), bd(21700), bd(53300),  22.4),
-            new ProjectSummaryDTO(5, "Security Audit",      bd(15800), bd(5000),  bd(10800),   0.0)
-    );
+    private final ReportsModel model = new ReportsModel();
+    private final ProjectService projectService = new ProjectService();
+    private final javafx.collections.ObservableList<Project> availableProjects = javafx.collections.FXCollections.observableArrayList();
 
     // ----------------------------------------------------------------
     // Chart data — ObservableLists that charts listen to
@@ -67,41 +59,99 @@ public class ReportsViewModel {
     private final StringProperty  errorMessage = new SimpleStringProperty("");
 
     public ReportsViewModel() {
-        loadStaticLists();
-        recompute();          // populate monthlySummaries / projectSummaries immediately
+        loadAvailableProjects();
+        recompute();
+
+        selectedPeriod.addListener((obs, oldV, newV) -> recompute());
+        selectedProject.addListener((obs, oldV, newV) -> recompute());
+        customFrom.addListener((obs, oldV, newV) -> recompute());
+        customTo.addListener((obs, oldV, newV) -> recompute());
+        selectedStatus.addListener((obs, oldV, newV) -> recompute());
+    }
+
+    private void loadAvailableProjects() {
+        int companyId = SessionManager.getInstance().getCurrentCompanyId();
+        javafx.concurrent.Task<java.util.List<Project>> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected java.util.List<Project> call() throws Exception {
+                return projectService.getProjectsByCompanyId(companyId);
+            }
+        };
+        task.setOnSucceeded(e -> javafx.application.Platform.runLater(() -> {
+            availableProjects.setAll(task.getValue());
+        }));
+        task.setOnFailed(e -> task.getException().printStackTrace());
+        new Thread(task).start();
     }
 
     // ----------------------------------------------------------------
-    // recompute() — filters ALL_MONTHLY and ALL_PROJECTS by the
-    // current filter state, then groups by Month or Quarter,
-    // and calls setAll() so chart ListChangeListeners fire.
+    // recompute() — real data loading
     // ----------------------------------------------------------------
     public void recompute() {
         LocalDate from = resolvedFrom();
         LocalDate to   = resolvedTo();
+        if (from == null || to == null) return;
 
-        // --- Monthly snapshots: filter by date range ---
-        List<MonthlySnapshotDTO> filtered = ALL_MONTHLY.stream()
-                .filter(s -> {
-                    LocalDate first = s.getPeriod().atDay(1);
-                    LocalDate last  = s.getPeriod().atEndOfMonth();
-                    // include if the month overlaps [from, to]
-                    if (from != null && last.isBefore(from))  return false;
-                    if (to   != null && first.isAfter(to))    return false;
-                    return true;
-                })
-                .collect(Collectors.toList());
+        int companyId = SessionManager.getInstance().getCurrentCompanyId();
+        Integer pId = selectedProject.get() != null ? selectedProject.get().getId() : null;
+        String status = selectedStatus.get();
+        if (status != null && status.isBlank()) status = null;
 
-        // --- Group by Quarter if requested ---
-        if ("Quarter".equals(grouping.get())) {
-            filtered = groupByQuarter(filtered);
-        }
+        loading.set(true);
+        errorMessage.set("");
 
-        monthlySummaries.setAll(filtered);
+        String finalStatus = status;
+        Task<List<?>[]> task = new Task<>() {
+            @Override
+            protected List<?>[] call() throws Exception {
+                List<ProjectSummaryDTO> pSums = model.getProjectSummaries(companyId, from, to, pId, finalStatus);
+                List<MonthlySnapshotDTO> mSums = model.getMonthlySummaries(companyId, from, to, pId, finalStatus);
+                List<ExpenseCategoryDTO> eCats = model.getExpenseBreakdown(companyId, from, to, pId);
+                List<IncomeBreakdownDTO> iBrk  = model.getIncomeBreakdown(companyId, from, to, pId, finalStatus);
 
-        // --- Project summaries: no date filter on dummy data, just pass through ---
-        // (when a real service exists, pass from/to/status here)
-        projectSummaries.setAll(ALL_PROJECTS);
+                if ("Quarter".equals(grouping.get())) {
+                    mSums = groupByQuarter(mSums);
+                }
+
+                return new List<?>[]{pSums, mSums, eCats, iBrk};
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            List<?>[] result = task.getValue();
+
+            List<ProjectSummaryDTO> pSumsList = (List<ProjectSummaryDTO>) result[0];
+            List<MonthlySnapshotDTO> mSumsList = (List<MonthlySnapshotDTO>) result[1];
+
+            BigDecimal tProfit = pSumsList.stream().map(ProjectSummaryDTO::getNetProfit).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal gInc = mSumsList.stream().map(MonthlySnapshotDTO::getIncome).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal nExp = mSumsList.stream().map(MonthlySnapshotDTO::getExpense).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal nTrend = gInc.subtract(nExp);
+
+            java.text.NumberFormat fmt = java.text.NumberFormat.getCurrencyInstance(java.util.Locale.US);
+
+            javafx.application.Platform.runLater(() -> {
+                projectSummaries.setAll(pSumsList);
+                monthlySummaries.setAll(mSumsList);
+                expenseCategories.setAll((List<ExpenseCategoryDTO>) result[2]);
+                incomeBreakdown.setAll((List<IncomeBreakdownDTO>) result[3]);
+
+                totalProfit.set(fmt.format(tProfit));
+                grossIncome.set(fmt.format(gInc));
+                netExpense.set(fmt.format(nExp));
+                netProfitTrend.set(fmt.format(nTrend));
+
+                loading.set(false);
+            });
+        });
+
+        task.setOnFailed(e -> {
+            loading.set(false);
+            errorMessage.set("Failed to load reports: " + task.getException().getMessage());
+            task.getException().printStackTrace();
+        });
+
+        new Thread(task).start();
     }
 
     /**
@@ -125,38 +175,12 @@ public class ReportsViewModel {
             BigDecimal income  = bucket.stream().map(MonthlySnapshotDTO::getIncome) .reduce(BigDecimal.ZERO, BigDecimal::add);
             BigDecimal expense = bucket.stream().map(MonthlySnapshotDTO::getExpense).reduce(BigDecimal.ZERO, BigDecimal::add);
             BigDecimal net     = income.subtract(expense);
-            // Use first month of the quarter as the period so axis labels show correctly
             YearMonth  period  = bucket.get(0).getPeriod();
             quarters.add(new MonthlySnapshotDTO(period, income, expense, net));
         }
         return quarters;
     }
 
-    // ----------------------------------------------------------------
-    // Static lists (expense categories, income breakdown) — not date-
-    // filtered in dummy mode; just loaded once.
-    // ----------------------------------------------------------------
-    private void loadStaticLists() {
-        expenseCategories.setAll(
-                new ExpenseCategoryDTO("Salaries",     bd(91200), 52.4),
-                new ExpenseCategoryDTO("Contractors",  bd(25600), 14.7),
-                new ExpenseCategoryDTO("Equipment",    bd(18500), 10.6),
-                new ExpenseCategoryDTO("Software",     bd(12400),  7.1),
-                new ExpenseCategoryDTO("Cloud & Infra",bd(8900),   5.1),
-                new ExpenseCategoryDTO("Other",        bd(17600), 10.1)
-        );
-        incomeBreakdown.setAll(
-                new IncomeBreakdownDTO("Mobile App",         bd(75000), 40.6),
-                new IncomeBreakdownDTO("ERP Implementation", bd(44000), 23.8),
-                new IncomeBreakdownDTO("Data Migration",     bd(28700), 15.5),
-                new IncomeBreakdownDTO("Website Redesign",   bd(22500), 12.2),
-                new IncomeBreakdownDTO("Security Audit",     bd(15800),  8.6)
-        );
-    }
-
-    private static BigDecimal bd(double value) {
-        return BigDecimal.valueOf(value);
-    }
 
     // ----------------------------------------------------------------
     // Resolved date helpers
@@ -212,9 +236,26 @@ public class ReportsViewModel {
     public StringProperty                     errorMessageProperty()     { return errorMessage; }
     public StringProperty                     selectedStatusProperty()   { return selectedStatus; }
 
+    public StringProperty totalProfitProperty() { return totalProfit; }
+    public StringProperty grossIncomeProperty() { return grossIncome; }
+    public StringProperty netExpenseProperty() { return netExpense; }
+    public StringProperty netProfitTrendProperty() { return netProfitTrend; }
+
     public void setSelectedProject(String name) {
         selectedProjectName = name;
+        if (name == null || name.isBlank()) {
+            selectedProject.set(null);
+            return;
+        }
+        if ("All Projects".equals(name)) {
+            selectedProject.set(null);
+            return;
+        }
+        Project match = availableProjects.stream().filter(p -> name.equals(p.getName())).findFirst().orElse(null);
+        selectedProject.set(match);
     }
+
+    public javafx.collections.ObservableList<Project> getAvailableProjects() { return availableProjects; }
 
     public void setSelectedStatus(String status) {
         selectedStatus.set(status);

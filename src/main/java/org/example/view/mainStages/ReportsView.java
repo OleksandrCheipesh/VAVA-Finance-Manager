@@ -55,21 +55,21 @@ public class ReportsView extends BaseView {
 
         VBox card1 = buildCard(
                 "PROJECT PROFIT DISTRIBUTION",
-                "$1.4M", "TOTAL", true,
+                viewModel.totalProfitProperty(), null, true,
                 new ProjectPieChart(viewModel.getProjectSummaries())
         );
         card1.setOnMouseClicked(e -> ReportModals.showProfitDistribution(stage, viewModel));
 
         VBox card2 = buildCard(
                 "INCOME VS EXPENSES",
-                "$42,500", "$18,200", false,
+                viewModel.grossIncomeProperty(), viewModel.netExpenseProperty(), false,
                 new IncomeExpenseBarChart(viewModel.getMonthlySummaries())
         );
         card2.setOnMouseClicked(e -> ReportModals.showIncomeVsExpenses(stage, viewModel));
 
         VBox card3 = buildCard(
                 "NET PROFIT TREND",
-                "$842,000", "Cumulative Growth", true,
+                viewModel.netProfitTrendProperty(), "Cumulative Growth", true,
                 new TrendLineChart(viewModel.getMonthlySummaries())
         );
         card3.setOnMouseClicked(e -> ReportModals.showNetProfitTrend(stage, viewModel));
@@ -123,7 +123,7 @@ public class ReportsView extends BaseView {
     /**
      * Builds a summary card. The real chart node replaces the old Region placeholder.
      */
-    private VBox buildCard(String titleText, String mainVal, String subVal,
+    private VBox buildCard(String titleText, Object mainVal, Object subVal,
                            boolean singleStat, Node chartContent) {
         VBox card = new VBox(15);
         card.setPadding(new Insets(25));
@@ -156,10 +156,22 @@ public class ReportsView extends BaseView {
             VBox statBox = new VBox(2);
             statBox.setAlignment(Pos.CENTER);
 
-            Label val = new Label(mainVal);
+            Label val = new Label();
+            if (mainVal instanceof javafx.beans.value.ObservableValue strProp) {
+                val.textProperty().bind(strProp);
+            } else if (mainVal != null) {
+                val.setText(mainVal.toString());
+            }
             val.setStyle("-fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: #111827;");
 
-            Label sub = new Label(subVal);
+            Label sub = new Label();
+            if (subVal instanceof javafx.beans.value.ObservableValue strProp) {
+                sub.textProperty().bind(strProp);
+            } else if (subVal != null) {
+                sub.setText(subVal.toString());
+            } else {
+                sub.setText("TOTAL");
+            }
             sub.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
             statBox.getChildren().addAll(val, sub);
             footer.getChildren().add(statBox);
@@ -167,7 +179,12 @@ public class ReportsView extends BaseView {
             VBox stat1 = new VBox(2);
             Label lbl1 = new Label("GROSS INCOME");
             lbl1.setStyle("-fx-font-size: 9px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
-            Label val1 = new Label(mainVal);
+            Label val1 = new Label();
+            if (mainVal instanceof javafx.beans.value.ObservableValue strProp) {
+                val1.textProperty().bind(strProp);
+            } else if (mainVal != null) {
+                val1.setText(mainVal.toString());
+            }
             val1.setStyle("-fx-font-size: 20px; -fx-font-weight: 900; -fx-text-fill: " + Themes.PRIMARY + ";");
             stat1.getChildren().addAll(lbl1, val1);
 
@@ -178,7 +195,12 @@ public class ReportsView extends BaseView {
             stat2.setAlignment(Pos.CENTER_RIGHT);
             Label lbl2 = new Label("NET EXPENSE");
             lbl2.setStyle("-fx-font-size: 9px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
-            Label val2 = new Label(subVal);
+            Label val2 = new Label();
+            if (subVal instanceof javafx.beans.value.ObservableValue strProp) {
+                val2.textProperty().bind(strProp);
+            } else if (subVal != null) {
+                val2.setText(subVal.toString());
+            }
             val2.setStyle("-fx-font-size: 20px; -fx-font-weight: 900; -fx-text-fill: #111827;");
             stat2.getChildren().addAll(lbl2, val2);
 
