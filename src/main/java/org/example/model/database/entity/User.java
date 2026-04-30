@@ -7,6 +7,7 @@ public class User extends Person{
     private Position position;
     private Integer companyId;
     private OffsetDateTime createdAt;
+    private String language = "English";
 
     public User() {}
 
@@ -73,5 +74,12 @@ public class User extends Person{
     }
     public void setCreatedAt(OffsetDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+    public void setLanguage(String language) {
+        this.language = language;
     }
 }

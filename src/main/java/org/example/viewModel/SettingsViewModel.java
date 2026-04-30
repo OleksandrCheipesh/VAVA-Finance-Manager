@@ -77,6 +77,13 @@ public class SettingsViewModel {
 
     public void applyPreferences() {
         I18n.setLanguage(language.get());
+        try {
+            int userId = SessionManager.getInstance().getCurrentUser().getId();
+            new UserService().updateLanguage(userId, language.get());
+            SessionManager.getInstance().getCurrentUser().setLanguage(language.get());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void addUser(User user) {
