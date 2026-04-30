@@ -51,18 +51,20 @@ public class EmployeesViewModel {
 
         activeEmployees.set(
                 (int) employees.stream()
-                        .filter(e -> "ACTIVE".equals(e.getStatus()))
+                        .filter(e -> "ACTIVE".equals(e.getStatus().toUpperCase()))
                         .count()
         );
 
         onboardingEmployees.set(
                 (int) employees.stream()
-                        .filter(e -> e.getHiredAt() != null)
-                        .filter(e -> e.getHiredAt().isAfter(OffsetDateTime.now().minusMonths(1)))
+                        .filter(e -> "CONTRACTOR".equals(e.getStatus().toUpperCase()))
                         .count()
         );
 
-        long addedThisMonth = onboardingEmployees.get();
+        long addedThisMonth = (int) employees.stream()
+                .filter(e -> e.getHiredAt() != null)
+                .filter(e -> e.getHiredAt().isAfter(OffsetDateTime.now().minusMonths(1)))
+                .count();
 
         totalEmployeesChangeText.set("+" + addedThisMonth + " this month");
 

@@ -130,7 +130,7 @@ public class EmployeesView extends BaseView {
         summaryContainer.getChildren().addAll(
                 createSummaryCard("TOTAL EMPLOYEES", totalEmpLabel, totalEmpLabelSub, Themes.TEXT_SUCCESS),
                 createSummaryCard("ACTIVE", activeLabel, activeLabelSub, Themes.TEXT_MUTED),
-                createSummaryCard("ONBOARDING", onboardingLabel, onboardingLabelSub, "#F59E0B")
+                createSummaryCard("CONTRACTOR", onboardingLabel, onboardingLabelSub, "#F59E0B")
         );
 
         table = new AppTable<>("");
