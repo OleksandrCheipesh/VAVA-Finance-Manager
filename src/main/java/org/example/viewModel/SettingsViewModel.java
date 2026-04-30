@@ -12,6 +12,7 @@ import org.example.model.database.service.UserService;
 import org.example.model.models.SettingsModel;
 import org.example.model.validation.CompanyValExept;
 import org.example.model.validation.CompanyValidator;
+import org.example.model.validation.RegisterValidator;
 
 import java.sql.SQLException;
 
@@ -103,13 +104,16 @@ public class SettingsViewModel {
         User currentUser = SessionManager.getInstance().getCurrentUser();
         if (currentUser == null) throw new Exception("No user logged in.");
 
-        if (!PasswordUtil.verify(currentPw, currentUser.getPasswordHash())) {
-            throw new Exception("Incorrect current password.");
-        }
+        if (currentPw == null || currentPw.isBlank())
+            throw new Exception("Current password is required.");
 
-        if (!newPw.equals(confirmPw)) {
-            throw new Exception("Password confirmation doesn't match.");
-        }
+        if (!PasswordUtil.verify(currentPw, currentUser.getPasswordHash()))
+            throw new Exception("Incorrect current password.");
+
+        RegisterValidator.validatePassword(newPw);
+
+        if (!newPw.equals(confirmPw))
+            throw new Exception("Passwords do not match.");
 
         currentUser.setPasswordHash(PasswordUtil.hash(newPw));
         UserService userService = new UserService();

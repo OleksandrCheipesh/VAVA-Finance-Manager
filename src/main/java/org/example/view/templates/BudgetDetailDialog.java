@@ -84,7 +84,12 @@ public class BudgetDetailDialog {
         StackPane iconBox = new StackPane();
         iconBox.setPrefSize(40, 40);
         iconBox.setStyle("-fx-background-color: " + Themes.PRIMARY_TEAL + "; -fx-background-radius: 10;");
-        iconBox.getChildren().add(IconFactory.getIcon("wallet", 20));
+        String iconName = switch (account.getCategory()) {
+            case CASH -> "banknote";
+            case CREDIT_LINE -> "credit-card";
+            default -> "landmark";
+        };
+        iconBox.getChildren().add(IconFactory.getIcon(iconName, 20));
 
         Label topLabel = new Label("ACCOUNT DETAIL");
         topLabel.setStyle("-fx-font-weight: 900; -fx-font-size: 12px; -fx-text-fill: #64748B; -fx-letter-spacing: 1.5px;");

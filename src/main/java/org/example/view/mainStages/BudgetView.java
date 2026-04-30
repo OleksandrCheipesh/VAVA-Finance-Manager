@@ -211,25 +211,7 @@ public class BudgetView extends BaseView {
     @Override
     protected void setLogic() {
         if (!viewModel.hasAccessProperty().get()) {
-            GaussianBlur blur = new GaussianBlur(10);
-            contentArea.setEffect(blur);
-
-            Label lock = new Label("🔒");
-            lock.setStyle("-fx-font-size: 48px;");
-
-            Label msg = new Label("Access Denied");
-            msg.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;");
-
-            VBox box = new VBox(10, lock, msg);
-            box.setAlignment(Pos.CENTER);
-
-            StackPane overlay = new StackPane();
-            overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
-            overlay.getChildren().add(box);
-
-            StackPane wrapper = new StackPane(contentArea, overlay);
-            VBox.setVgrow(wrapper, Priority.ALWAYS);
-            root.setCenter(new VBox(topBar, wrapper));
+            showAccessDenied();
             return;
         }
 
@@ -342,46 +324,16 @@ public class BudgetView extends BaseView {
         HBox cardHeader = new HBox();
         cardHeader.setAlignment(Pos.CENTER_LEFT);
 
-        // Pick icon path and colors based on account category
-        AccountCategory cat = account.getCategory();
-        String iconPath;
-        String iconColor;
-        String iconBg;
-        if (cat == AccountCategory.BANK_ACCOUNT) {
-            iconPath = "M4 10v7h3v-7H4zm6 0v7h3v-7h-3zm-8 9h22v-3H2v3zm14-9v7h3v-7h-3zM12 1L2 6v2h20V6L12 1z";
-            iconColor = "#3B82F6";
-            iconBg    = "#EFF6FF";
-        } else if (cat == AccountCategory.CREDIT_LINE) {
-            iconPath = "M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z";
-            iconColor = "#EF4444";
-            iconBg    = "#FEF2F2";
-        } else if (cat == AccountCategory.SAVINGS) {
-            iconPath = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z";
-            iconColor = "#8B5CF6";
-            iconBg    = "#F5F3FF";
-        } else if (cat == AccountCategory.INVESTMENT) {
-            iconPath = "M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z";
-            iconColor = "#10B981";
-            iconBg    = "#ECFDF5";
-        } else if (cat == AccountCategory.CASH) {
-            iconPath = "M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z";
-            iconColor = Themes.PRIMARY_DARK;
-            iconBg    = "#E6FFF5";
-        } else {
-            iconPath = "M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z";
-            iconColor = Themes.PRIMARY;
-            iconBg    = Themes.PRIMARY + "22";
-        }
-
         StackPane iconBox = new StackPane();
         iconBox.setPrefSize(42, 42);
         iconBox.setStyle("-fx-background-color: " + iconBg + "; -fx-background-radius: 10;");
 
-        SVGPath icon = new SVGPath();
-        icon.setContent(iconPath);
-        icon.setFill(Color.web(iconColor));
-        icon.setScaleX(0.7); icon.setScaleY(0.7);
-        iconBox.getChildren().add(icon);
+        String iconName = switch (account.getCategory()) {
+            case CASH -> "banknote";
+            case CREDIT_LINE -> "credit-card";
+            default -> "landmark"; // BANK_ACCOUNT and anything else
+        };
+        iconBox.getChildren().add(IconFactory.getIcon(iconName, 22));
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);

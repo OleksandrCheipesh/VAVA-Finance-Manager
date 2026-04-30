@@ -1,9 +1,14 @@
 package org.example.view.templates;
 
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.effect.GaussianBlur;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
@@ -82,5 +87,32 @@ public abstract class BaseView {
     // Just specify the target CLASS to navigate to !!!
     protected void navigateTo(BaseView view) {
         view.show(stage);
+    }
+
+    // Covers the main content area (header + content, NOT the sidebar) with a blur + dark overlay.
+    // Sidebar stays interactive so the user can navigate away.
+    // Call from setLogic() when the user lacks permission, then return immediately.
+    protected void showAccessDenied() {
+        BorderPane root = (BorderPane) scene.getRoot();
+        javafx.scene.Node center = root.getCenter();
+        center.setEffect(new GaussianBlur(12));
+
+        ImageView lockIcon = IconFactory.getWhiteIcon("lock", 52);
+
+        Label msg = new Label("Access Denied");
+        msg.setStyle("-fx-font-size: 24px; -fx-font-weight: 900; -fx-text-fill: white;");
+
+        Label sub = new Label("You don't have permission to view this screen.");
+        sub.setStyle("-fx-font-size: 14px; -fx-text-fill: rgba(255,255,255,0.65);");
+
+        VBox content = new VBox(14, lockIcon, msg, sub);
+        content.setAlignment(Pos.CENTER);
+
+        StackPane overlay = new StackPane(content);
+        overlay.setStyle("-fx-background-color: rgba(15,23,42,0.60);");
+
+        // Wrapping center detaches it from root automatically in JavaFX
+        StackPane wrapper = new StackPane(center, overlay);
+        root.setCenter(wrapper);
     }
 }
