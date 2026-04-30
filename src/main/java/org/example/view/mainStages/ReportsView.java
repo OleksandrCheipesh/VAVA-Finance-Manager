@@ -33,11 +33,13 @@ public class ReportsView extends BaseView {
         VBox titleBox = new VBox(2);
         titleBox.setAlignment(Pos.BOTTOM_LEFT);
 
-        Label title = new Label("Reports");
+        Label title = new Label(I18n.t("Reports"));
         title.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: #111827;");
+        I18n.language.addListener((obs, o, v) -> title.setText(I18n.t("Reports")));
 
-        Label subTitle = new Label("Financial overview · FY 2024");
+        Label subTitle = new Label(I18n.t("Financial overview · FY 2024"));
         subTitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 14px;");
+        I18n.language.addListener((obs, o, v) -> subTitle.setText(I18n.t("Financial overview · FY 2024")));
         titleBox.getChildren().addAll(title, subTitle);
         HBox.setMargin(titleBox, new Insets(0, 0, 15, 0));
 
@@ -123,15 +125,16 @@ public class ReportsView extends BaseView {
     /**
      * Builds a summary card. The real chart node replaces the old Region placeholder.
      */
-    private VBox buildCard(String titleText, String mainVal, String subVal,
+    private VBox buildCard(String titleKey, String mainVal, String subVal,
                            boolean singleStat, Node chartContent) {
         VBox card = new VBox(15);
         card.setPadding(new Insets(25));
         card.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-border-color: #E2E8F0; -fx-border-radius: 16; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 4);");
 
         HBox header = new HBox();
-        Label titleLbl = new Label(titleText);
+        Label titleLbl = new Label(I18n.t(titleKey));
         titleLbl.setStyle("-fx-font-size: 11px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-letter-spacing: 1px;");
+        I18n.language.addListener((obs, o, v) -> titleLbl.setText(I18n.t(titleKey)));
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
@@ -165,8 +168,9 @@ public class ReportsView extends BaseView {
             footer.getChildren().add(statBox);
         } else {
             VBox stat1 = new VBox(2);
-            Label lbl1 = new Label("GROSS INCOME");
+            Label lbl1 = new Label(I18n.t("GROSS INCOME"));
             lbl1.setStyle("-fx-font-size: 9px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+            I18n.language.addListener((obs, o, v) -> lbl1.setText(I18n.t("GROSS INCOME")));
             Label val1 = new Label(mainVal);
             val1.setStyle("-fx-font-size: 20px; -fx-font-weight: 900; -fx-text-fill: " + Themes.PRIMARY + ";");
             stat1.getChildren().addAll(lbl1, val1);
@@ -176,8 +180,9 @@ public class ReportsView extends BaseView {
 
             VBox stat2 = new VBox(2);
             stat2.setAlignment(Pos.CENTER_RIGHT);
-            Label lbl2 = new Label("NET EXPENSE");
+            Label lbl2 = new Label(I18n.t("NET EXPENSE"));
             lbl2.setStyle("-fx-font-size: 9px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+            I18n.language.addListener((obs, o, v) -> lbl2.setText(I18n.t("NET EXPENSE")));
             Label val2 = new Label(subVal);
             val2.setStyle("-fx-font-size: 20px; -fx-font-weight: 900; -fx-text-fill: #111827;");
             stat2.getChildren().addAll(lbl2, val2);

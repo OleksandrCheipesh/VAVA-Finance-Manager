@@ -68,11 +68,13 @@ public class BudgetView extends BaseView {
     VBox titleBox = new VBox(2);
     titleBox.setAlignment(Pos.BOTTOM_LEFT);
 
-    Label title = new Label("Budget");
+    Label title = new Label(I18n.t("Budget"));
     title.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: #111827;");
+    I18n.language.addListener((obs, o, v) -> title.setText(I18n.t("Budget")));
 
-    Label subtitle = new Label("Manage and track your company spending.");
+    Label subtitle = new Label(I18n.t("Manage and track your company spending."));
     subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 14px;");
+    I18n.language.addListener((obs, o, v) -> subtitle.setText(I18n.t("Manage and track your company spending.")));
 
     titleBox.getChildren().addAll(title, subtitle);
 
@@ -96,8 +98,9 @@ public class BudgetView extends BaseView {
 
     VBox card1 = createBaseCard(false, cardWidthBinding);
 
-    Label c1Title = new Label("TOTAL ASSETS");
+    Label c1Title = new Label(I18n.t("TOTAL ASSETS"));
     c1Title.setStyle("-fx-text-fill: " + Themes.TEXT_GRAY + "; -fx-font-size: 11px; -fx-font-weight: bold; -fx-letter-spacing: 1px;");
+    I18n.language.addListener((obs, o, v) -> c1Title.setText(I18n.t("TOTAL ASSETS")));
 
     BigDecimal totalAssets = viewModel.getTotalAssets();
     c1Value = new Label(String.format(Locale.US, "$%,.2f", totalAssets));
@@ -107,8 +110,9 @@ public class BudgetView extends BaseView {
 
     VBox card2 = createBaseCard(false, cardWidthBinding);
 
-    Label c2Title = new Label("TOTAL LIABILITIES");
+    Label c2Title = new Label(I18n.t("TOTAL LIABILITIES"));
     c2Title.setStyle("-fx-text-fill: " + Themes.TEXT_GRAY + "; -fx-font-size: 11px; -fx-font-weight: bold; -fx-letter-spacing: 1px;");
+    I18n.language.addListener((obs, o, v) -> c2Title.setText(I18n.t("TOTAL LIABILITIES")));
 
     BigDecimal totalLiabilities = viewModel.getTotalLiabilities();
     c2Value = new Label(String.format(Locale.US, "$%,.2f", totalLiabilities.abs()));
@@ -118,14 +122,19 @@ public class BudgetView extends BaseView {
 
     VBox card3 = createBaseCard(true, cardWidthBinding);
 
-    Label c3Title = new Label("NET POSITION");
+    Label c3Title = new Label(I18n.t("NET POSITION"));
     c3Title.setStyle("-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight: bold; -fx-letter-spacing: 1px;");
+    I18n.language.addListener((obs, o, v) -> c3Title.setText(I18n.t("NET POSITION")));
 
     BigDecimal netPosition = viewModel.getNetPosition();
     c3Value = new Label(String.format(Locale.US, "$%,.2f", netPosition));
     c3Value.setStyle("-fx-font-size: 34px; -fx-font-weight: 900; -fx-text-fill: " + (netPosition.compareTo(BigDecimal.ZERO) >= 0 ? "white" : "#FECACA") + ";");
 
-    c3Sub = new Label(netPosition.compareTo(BigDecimal.ZERO) >= 0 ? "Available for allocation" : "Deficit");
+    c3Sub = new Label(I18n.t(netPosition.compareTo(BigDecimal.ZERO) >= 0 ? "Available for allocation" : "Deficit"));
+    I18n.language.addListener((obs, o, v) -> {
+      BigDecimal np = viewModel.getNetPosition();
+      c3Sub.setText(I18n.t(np.compareTo(BigDecimal.ZERO) >= 0 ? "Available for allocation" : "Deficit"));
+    });
     c3Sub.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + (netPosition.compareTo(BigDecimal.ZERO) >= 0 ? Themes.PRIMARY : "#FCA5A5") + ";");
     card3.getChildren().addAll(c3Title, c3Value, c3Sub);
 
@@ -139,11 +148,13 @@ public class BudgetView extends BaseView {
 
     VBox midTitleBox = new VBox(5);
 
-    Label midTitle = new Label("Accounts Overview");
+    Label midTitle = new Label(I18n.t("Accounts Overview"));
     midTitle.setStyle("-fx-font-size: 20px; -fx-font-weight: 800; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+    I18n.language.addListener((obs, o, v) -> midTitle.setText(I18n.t("Accounts Overview")));
 
-    Label midSubtitle = new Label("Manage your operational and reserve funds");
+    Label midSubtitle = new Label(I18n.t("Manage your operational and reserve funds"));
     midSubtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
+    I18n.language.addListener((obs, o, v) -> midSubtitle.setText(I18n.t("Manage your operational and reserve funds")));
     midTitleBox.getChildren().addAll(midTitle, midSubtitle);
 
     Region spacer2 = new Region();
@@ -165,14 +176,16 @@ public class BudgetView extends BaseView {
     searchIcon.setScaleY(0.8);
 
     searchField = new TextField();
-    searchField.setPromptText("Search accounts...");
+    searchField.setPromptText(I18n.t("Search accounts..."));
+    I18n.language.addListener((obs, o, v) -> searchField.setPromptText(I18n.t("Search accounts...")));
     searchField.setStyle("-fx-background-color: transparent; -fx-border-width: 0; -fx-padding: 0; -fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
     HBox.setHgrow(searchField, Priority.ALWAYS);
 
     searchContainer.getChildren().addAll(searchIcon, searchField);
 
-    addAccountBtnMid = new StateButton("+ Add New Account", StateButton.ButtonType.PRIMARY);
+    addAccountBtnMid = new StateButton(I18n.t("+ Add New Account"), StateButton.ButtonType.PRIMARY);
+    I18n.language.addListener((obs, o, v) -> addAccountBtnMid.setText(I18n.t("+ Add New Account")));
     addAccountBtnMid.setMinHeight(44);
     addAccountBtnMid.setPrefHeight(44);
     addAccountBtnMid.setMaxHeight(44);
@@ -261,7 +274,7 @@ public class BudgetView extends BaseView {
     c2Value.setText(String.format(Locale.US, "$%,.2f", totalLiabilities.abs()));
     c3Value.setText(String.format(Locale.US, "$%,.2f", netPosition));
     c3Value.setStyle("-fx-font-size: 34px; -fx-font-weight: 900; -fx-text-fill: " + (netPosition.compareTo(BigDecimal.ZERO) >= 0 ? "white" : "#FECACA") + ";");
-    c3Sub.setText(netPosition.compareTo(BigDecimal.ZERO) >= 0 ? "Available for allocation" : "Deficit");
+    c3Sub.setText(I18n.t(netPosition.compareTo(BigDecimal.ZERO) >= 0 ? "Available for allocation" : "Deficit"));
     c3Sub.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + (netPosition.compareTo(BigDecimal.ZERO) >= 0 ? Themes.PRIMARY : "#FCA5A5") + ";");
   }
 
@@ -291,7 +304,7 @@ public class BudgetView extends BaseView {
 
       iconCircle.getChildren().add(emptyIcon);
 
-      Label emptyTitle = new Label("No accounts found");
+      Label emptyTitle = new Label(I18n.t("No accounts found"));
       emptyTitle.setStyle("-fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-size: 20px; -fx-font-weight: 900;");
 
       Label emptySubtitle = new Label("We couldn't find any accounts matching your criteria.\nTry adjusting your search or add a new account.");

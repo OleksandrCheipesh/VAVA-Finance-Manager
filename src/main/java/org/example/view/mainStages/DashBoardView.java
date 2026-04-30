@@ -45,11 +45,13 @@ public class DashBoardView extends BaseView {
         titleBox.setAlignment(Pos.BOTTOM_LEFT);
         HBox.setMargin(titleBox, new Insets(0, 0, 15, 0));
 
-        Label title = new Label("Dashboard");
+        Label title = new Label(I18n.t("Dashboard"));
         title.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
+        I18n.language.addListener((obs, o, v) -> title.setText(I18n.t("Dashboard")));
 
-        Label subtitle = new Label("Overview of your key performance indicators.");
+        Label subtitle = new Label(I18n.t("Overview of your key performance indicators."));
         subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 14px;");
+        I18n.language.addListener((obs, o, v) -> subtitle.setText(I18n.t("Overview of your key performance indicators.")));
 
         titleBox.getChildren().addAll(title, subtitle);
 
@@ -87,8 +89,9 @@ public class DashBoardView extends BaseView {
 
         revHeader.getChildren().addAll(revIconBox, revSpacer, revenueBadgeLabel);
 
-        Label revTitle = new Label("TOTAL REVENUE");
+        Label revTitle = new Label(I18n.t("TOTAL REVENUE"));
         revTitle.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-letter-spacing: 1px;");
+        I18n.language.addListener((obs, o, v) -> revTitle.setText(I18n.t("TOTAL REVENUE")));
         VBox.setMargin(revTitle, new Insets(20, 0, 5, 0));
 
         revenueValueLabel = new Label();
@@ -108,12 +111,14 @@ public class DashBoardView extends BaseView {
         Region projSpacer = new Region();
         HBox.setHgrow(projSpacer, Priority.ALWAYS);
 
-        Label projBadge = new Label("Active");
+        Label projBadge = new Label(I18n.t("Active"));
         projBadge.setStyle("-fx-background-color: #F3F4F6; -fx-text-fill: #4B5563; -fx-padding: 4 10; -fx-background-radius: 12; -fx-font-size: 11px; -fx-font-weight: bold;");
+        I18n.language.addListener((obs, o, v) -> projBadge.setText(I18n.t("Active")));
         projHeader.getChildren().addAll(projIconBox, projSpacer, projBadge);
 
-        Label projTitle = new Label("ACTIVE PROJECTS");
+        Label projTitle = new Label(I18n.t("ACTIVE PROJECTS"));
         projTitle.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-letter-spacing: 1px;");
+        I18n.language.addListener((obs, o, v) -> projTitle.setText(I18n.t("ACTIVE PROJECTS")));
         VBox.setMargin(projTitle, new Insets(20, 0, 5, 0));
 
         activeProjectsValueLabel = new Label();
@@ -132,11 +137,13 @@ public class DashBoardView extends BaseView {
 
         VBox chartTitleBox = new VBox(4);
 
-        Label chartTitle = new Label("Revenue vs Projections");
+        Label chartTitle = new Label(I18n.t("Revenue vs Projections"));
         chartTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: " + Themes.DARK_TEXT + ";");
+        I18n.language.addListener((obs, o, v) -> chartTitle.setText(I18n.t("Revenue vs Projections")));
 
-        Label chartSubtitle = new Label("Quarterly financial performance analysis");
+        Label chartSubtitle = new Label(I18n.t("Quarterly financial performance analysis"));
         chartSubtitle.setStyle("-fx-font-size: 12px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+        I18n.language.addListener((obs, o, v) -> chartSubtitle.setText(I18n.t("Quarterly financial performance analysis")));
         chartTitleBox.getChildren().addAll(chartTitle, chartSubtitle);
 
         Region chartSpacer = new Region();
@@ -173,8 +180,9 @@ public class DashBoardView extends BaseView {
         VBox expenseCard = createBaseCard();
         expenseCard.setMinHeight(250);
 
-        Label expenseTitle = new Label("Top Projects");
+        Label expenseTitle = new Label(I18n.t("Top Projects"));
         expenseTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: " + Themes.DARK_TEXT + ";");
+        I18n.language.addListener((obs, o, v) -> expenseTitle.setText(I18n.t("Top Projects")));
 
         ProjectPieChart pieChart = new ProjectPieChart(reportsViewModel.getProjectSummaries());
         VBox.setVgrow(pieChart, Priority.ALWAYS);
@@ -184,14 +192,16 @@ public class DashBoardView extends BaseView {
         VBox transactionsCard = createBaseCard();
         VBox.setVgrow(transactionsCard, Priority.ALWAYS);
 
-        Label transTitle = new Label("Recent Transactions");
+        Label transTitle = new Label(I18n.t("Recent Transactions"));
         transTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
+        I18n.language.addListener((obs, o, v) -> transTitle.setText(I18n.t("Recent Transactions")));
 
         VBox.setMargin(transTitle, new Insets(0, 0, 20, 0));
 
         transactionsListContainer = new VBox(15);
 
-        Button viewAllBtn = new Button("View All");
+        Button viewAllBtn = new Button(I18n.t("View All"));
+        I18n.language.addListener((obs, o, v) -> viewAllBtn.setText(I18n.t("View All")));
         viewAllBtn.setMaxWidth(Double.MAX_VALUE);
         viewAllBtn.setStyle("-fx-background-color: #F8FAFC; -fx-text-fill: " + Themes.DARK_TEXT + "; -fx-font-weight: 900; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px; -fx-cursor: hand; -fx-background-insets: 0;");
 
