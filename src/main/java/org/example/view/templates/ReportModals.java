@@ -21,6 +21,8 @@ import org.example.viewModel.ReportsViewModel;
 
 import java.math.BigDecimal;
 import java.util.stream.Collectors;
+import org.example.model.database.entity.Project;
+import javafx.collections.ListChangeListener;
 
 public class ReportModals {
 
@@ -88,8 +90,19 @@ public class ReportModals {
         projLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
         ComboBox<String> projectCombo = UIFactory.inputComboBox("All Projects");
-        projectCombo.getItems().addAll("All Projects", "Project Alpha", "Project Beta");
+        projectCombo.getItems().add("All Projects");
+        projectCombo.getItems().addAll(vm.getAvailableProjects().stream().map(Project::getName).collect(Collectors.toList()));
         projectCombo.setValue("All Projects");
+
+        vm.getAvailableProjects().addListener((ListChangeListener<Project>) c -> {
+            java.util.List<String> names = vm.getAvailableProjects().stream().map(Project::getName).collect(Collectors.toList());
+            javafx.application.Platform.runLater(() -> {
+                String current = projectCombo.getValue();
+                projectCombo.getItems().setAll("All Projects");
+                projectCombo.getItems().addAll(names);
+                if (projectCombo.getItems().contains(current)) projectCombo.setValue(current); else projectCombo.setValue("All Projects");
+            });
+        });
         projectCombo.setMinHeight(44); projectCombo.setPrefHeight(44);
         projectCombo.setMaxHeight(44); projectCombo.setMaxWidth(Double.MAX_VALUE);
 
@@ -146,8 +159,18 @@ public class ReportModals {
         projLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
         ComboBox<String> projectCombo = UIFactory.inputComboBox("All Projects");
-        projectCombo.getItems().addAll("All Projects", "Project Alpha");
+        projectCombo.getItems().add("All Projects");
+        projectCombo.getItems().addAll(vm.getAvailableProjects().stream().map(Project::getName).collect(Collectors.toList()));
         projectCombo.setValue("All Projects");
+        vm.getAvailableProjects().addListener((ListChangeListener<Project>) c -> {
+            java.util.List<String> names = vm.getAvailableProjects().stream().map(Project::getName).collect(Collectors.toList());
+            javafx.application.Platform.runLater(() -> {
+                String current = projectCombo.getValue();
+                projectCombo.getItems().setAll("All Projects");
+                projectCombo.getItems().addAll(names);
+                if (projectCombo.getItems().contains(current)) projectCombo.setValue(current); else projectCombo.setValue("All Projects");
+            });
+        });
         projectCombo.setMinHeight(44); projectCombo.setPrefHeight(44);
         projectCombo.setMaxHeight(44); projectCombo.setMaxWidth(Double.MAX_VALUE);
 
@@ -480,12 +503,28 @@ public class ReportModals {
         Label projLbl = new Label("PROJECTS");
         projLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
-        RadioButton p1 = new RadioButton("Project Alpha");   p1.setSelected(true); p1.getStyleClass().add("custom-radio");
-        RadioButton p2 = new RadioButton("Project Beta");    p2.getStyleClass().add("custom-radio");
-        RadioButton p3 = new RadioButton("Corporate Rebrand"); p3.getStyleClass().add("custom-radio");
-
         ToggleGroup tg = new ToggleGroup();
-        p1.setToggleGroup(tg); p2.setToggleGroup(tg); p3.setToggleGroup(tg);
+        java.util.function.Consumer<java.util.List<Project>> rebuildRadios = (projects) -> {
+            projBox.getChildren().clear();
+            projBox.getChildren().add(projLbl);
+            if (projects.isEmpty()) {
+                Label placeholder = new Label("No projects");
+                placeholder.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + ";");
+                projBox.getChildren().add(placeholder);
+                return;
+            }
+            for (Project p : projects) {
+                RadioButton rb = new RadioButton(p.getName());
+                rb.getStyleClass().add("custom-radio");
+                rb.setToggleGroup(tg);
+                projBox.getChildren().add(rb);
+                if (vm.selectedProjectProperty().get() != null && vm.selectedProjectProperty().get().getId() == p.getId()) rb.setSelected(true);
+            }
+        };
+
+        rebuildRadios.accept(vm.getAvailableProjects());
+
+        vm.getAvailableProjects().addListener((ListChangeListener<Project>) c -> rebuildRadios.accept(vm.getAvailableProjects()));
 
         tg.selectedToggleProperty().addListener((obs, oldT, newT) -> {
             if (newT instanceof RadioButton rb) {
@@ -494,7 +533,6 @@ public class ReportModals {
             }
         });
 
-        projBox.getChildren().addAll(projLbl, p1, p2, p3);
 
         // Footer
         HBox actions = new HBox();
@@ -509,7 +547,7 @@ public class ReportModals {
             vm.customToProperty().set(null);
             vm.setSelectedProject(null);
             vm.setSelectedStatus(null);
-            tg.selectToggle(p1);
+            tg.selectToggle(null);
         });
 
         Region actionSpacer = new Region();
