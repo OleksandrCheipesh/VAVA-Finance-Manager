@@ -2,6 +2,8 @@ package org.example.view.templates;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -161,6 +163,20 @@ public class UIFactory {
 
         Circle logoCircle = new Circle(60, Color.web(Themes.LOGO_CIRCLE));
 
+        ImageView miniLogo = new ImageView();
+        try {
+            miniLogo.setImage(new Image(UIFactory.class.getResourceAsStream("/icons/mini_logo.png")));
+            miniLogo.setFitWidth(120);
+            miniLogo.setFitHeight(120);
+            miniLogo.setPreserveRatio(false);
+            miniLogo.setSmooth(true);
+            miniLogo.setClip(new javafx.scene.shape.Circle(60, 60, 60));
+        } catch (Exception e) {
+            System.err.println("Could not load mini_logo.png");
+        }
+
+        StackPane logoStack = new StackPane(logoCircle, miniLogo);
+
         Label brandName = new Label("FinaM");
         brandName.setFont(Font.font("System", FontWeight.BOLD, 36));
         brandName.setTextFill(Color.WHITE);
@@ -171,7 +187,7 @@ public class UIFactory {
 
         VBox content = new VBox(15);
         content.setAlignment(Pos.CENTER);
-        content.getChildren().addAll(logoCircle, brandName, brandMotto);
+        content.getChildren().addAll(logoStack, brandName, brandMotto);
 
         StackPane panel = new StackPane();
         panel.getChildren().addAll(bgImage, colorOverlay, content);
