@@ -125,7 +125,7 @@ public class ReportsView extends BaseView {
     /**
      * Builds a summary card. The real chart node replaces the old Region placeholder.
      */
-    private VBox buildCard(String titleText, Object mainVal, Object subVal,
+    private VBox buildCard(String titleKey, Object mainVal, Object subVal,
                            boolean singleStat, Node chartContent) {
         VBox card = new VBox(15);
         card.setPadding(new Insets(25));
@@ -183,7 +183,7 @@ public class ReportsView extends BaseView {
             Label lbl1 = new Label(I18n.t("GROSS INCOME"));
             lbl1.setStyle("-fx-font-size: 9px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
             I18n.language.addListener((obs, o, v) -> lbl1.setText(I18n.t("GROSS INCOME")));
-            Label val1 = new Label(mainVal);
+            Label val1 = new Label();
             if (mainVal instanceof javafx.beans.value.ObservableValue strProp) {
                 val1.textProperty().bind(strProp);
             } else if (mainVal != null) {
@@ -200,7 +200,7 @@ public class ReportsView extends BaseView {
             Label lbl2 = new Label(I18n.t("NET EXPENSE"));
             lbl2.setStyle("-fx-font-size: 9px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
             I18n.language.addListener((obs, o, v) -> lbl2.setText(I18n.t("NET EXPENSE")));
-            Label val2 = new Label(subVal);
+            Label val2 = new Label();
             if (subVal instanceof javafx.beans.value.ObservableValue strProp) {
                 val2.textProperty().bind(strProp);
             } else if (subVal != null) {
