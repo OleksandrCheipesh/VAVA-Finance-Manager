@@ -27,7 +27,7 @@ public class ProjectPieChart extends HBox {
 
     private static final org.example.logging.AppLog.SimpleLogger logger = AppLog.getLogger(ProjectPieChart.class);
 
-    public ProjectPieChart(ObservableList<ProjectSummaryDTO> data) {
+    public ProjectPieChart(ObservableList<ProjectSummaryDTO> data, int size) {
         super(10);
 
         setAlignment(Pos.CENTER_LEFT);
@@ -37,8 +37,8 @@ public class ProjectPieChart extends HBox {
         chart.setLabelsVisible(false);
         chart.setLegendVisible(false);
         chart.setAnimated(true);
-        chart.setMinSize(120, 120);
-        chart.setPrefSize(120, 120);
+        chart.setMinSize(size, size);
+        chart.setPrefSize(size, size);
 
         customLegend = new VBox(15);
         customLegend.setAlignment(Pos.CENTER_LEFT);

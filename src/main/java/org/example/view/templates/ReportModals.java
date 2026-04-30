@@ -28,7 +28,7 @@ public class ReportModals {
 
     // --- 1. Project Profit Distribution ---
     public static void showProfitDistribution(Stage owner, ReportsViewModel vm) {
-        ProjectPieChart chart = new ProjectPieChart(vm.getProjectSummaries());
+        ProjectPieChart chart = new ProjectPieChart(vm.getProjectSummaries(), 400);
         chart.setMinHeight(320);
         chart.setPrefHeight(320);
 

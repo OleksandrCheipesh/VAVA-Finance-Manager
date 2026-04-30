@@ -58,7 +58,7 @@ public class ReportsView extends BaseView {
         VBox card1 = buildCard(
                 "PROJECT PROFIT DISTRIBUTION",
                 viewModel.totalProfitProperty(), null, true,
-                new ProjectPieChart(viewModel.getProjectSummaries())
+                new ProjectPieChart(viewModel.getProjectSummaries(), 250)
         );
         card1.setOnMouseClicked(e -> ReportModals.showProfitDistribution(stage, viewModel));
 
