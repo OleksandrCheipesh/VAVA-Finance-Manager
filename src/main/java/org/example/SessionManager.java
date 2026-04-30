@@ -44,6 +44,7 @@ public final class SessionManager {
             throw new IllegalArgumentException("Cannot login with null user");
         }
         this.currentUser = user;
+        this.language = user.getLanguage() != null ? user.getLanguage() : "English";
 
         Integer companyId = user.getCompanyId();
         if (companyId == null) {
@@ -68,6 +69,7 @@ public final class SessionManager {
         }
         this.currentUser = user;
         this.currentCompany = currentCompany;
+        this.language = user.getLanguage() != null ? user.getLanguage() : "English";
         logger.info("User login: id={} email={}", user.getId(), user.getEmail());
         AppLog.pushSession(getStatus());
     }

@@ -29,14 +29,14 @@ import java.util.Locale;
 public class BudgetDetailDialog {
 
     private static String formatCategory(org.example.model.database.entity.AccountCategory cat) {
-        if (cat == null) return "Other";
+        if (cat == null) return I18n.t("Other");
         return switch (cat) {
-            case BANK_ACCOUNT -> "Bank Account";
-            case CASH -> "Cash";
-            case CREDIT_LINE -> "Credit Line";
-            case SAVINGS -> "Savings";
-            case INVESTMENT -> "Investment";
-            case OTHER -> "Other";
+            case BANK_ACCOUNT -> I18n.t("Bank Account");
+            case CASH -> I18n.t("Cash");
+            case CREDIT_LINE -> I18n.t("Credit Line");
+            case SAVINGS -> I18n.t("Savings");
+            case INVESTMENT -> I18n.t("Investment");
+            case OTHER -> I18n.t("Other");
         };
     }
 

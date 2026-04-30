@@ -177,6 +177,22 @@ public class UserService {
         }
     }
 
+    public boolean updateLanguage(int userId, String language) throws SQLException {
+        String sql = "UPDATE users SET language = ? WHERE id = ?";
+        var logger = org.example.logging.AppLog.getLogger(UserService.class);
+        try (Connection connection = ConnectionProvider.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, language);
+            preparedStatement.setInt(2, userId);
+            boolean updated = preparedStatement.executeUpdate() > 0;
+            if (updated) logger.info("User language updated: id={} language={}", userId, language);
+            return updated;
+        } catch (SQLException e) {
+            logger.error("Failed to update language for user id={}", userId, e);
+            throw e;
+        }
+    }
+
     // maps ResultSet row to User object
     private User mapRow(ResultSet resultSet) throws SQLException {
         User user = new User();
@@ -190,6 +206,7 @@ public class UserService {
         int companyId = resultSet.getInt("company_id");
         user.setCompanyId(resultSet.wasNull() ? null : companyId);
         user.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+        user.setLanguage(resultSet.getString("language"));
         return user;
     }
 }

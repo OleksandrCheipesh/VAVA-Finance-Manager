@@ -7,8 +7,10 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import org.example.SessionManager;
 import org.example.view.mainStages.DashBoardView;
 import org.example.view.templates.BaseView;
+import org.example.view.templates.I18n;
 import org.example.view.templates.Themes;
 import org.example.view.templates.UIFactory;
 import org.example.viewModel.LoginViewModel;
@@ -108,6 +110,7 @@ public class LoginView extends BaseView {
         viewModel.messageProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && newVal.contains("successful")) {
                 messageLabel.setTextFill(Color.web(Themes.TEXT_SUCCESS));
+                I18n.setLanguage(SessionManager.getInstance().getLanguage());
                 navigateTo(new DashBoardView());
             } else if (newVal != null && !newVal.isEmpty()) {
                 messageLabel.setTextFill(Color.web(Themes.TEXT_ERROR));

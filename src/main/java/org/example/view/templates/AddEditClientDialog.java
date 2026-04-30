@@ -73,9 +73,9 @@ public class AddEditClientDialog {
         header.setAlignment(Pos.CENTER_LEFT);
 
         VBox titleBox = new VBox(4);
-        Label title = new Label(isEditMode ? "Edit Client" : "Add Client");
+        Label title = new Label(isEditMode ? I18n.t("Edit Client") : I18n.t("Add Client"));
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
-        Label subtitle = new Label(isEditMode ? "Update client information." : "Onboard a new client to the ecosystem.");
+        Label subtitle = new Label(isEditMode ? I18n.t("Update client information.") : I18n.t("Onboard a new client to the ecosystem."));
         subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
         titleBox.getChildren().addAll(title, subtitle);
 
@@ -103,8 +103,8 @@ public class AddEditClientDialog {
         HBox.setHgrow(nameField, Priority.ALWAYS);
         HBox.setHgrow(surnameField, Priority.ALWAYS);
         splitName.getChildren().addAll(
-                createLabeledField("FIRST NAME", nameField),
-                createLabeledField("LAST NAME", surnameField)
+                createLabeledField(I18n.t("FIRST NAME"), nameField),
+                createLabeledField(I18n.t("LAST NAME"), surnameField)
         );
 
         TextField emailField = UIFactory.inputField("email@example.com");
@@ -119,15 +119,15 @@ public class AddEditClientDialog {
         HBox.setHgrow(emailField, Priority.ALWAYS);
         HBox.setHgrow(phoneField, Priority.ALWAYS);
         splitContact.getChildren().addAll(
-                createLabeledField("EMAIL", emailField),
-                createLabeledField("PHONE", phoneField)
+                createLabeledField(I18n.t("EMAIL"), emailField),
+                createLabeledField(I18n.t("PHONE"), phoneField)
         );
 
         TextField incomeField = UIFactory.inputField("0.00");
         incomeField.setMinHeight(44);
         incomeField.setPrefHeight(44);
 
-        form.getChildren().addAll(splitName, splitContact, createLabeledField("MONTHLY INCOME", incomeField));
+        form.getChildren().addAll(splitName, splitContact, createLabeledField(I18n.t("MONTHLY INCOME"), incomeField));
 
         if (isEditMode) {
             nameField.setText(clientToEdit.getName() != null ? clientToEdit.getName() : "");
@@ -147,14 +147,14 @@ public class AddEditClientDialog {
         actionBox.setAlignment(Pos.CENTER_RIGHT);
         actionBox.setPadding(new Insets(10, 0, 0, 0));
 
-        Button cancelBtn = new Button("Cancel");
+        Button cancelBtn = new Button(I18n.t("Cancel"));
         cancelBtn.setMinWidth(Region.USE_PREF_SIZE);
         cancelBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-padding: 10 20;");
         cancelBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
         cancelBtn.setOnMousePressed(e -> { cancelBtn.setScaleX(0.98); cancelBtn.setScaleY(0.98); });
         cancelBtn.setOnMouseReleased(e -> { cancelBtn.setScaleX(1.0); cancelBtn.setScaleY(1.0); });
 
-        StateButton saveBtn = new StateButton(isEditMode ? "Update" : "Add Client", StateButton.ButtonType.PRIMARY);
+        StateButton saveBtn = new StateButton(isEditMode ? I18n.t("Update") : I18n.t("Add Client"), StateButton.ButtonType.PRIMARY);
         saveBtn.setMaxWidth(Double.MAX_VALUE);
         saveBtn.setMinHeight(50);
         HBox.setHgrow(saveBtn, Priority.ALWAYS);
@@ -178,7 +178,7 @@ public class AddEditClientDialog {
                 try {
                     client.setMonthlyIncome(new BigDecimal(incomeText));
                 } catch (NumberFormatException ex) {
-                    showInlineError(errorLabel, "Monthly income must be a valid number.");
+                    showInlineError(errorLabel, I18n.t("Monthly income must be a valid number."));
                     return;
                 }
             }

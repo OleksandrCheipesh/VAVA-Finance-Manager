@@ -75,9 +75,9 @@ public class AddUserDialog {
         header.setAlignment(Pos.CENTER_LEFT);
 
         VBox titleBox = new VBox(4);
-        Label title = new Label("Add User");
+        Label title = new Label(I18n.t("Add User"));
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
-        Label subtitle = new Label("Grant access permissions for a new team member");
+        Label subtitle = new Label(I18n.t("Grant access permissions for a new team member"));
         subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
         titleBox.getChildren().addAll(title, subtitle);
 
@@ -104,11 +104,11 @@ public class AddUserDialog {
 
         TextField nameField = UIFactory.inputField("e.g. Julian");
         nameField.setMinHeight(FIELD_HEIGHT); nameField.setPrefHeight(FIELD_HEIGHT); nameField.setMaxHeight(FIELD_HEIGHT);
-        VBox nameBox = createLabeledField("NAME", nameField);
+        VBox nameBox = createLabeledField(I18n.t("NAME"), nameField);
 
         TextField surnameField = UIFactory.inputField("e.g. Sterling");
         surnameField.setMinHeight(FIELD_HEIGHT); surnameField.setPrefHeight(FIELD_HEIGHT); surnameField.setMaxHeight(FIELD_HEIGHT);
-        VBox surnameBox = createLabeledField("SURNAME", surnameField);
+        VBox surnameBox = createLabeledField(I18n.t("SURNAME"), surnameField);
 
         GridPane nameGrid = new GridPane();
         nameGrid.setHgap(15);
@@ -120,10 +120,10 @@ public class AddUserDialog {
 
         TextField emailField = UIFactory.inputField("julian.s@mintmanagement.com");
         emailField.setMinHeight(FIELD_HEIGHT); emailField.setPrefHeight(FIELD_HEIGHT); emailField.setMaxHeight(FIELD_HEIGHT);
-        VBox emailBox = createLabeledField("EMAIL ADDRESS", emailField);
+        VBox emailBox = createLabeledField(I18n.t("EMAIL ADDRESS"), emailField);
 
         PasswordField passField = new PasswordField();
-        VBox passwordBox = createSecurePasswordFieldWrapper("PASSWORD", "••••••••••••", passField);
+        VBox passwordBox = createSecurePasswordFieldWrapper(I18n.t("PASSWORD"), "••••••••••••", passField);
 
         boolean hasDirector = users.stream().anyMatch(u -> u.getPosition() == Position.Director);
         ComboBox<Position> roleCombo = new ComboBox<>();
@@ -132,7 +132,7 @@ public class AddUserDialog {
                         .filter(p -> p != Position.Director || !hasDirector)
                         .toList()
         );
-        roleCombo.setPromptText("Select organization role");
+        roleCombo.setPromptText(I18n.t("Select organization role"));
         roleCombo.setMinHeight(FIELD_HEIGHT);
         roleCombo.setPrefHeight(FIELD_HEIGHT);
         roleCombo.setMaxHeight(FIELD_HEIGHT);
@@ -142,7 +142,7 @@ public class AddUserDialog {
         roleCombo.getStyleClass().setAll(dummyCombo.getStyleClass());
         roleCombo.setStyle(dummyCombo.getStyle());
 
-        VBox roleBox = createLabeledField("ACCESS ROLE", roleCombo);
+        VBox roleBox = createLabeledField(I18n.t("ACCESS ROLE"), roleCombo);
 
         form.getChildren().addAll(nameGrid, emailBox, passwordBox, roleBox);
 
@@ -150,7 +150,7 @@ public class AddUserDialog {
         actionBox.setAlignment(Pos.CENTER_RIGHT);
         actionBox.setStyle("-fx-padding: 10 0 0 0;");
 
-        Button cancelBtn = new Button("Cancel");
+        Button cancelBtn = new Button(I18n.t("Cancel"));
         cancelBtn.setMinWidth(Region.USE_PREF_SIZE);
         cancelBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-padding: 10 20;");
         cancelBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
@@ -165,7 +165,7 @@ public class AddUserDialog {
             cancelBtn.setScaleY(1.0);
         });
 
-        StateButton saveBtn = new StateButton("Save User", StateButton.ButtonType.PRIMARY);
+        StateButton saveBtn = new StateButton(I18n.t("Save User"), StateButton.ButtonType.PRIMARY);
         saveBtn.setMinHeight(50);
         saveBtn.setPrefWidth(340);
         HBox.setHgrow(saveBtn, Priority.ALWAYS);

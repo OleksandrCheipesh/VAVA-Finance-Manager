@@ -32,12 +32,12 @@ public class AddBudgetDialog {
 
     private static String formatCategory(AccountCategory cat) {
         return switch (cat) {
-            case BANK_ACCOUNT -> "Bank Account";
-            case CASH -> "Cash";
-            case CREDIT_LINE -> "Credit Line";
-            case SAVINGS -> "Savings";
-            case INVESTMENT -> "Investment";
-            case OTHER -> "Other";
+            case BANK_ACCOUNT -> I18n.t("Bank Account");
+            case CASH -> I18n.t("Cash");
+            case CREDIT_LINE -> I18n.t("Credit Line");
+            case SAVINGS -> I18n.t("Savings");
+            case INVESTMENT -> I18n.t("Investment");
+            case OTHER -> I18n.t("Other");
         };
     }
 
@@ -90,10 +90,10 @@ public class AddBudgetDialog {
         header.setAlignment(Pos.CENTER_LEFT);
 
         VBox titleBox = new VBox(2);
-        Label title = new Label(isEditMode ? "Edit Account" : "New Account");
+        Label title = new Label(isEditMode ? I18n.t("Edit Account") : I18n.t("New Account"));
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
-        Label subtitle = new Label(isEditMode ? "Update the details for this account." : "Define the parameters for your new financial account.");
+        Label subtitle = new Label(isEditMode ? I18n.t("Update the details for this account.") : I18n.t("Define the parameters for your new financial account."));
         subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
         titleBox.getChildren().addAll(title, subtitle);
 
@@ -127,9 +127,9 @@ public class AddBudgetDialog {
         nameField.setPrefHeight(FIELD_HEIGHT);
         nameField.setMaxHeight(FIELD_HEIGHT);
 
-        VBox nameBox = createLabeledField("ACCOUNT NAME", nameField);
+        VBox nameBox = createLabeledField(I18n.t("ACCOUNT NAME"), nameField);
 
-        ComboBox<String> catCombo = UIFactory.inputComboBox("Select Category");
+        ComboBox<String> catCombo = UIFactory.inputComboBox(I18n.t("Select Category"));
 
         for (AccountCategory cat : AccountCategory.values()) {
             catCombo.getItems().add(formatCategory(cat));
@@ -139,7 +139,7 @@ public class AddBudgetDialog {
         catCombo.setPrefHeight(FIELD_HEIGHT);
         catCombo.setMaxHeight(FIELD_HEIGHT);
 
-        VBox catBox = createLabeledField("CATEGORY", catCombo);
+        VBox catBox = createLabeledField(I18n.t("CATEGORY"), catCombo);
 
         TextField limitField = UIFactory.inputField("0.00 (optional)");
 
@@ -148,7 +148,7 @@ public class AddBudgetDialog {
         limitField.setPrefHeight(FIELD_HEIGHT);
         limitField.setMaxHeight(FIELD_HEIGHT);
 
-        Label limitLabel = new Label("Limit Amount");
+        Label limitLabel = new Label(I18n.t("Limit Amount"));
         limitLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-size: 13px;");
         VBox limitBox = new VBox(5, limitLabel, limitField);
         limitBox.setMaxWidth(Double.MAX_VALUE);
@@ -177,11 +177,11 @@ public class AddBudgetDialog {
             }
 
             if (selectedCategory == AccountCategory.SAVINGS || selectedCategory == AccountCategory.INVESTMENT) {
-                limitLabel.setText("Savings Goal");
+                limitLabel.setText(I18n.t("Savings Goal"));
             } else if (selectedCategory == AccountCategory.CREDIT_LINE) {
-                limitLabel.setText("Credit Limit");
+                limitLabel.setText(I18n.t("Credit Limit"));
             } else {
-                limitLabel.setText("Limit Amount");
+                limitLabel.setText(I18n.t("Limit Amount"));
             }
         };
         catCombo.valueProperty().addListener((obs, oldVal, newVal) -> syncLimitFieldByCategory.run());
@@ -195,11 +195,11 @@ public class AddBudgetDialog {
         balanceField.setMaxHeight(FIELD_HEIGHT);
 
         // Balance is computed from transactions — hide when editing an existing account
-        VBox balanceBox = createLabeledField("INITIAL BALANCE", balanceField);
+        VBox balanceBox = createLabeledField(I18n.t("INITIAL BALANCE"), balanceField);
         balanceBox.setVisible(!isEditMode);
         balanceBox.setManaged(!isEditMode);
 
-        ComboBox<String> currencyCombo = UIFactory.inputComboBox("Select Currency");
+        ComboBox<String> currencyCombo = UIFactory.inputComboBox(I18n.t("Select Currency"));
 
         currencyCombo.setItems(FXCollections.observableArrayList("CZK", "EUR", "GBP", "USD"));
         currencyCombo.setMaxWidth(Double.MAX_VALUE);
@@ -207,7 +207,7 @@ public class AddBudgetDialog {
         currencyCombo.setPrefHeight(FIELD_HEIGHT);
         currencyCombo.setMaxHeight(FIELD_HEIGHT);
 
-        VBox currencyBox = createLabeledField("CURRENCY", currencyCombo);
+        VBox currencyBox = createLabeledField(I18n.t("CURRENCY"), currencyCombo);
 
         GridPane row2Grid = new GridPane();
         row2Grid.setHgap(15);
@@ -221,7 +221,7 @@ public class AddBudgetDialog {
 
         VBox freqBoxMain = new VBox(5);
 
-        Label freqLabel = new Label("FREQUENCY CYCLE");
+        Label freqLabel = new Label(I18n.t("FREQUENCY CYCLE"));
         freqLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-size: 13px;");
 
         HBox toggleBox = new HBox();
@@ -232,8 +232,8 @@ public class AddBudgetDialog {
         toggleBox.setPrefHeight(FIELD_HEIGHT);
         toggleBox.setMaxHeight(FIELD_HEIGHT);
 
-        Button monthlyBtn = new Button("Monthly");
-        Button weeklyBtn = new Button("Weekly");
+        Button monthlyBtn = new Button(I18n.t("Monthly"));
+        Button weeklyBtn = new Button(I18n.t("Weekly"));
 
         String activeStyle = "-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: default;";
         String inactiveStyle = "-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-weight: bold; -fx-cursor: hand;";
@@ -288,7 +288,7 @@ public class AddBudgetDialog {
         actionBox.setAlignment(Pos.CENTER_RIGHT);
         actionBox.setPadding(new Insets(20, 0, 0, 0));
 
-        Button cancelBtn = new Button("Cancel");
+        Button cancelBtn = new Button(I18n.t("Cancel"));
 
         cancelBtn.setMinWidth(Region.USE_PREF_SIZE);
         cancelBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-padding: 10 20;");
@@ -304,7 +304,7 @@ public class AddBudgetDialog {
             cancelBtn.setScaleY(1.0);
         });
 
-        StateButton saveBtn = new StateButton(isEditMode ? "Save Changes" : "Save Account", StateButton.ButtonType.PRIMARY);
+        StateButton saveBtn = new StateButton(isEditMode ? I18n.t("Save Changes") : I18n.t("Save Account"), StateButton.ButtonType.PRIMARY);
 
         saveBtn.setMinHeight(50);
         saveBtn.setMaxWidth(Double.MAX_VALUE);
@@ -384,7 +384,7 @@ public class AddBudgetDialog {
             }
 
             if (!isValid) {
-                ToastManager.showError(owner, "Please fill in all required fields correctly.");
+                ToastManager.showError(owner, I18n.t("Please fill in all required fields correctly."));
                 return;
             }
 

@@ -184,7 +184,7 @@ public class DashBoardView extends BaseView {
         expenseTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: " + Themes.DARK_TEXT + ";");
         I18n.language.addListener((obs, o, v) -> expenseTitle.setText(I18n.t("Top Projects")));
 
-        ProjectPieChart pieChart = new ProjectPieChart(reportsViewModel.getProjectSummaries());
+        ProjectPieChart pieChart = new ProjectPieChart(reportsViewModel.getProjectSummaries(), 150);
         VBox.setVgrow(pieChart, Priority.ALWAYS);
         expenseCard.getChildren().addAll(expenseTitle, pieChart);
 

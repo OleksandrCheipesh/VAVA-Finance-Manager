@@ -82,10 +82,10 @@ public class AddProjectDialog {
 
         VBox titleBox = new VBox(4);
 
-        Label title = new Label(isEditMode ? "Edit Project" : "Add New Project");
+        Label title = new Label(isEditMode ? I18n.t("Edit Project") : I18n.t("Add New Project"));
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
-        Label subtitle = new Label(isEditMode ? "Update the project details below." : "Define the scope and resources for your next initiative.");
+        Label subtitle = new Label(isEditMode ? I18n.t("Update the project details below.") : I18n.t("Define the scope and resources for your next initiative."));
         subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
         titleBox.getChildren().addAll(title, subtitle);
 
@@ -114,33 +114,33 @@ public class AddProjectDialog {
         nameField.setMinHeight(44);
         nameField.setPrefHeight(44);
 
-        VBox nameBox = createLabeledField("PROJECT NAME", nameField);
+        VBox nameBox = createLabeledField(I18n.t("PROJECT NAME"), nameField);
 
         TextField descField = UIFactory.inputField("Describe the objectives and key outcomes...");
         descField.setMinHeight(44);
         descField.setPrefHeight(44);
 
-        VBox descBox = createLabeledField("DESCRIPTION", descField);
+        VBox descBox = createLabeledField(I18n.t("DESCRIPTION"), descField);
 
         TextField budgetField = UIFactory.inputField("$ 0.00");
         budgetField.setMinHeight(44);
         budgetField.setPrefHeight(44);
 
-        VBox budgetBox = createLabeledField("BUDGET LIMIT", budgetField);
+        VBox budgetBox = createLabeledField(I18n.t("BUDGET LIMIT"), budgetField);
 
         DatePicker startDateField = UIFactory.inputDatePicker("mm/dd/yyyy");
         startDateField.setMinHeight(44);
         startDateField.setPrefHeight(44);
         startDateField.setMaxWidth(Double.MAX_VALUE);
 
-        VBox startBox = createLabeledField("START DATE", startDateField);
+        VBox startBox = createLabeledField(I18n.t("START DATE"), startDateField);
 
         DatePicker endDateField = UIFactory.inputDatePicker("mm/dd/yyyy");
         endDateField.setMinHeight(44);
         endDateField.setPrefHeight(44);
         endDateField.setMaxWidth(Double.MAX_VALUE);
 
-        VBox endBox = createLabeledField("END DATE", endDateField);
+        VBox endBox = createLabeledField(I18n.t("END DATE"), endDateField);
 
         HBox splitDates = new HBox(15);
         HBox.setHgrow(startBox, Priority.ALWAYS);
@@ -165,14 +165,14 @@ public class AddProjectDialog {
         actionBox.setAlignment(Pos.CENTER_RIGHT);
         actionBox.setPadding(new Insets(10, 0, 0, 0));
 
-        Button cancelBtn = new Button("Cancel");
+        Button cancelBtn = new Button(I18n.t("Cancel"));
         cancelBtn.setMinWidth(Region.USE_PREF_SIZE);
         cancelBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-padding: 10 20;");
         cancelBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
 
         setupScaleEffect(cancelBtn, 0.98);
 
-        StateButton saveBtn = new StateButton(isEditMode ? "Save Changes" : "Add New Project", StateButton.ButtonType.PRIMARY);
+        StateButton saveBtn = new StateButton(isEditMode ? I18n.t("Save Changes") : I18n.t("Add New Project"), StateButton.ButtonType.PRIMARY);
         saveBtn.setMinHeight(50);
         saveBtn.setMaxWidth(Double.MAX_VALUE);
 
@@ -235,7 +235,7 @@ public class AddProjectDialog {
                     } catch (NumberFormatException ex) {
                         saveBtn.setLoading(false);
                         budgetField.setStyle(budgetField.getStyle() + errorBorder);
-                        ToastManager.showError(owner, "Please enter a valid numeric budget.");
+                        ToastManager.showError(owner, I18n.t("Please enter a valid numeric budget."));
                     }
                 });
             }).start();

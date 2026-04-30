@@ -73,7 +73,7 @@ public class EditTransactionDialog {
 
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER_LEFT);
-        Label title = new Label("Edit Transaction");
+        Label title = new Label(I18n.t("Edit Transaction"));
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
         Button closeBtn = new Button("X");
@@ -97,8 +97,8 @@ public class EditTransactionDialog {
 
         HBox toggleBox = new HBox();
         toggleBox.setStyle("-fx-background-color: " + Themes.BG_FIELD + "; -fx-background-radius: 8; -fx-padding: 4;");
-        Button saleBtn = new Button("+ Sale");
-        Button purchaseBtn = new Button("- Purchase");
+        Button saleBtn = new Button(I18n.t("+ Sale"));
+        Button purchaseBtn = new Button(I18n.t("- Purchase"));
 
         if (existingTx != null && existingTx.getType() != null) {
             selectedType = existingTx.getType().toUpperCase();
@@ -135,13 +135,13 @@ public class EditTransactionDialog {
         TextField amountField = UIFactory.inputField("0.00");
         if (!initialAmount.isEmpty()) amountField.setText(initialAmount);
         Label amountError = errorLabel();
-        VBox amountBox = createLabeledField("Amount", amountField, amountError);
+        VBox amountBox = createLabeledField(I18n.t("Amount"), amountField, amountError);
 
         String initialDesc = existingTx != null && existingTx.getDescription() != null ? existingTx.getDescription() : "";
         TextField descField = UIFactory.inputField("Enter description");
         if (!initialDesc.isEmpty()) descField.setText(initialDesc);
         Label descError = errorLabel();
-        VBox descBox = createLabeledField("Description", descField, descError);
+        VBox descBox = createLabeledField(I18n.t("Description"), descField, descError);
 
         // Account selector — pre-select account matching existingTx.accountId
         boolean hasAccounts = !accounts.isEmpty();
@@ -178,7 +178,7 @@ public class EditTransactionDialog {
             }
         }
         Label accountError = errorLabel();
-        VBox accountBox = createLabeledField("Account", accountCombo, accountError);
+        VBox accountBox = createLabeledField(I18n.t("Account"), accountCombo, accountError);
 
         Map<String, Integer> projectNameToId = new HashMap<>();
         ComboBox<String> projectCombo = UIFactory.inputComboBox("Select Project");
@@ -194,7 +194,7 @@ public class EditTransactionDialog {
             projectCombo.setValue(initialProject);
         }
         Label projectError = errorLabel();
-        VBox projectBox = createLabeledField("Project", projectCombo, projectError);
+        VBox projectBox = createLabeledField(I18n.t("Project"), projectCombo, projectError);
 
         HBox splitBox = new HBox(15);
         HBox.setHgrow(accountBox, Priority.ALWAYS);
@@ -220,7 +220,7 @@ public class EditTransactionDialog {
                     setText(item.getName() + " " + item.getSurname());
                     setStyle("-fx-text-fill: " + Themes.TEXT_DARK + ";");
                 } else {
-                    setText("Select Client (optional)");
+                    setText(I18n.t("Select Client (optional)"));
                     setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + ";");
                 }
             }
@@ -234,7 +234,7 @@ public class EditTransactionDialog {
             }
         }
         Label clientError = errorLabel();
-        VBox clientBox = createLabeledField("CLIENT (OPTIONAL)", clientCombo, clientError);
+        VBox clientBox = createLabeledField(I18n.t("CLIENT (OPTIONAL)"), clientCombo, clientError);
 
         DatePicker datePicker = UIFactory.inputDatePicker("Select date");
         java.time.LocalDate initialDate = existingTx != null && existingTx.getDate() != null ? existingTx.getDate() : java.time.LocalDate.now();
@@ -250,11 +250,11 @@ public class EditTransactionDialog {
         });
 
         Label dateError = errorLabel();
-        VBox dateBox = createLabeledField("Date", datePicker, dateError);
+        VBox dateBox = createLabeledField(I18n.t("Date"), datePicker, dateError);
 
         form.getChildren().addAll(amountBox, descBox, splitBox, clientBox, dateBox);
 
-        StateButton saveBtn = new StateButton("Save", StateButton.ButtonType.PRIMARY);
+        StateButton saveBtn = new StateButton(I18n.t("Save"), StateButton.ButtonType.PRIMARY);
         saveBtn.setMaxWidth(Double.MAX_VALUE);
 
         final String origAmountStyle = amountField.getStyle();
@@ -277,39 +277,39 @@ public class EditTransactionDialog {
             BigDecimal amount = null;
             String amountText = amountField.getText().trim();
             if (amountText.isBlank()) {
-                showFieldError(amountField, errorBorder, amountError, "Amount is required");
+                showFieldError(amountField, errorBorder, amountError, I18n.t("Amount is required"));
                 valid = false;
             } else {
                 try {
                     amount = new BigDecimal(amountText);
                     if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-                        showFieldError(amountField, errorBorder, amountError, "Amount must be greater than zero");
+                        showFieldError(amountField, errorBorder, amountError, I18n.t("Amount must be greater than zero"));
                         valid = false;
                     }
                 } catch (NumberFormatException ex) {
-                    showFieldError(amountField, errorBorder, amountError, "Enter a valid number (e.g. 1500.00)");
+                    showFieldError(amountField, errorBorder, amountError, I18n.t("Enter a valid number (e.g. 1500.00)"));
                     valid = false;
                 }
             }
 
             if (descField.getText().isBlank()) {
-                showFieldError(descField, errorBorder, descError, "Description is required");
+                showFieldError(descField, errorBorder, descError, I18n.t("Description is required"));
                 valid = false;
             }
 
             if (datePicker.getValue() == null) {
-                showFieldError(datePicker, errorBorder, dateError, "Please select a date");
+                showFieldError(datePicker, errorBorder, dateError, I18n.t("Please select a date"));
                 valid = false;
             }
 
             if (accountCombo.getValue() == null) {
                 showFieldError(accountCombo, errorBorder, accountError,
-                        accounts.isEmpty() ? "No accounts available — create one first" : "Please select an account");
+                        accounts.isEmpty() ? I18n.t("No accounts available — create one first") : I18n.t("Please select an account"));
                 valid = false;
             }
 
             if (!valid) {
-                ToastManager.showError(owner, "Please fix the highlighted fields.");
+                ToastManager.showError(owner, I18n.t("Please fix the highlighted fields."));
                 return;
             }
 
@@ -334,7 +334,7 @@ public class EditTransactionDialog {
                         closeWithAnimation(modal, shadowWrapper);
                     } catch (Exception ex) {
                         saveBtn.setLoading(false);
-                        ToastManager.showError(owner, "Something went wrong. Please try again.");
+                        ToastManager.showError(owner, I18n.t("Something went wrong. Please try again."));
                         var logger = AppLog.getLogger(EditTransactionDialog.class);
                         logger.error("Unexpected error saving transaction: {}", ex.getMessage(), ex);
                     }

@@ -72,10 +72,10 @@ public class AddEmployeeDialog {
         header.setAlignment(Pos.CENTER_LEFT);
 
         VBox titleBox = new VBox(4);
-        Label title = new Label(isEditMode ? "Edit Employee" : "New Employee");
+        Label title = new Label(isEditMode ? I18n.t("Edit Employee") : I18n.t("New Employee"));
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
-        Label subtitle = new Label(isEditMode ? "Update member information." : "Add a new member to your team.");
+        Label subtitle = new Label(isEditMode ? I18n.t("Update member information.") : I18n.t("Add a new member to your team."));
         subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
 
         titleBox.getChildren().addAll(title, subtitle);
@@ -104,17 +104,17 @@ public class AddEmployeeDialog {
         HBox.setHgrow(nameField, Priority.ALWAYS);
         HBox.setHgrow(surnameField, Priority.ALWAYS);
 
-        splitName.getChildren().addAll(createLabeledField("NAME", nameField), createLabeledField("SURNAME", surnameField));
+        splitName.getChildren().addAll(createLabeledField(I18n.t("NAME"), nameField), createLabeledField(I18n.t("SURNAME"), surnameField));
 
         TextField emailField = UIFactory.inputField("E-mail");
         emailField.setMinHeight(44);
         emailField.setPrefHeight(44);
-        VBox emailBox = createLabeledField("E-MAIL", emailField);
+        VBox emailBox = createLabeledField(I18n.t("E-MAIL"), emailField);
 
         TextField roleField = UIFactory.inputField("Industry");
         roleField.setMinHeight(44);
         roleField.setPrefHeight(44);
-        VBox roleBox = createLabeledField("ROLE", roleField);
+        VBox roleBox = createLabeledField(I18n.t("ROLE"), roleField);
 
         TextField deptField = UIFactory.inputField("Department");
         deptField.setMinHeight(44);
@@ -140,8 +140,8 @@ public class AddEmployeeDialog {
 
         splitBottom.getColumnConstraints().addAll(col1, col2);
 
-        splitBottom.add(createLabeledField("DEPARTMENT", deptField), 0, 0);
-        splitBottom.add(createLabeledField("STATUS", statusCombo), 1, 0);
+        splitBottom.add(createLabeledField(I18n.t("DEPARTMENT"), deptField), 0, 0);
+        splitBottom.add(createLabeledField(I18n.t("STATUS"), statusCombo), 1, 0);
 
         form.getChildren().addAll(splitName, emailBox, roleBox, splitBottom);
 
@@ -158,7 +158,7 @@ public class AddEmployeeDialog {
         actionBox.setAlignment(Pos.CENTER_RIGHT);
         actionBox.setPadding(new Insets(10, 0, 0, 0));
 
-        Button cancelBtn = new Button("Cancel");
+        Button cancelBtn = new Button(I18n.t("Cancel"));
         cancelBtn.setMinWidth(Region.USE_PREF_SIZE);
         cancelBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-padding: 10 20;");
         cancelBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
@@ -173,7 +173,7 @@ public class AddEmployeeDialog {
             cancelBtn.setScaleY(1.0);
         });
 
-        StateButton saveBtn = new StateButton(isEditMode ? "Update" : "Save", StateButton.ButtonType.PRIMARY);
+        StateButton saveBtn = new StateButton(isEditMode ? I18n.t("Update") : I18n.t("Save"), StateButton.ButtonType.PRIMARY);
 
         saveBtn.setMaxWidth(Double.MAX_VALUE);
         saveBtn.setMinHeight(50);

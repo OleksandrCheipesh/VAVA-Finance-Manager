@@ -69,9 +69,9 @@ public class EditUserDialog {
         header.setAlignment(Pos.CENTER_LEFT);
 
         VBox titleBox = new VBox(4);
-        Label title = new Label("Edit User");
+        Label title = new Label(I18n.t("Edit User"));
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
-        Label subtitle = new Label("Update information for " + user.getName() + " " + user.getSurname());
+        Label subtitle = new Label(I18n.t("Update information for") + " " + user.getName() + " " + user.getSurname());
         subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
         titleBox.getChildren().addAll(title, subtitle);
 
@@ -97,10 +97,10 @@ public class EditUserDialog {
         VBox.setMargin(form, new Insets(10, 0, 0, 0));
 
         TextField nameField = createTextField(user.getName());
-        VBox nameBox = createLabeledField("NAME", nameField);
+        VBox nameBox = createLabeledField(I18n.t("NAME"), nameField);
 
         TextField surnameField = createTextField(user.getSurname());
-        VBox surnameBox = createLabeledField("SURNAME", surnameField);
+        VBox surnameBox = createLabeledField(I18n.t("SURNAME"), surnameField);
 
         GridPane nameGrid = new GridPane();
         nameGrid.setHgap(15);
@@ -111,7 +111,7 @@ public class EditUserDialog {
         nameGrid.add(surnameBox, 1, 0);
 
         TextField emailField = createTextField(user.getEmail());
-        VBox emailBox = createLabeledField("EMAIL ADDRESS", emailField);
+        VBox emailBox = createLabeledField(I18n.t("EMAIL ADDRESS"), emailField);
 
         ComboBox<Position> roleCombo = new ComboBox<>();
 
@@ -130,7 +130,7 @@ public class EditUserDialog {
         roleCombo.setMinHeight(FIELD_HEIGHT); roleCombo.setPrefHeight(FIELD_HEIGHT); roleCombo.setMaxHeight(FIELD_HEIGHT);
         roleCombo.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 15; -fx-border-width: 0; -fx-font-size: 14px;");
         roleCombo.setMaxWidth(Double.MAX_VALUE);
-        VBox roleBox = createLabeledField("ACCESS ROLE", roleCombo);
+        VBox roleBox = createLabeledField(I18n.t("ACCESS ROLE"), roleCombo);
 
         form.getChildren().addAll(nameGrid, emailBox, roleBox);
 
@@ -140,11 +140,11 @@ public class EditUserDialog {
         actionBox.setStyle("-fx-padding: 10 0 0 0;");
         VBox.setMargin(actionBox, new Insets(10, 0, 0, 0));
 
-        Button cancelBtn = new Button("Cancel");
+        Button cancelBtn = new Button(I18n.t("Cancel"));
         cancelBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-weight: bold; -fx-font-size: 16px; -fx-cursor: hand; -fx-background-insets: 0; -fx-padding: 10 15 10 0;");
         cancelBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
 
-        Button saveBtn = new Button("Save Changes");
+        Button saveBtn = new Button(I18n.t("Save Changes"));
         saveBtn.setMinHeight(48);
         saveBtn.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(saveBtn, Priority.ALWAYS);
@@ -167,13 +167,13 @@ public class EditUserDialog {
             Position position = roleCombo.getValue();
 
             if (name.isEmpty() || surname.isEmpty() || email.isEmpty() || position == null) {
-                errorLabel.setText("All fields are required.");
+                errorLabel.setText(I18n.t("All fields are required."));
                 errorLabel.setVisible(true);
                 return;
             }
 
             if (!email.contains("@") || !email.contains(".")) {
-                errorLabel.setText("Please enter a valid email address.");
+                errorLabel.setText(I18n.t("Please enter a valid email address."));
                 errorLabel.setVisible(true);
                 return;
             }

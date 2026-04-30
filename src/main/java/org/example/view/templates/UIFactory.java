@@ -181,7 +181,7 @@ public class UIFactory {
         brandName.setFont(Font.font("System", FontWeight.BOLD, 36));
         brandName.setTextFill(Color.WHITE);
 
-        Label brandMotto = new Label("Your finances, your complete clarity");
+        Label brandMotto = new Label(I18n.t("Your finances, your complete clarity"));
         brandMotto.setFont(Font.font("System", 14));
         brandMotto.setTextFill(Color.WHITE);
 
