@@ -28,16 +28,14 @@ public class ReportModals {
 
     // --- 1. Project Profit Distribution ---
     public static void showProfitDistribution(Stage owner, ReportsViewModel vm) {
-        // Chart: live reactive ProjectPieChart
         ProjectPieChart chart = new ProjectPieChart(vm.getProjectSummaries());
         chart.setMinHeight(320);
         chart.setPrefHeight(320);
 
         VBox extraFilters = new VBox(15);
 
-        // Min Profit Threshold — local-only filter, transforms data inside modal
         VBox threshBox = new VBox(5);
-        Label threshLbl = new Label("MIN. PROFIT THRESHOLD");
+        Label threshLbl = new Label(I18n.t("MIN. PROFIT THRESHOLD"));
         threshLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
         TextField thresholdField = UIFactory.inputField("$ 0.00");
@@ -49,7 +47,7 @@ public class ReportModals {
         threshBox.getChildren().addAll(threshLbl, thresholdField);
 
         HBox presets = new HBox(8);
-        Label presetLbl = new Label("Quick preset:");
+        Label presetLbl = new Label(I18n.t("Quick preset:"));
         presetLbl.setStyle("-fx-font-size: 11px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
         Button p10  = createPresetBtn("$10k",  "10000",  thresholdField);
         Button p50  = createPresetBtn("$50k",  "50000",  thresholdField);
@@ -59,9 +57,8 @@ public class ReportModals {
 
         extraFilters.getChildren().addAll(threshBox, presets);
 
-        showBaseModal(owner, "Project Profit Distribution", chart, extraFilters, vm,
+        showBaseModal(owner, I18n.t("Project Profit Distribution"), chart, extraFilters, vm,
                 () -> {
-                    // Local threshold filtering — applied in-memory to the already-loaded summaries
                     String raw = thresholdField.getText().replaceAll("[$,\\s]", "");
                     if (!raw.isEmpty()) {
                         try {
@@ -86,30 +83,30 @@ public class ReportModals {
         VBox extraFilters = new VBox(15);
 
         VBox projBox = new VBox(5);
-        Label projLbl = new Label("PROJECT SELECTION");
+        Label projLbl = new Label(I18n.t("PROJECT SELECTION"));
         projLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
-        ComboBox<String> projectCombo = UIFactory.inputComboBox("All Projects");
-        projectCombo.getItems().add("All Projects");
+        ComboBox<String> projectCombo = UIFactory.inputComboBox(I18n.t("All Projects"));
+        projectCombo.getItems().add(I18n.t("All Projects"));
         projectCombo.getItems().addAll(vm.getAvailableProjects().stream().map(Project::getName).collect(Collectors.toList()));
-        projectCombo.setValue("All Projects");
+        projectCombo.setValue(I18n.t("All Projects"));
 
         vm.getAvailableProjects().addListener((ListChangeListener<Project>) c -> {
             java.util.List<String> names = vm.getAvailableProjects().stream().map(Project::getName).collect(Collectors.toList());
             javafx.application.Platform.runLater(() -> {
                 String current = projectCombo.getValue();
-                projectCombo.getItems().setAll("All Projects");
+                projectCombo.getItems().setAll(I18n.t("All Projects"));
                 projectCombo.getItems().addAll(names);
-                if (projectCombo.getItems().contains(current)) projectCombo.setValue(current); else projectCombo.setValue("All Projects");
+                if (projectCombo.getItems().contains(current)) projectCombo.setValue(current);
+                else projectCombo.setValue(I18n.t("All Projects"));
             });
         });
         projectCombo.setMinHeight(44); projectCombo.setPrefHeight(44);
         projectCombo.setMaxHeight(44); projectCombo.setMaxWidth(Double.MAX_VALUE);
 
-        // Wire project selection → ViewModel
         projectCombo.setOnAction(e -> {
             String selected = projectCombo.getValue();
-            vm.setSelectedProject("All Projects".equals(selected) ? null : selected);
+            vm.setSelectedProject(I18n.t("All Projects").equals(selected) ? null : selected);
         });
 
         projBox.getChildren().addAll(projLbl, projectCombo);
@@ -118,18 +115,17 @@ public class ReportModals {
         groupAndToggles.setAlignment(Pos.TOP_LEFT);
 
         VBox groupBox = new VBox(5);
-        Label groupLbl = new Label("GROUPING");
+        Label groupLbl = new Label(I18n.t("GROUPING"));
         groupLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
-        HBox groupBtns = createSegmentedControl("Month", "Quarter",
+        HBox groupBtns = createSegmentedControl(I18n.t("Month"), I18n.t("Quarter"),
                 selected -> vm.setGrouping(selected));
         groupBox.getChildren().addAll(groupLbl, groupBtns);
 
         Region centerSpacer = new Region();
         HBox.setHgrow(centerSpacer, Priority.ALWAYS);
 
-        // Show Income / Show Expenses toggles — local state only (visual transform)
-        HBox incomeToggle  = createToggle("Show Income",   true,  (on) -> chart.setSeriesVisible("Income",   on));
-        HBox expenseToggle = createToggle("Show Expenses", false, (on) -> chart.setSeriesVisible("Expenses", on));
+        HBox incomeToggle  = createToggle(I18n.t("Show Income"),   true,  (on) -> chart.setSeriesVisible("Income",   on));
+        HBox expenseToggle = createToggle(I18n.t("Show Expenses"), false, (on) -> chart.setSeriesVisible("Expenses", on));
 
         VBox togglesBox = new VBox(12);
         togglesBox.getChildren().addAll(incomeToggle, expenseToggle);
@@ -138,7 +134,7 @@ public class ReportModals {
         groupAndToggles.getChildren().addAll(groupBox, centerSpacer, togglesBox);
         extraFilters.getChildren().addAll(projBox, groupAndToggles);
 
-        showBaseModal(owner, "Income VS Expenses", chart, extraFilters, vm, null);
+        showBaseModal(owner, I18n.t("Income VS Expenses"), chart, extraFilters, vm, null);
     }
 
     // --- 3. Net Profit Trend ---
@@ -147,7 +143,6 @@ public class ReportModals {
         chart.setMinHeight(320);
         chart.setPrefHeight(320);
 
-        // Zero line is on by default — show it as soon as the scene is ready
         chart.sceneProperty().addListener((obs, o, newScene) -> {
             if (newScene != null) chart.setZeroLineVisible(true);
         });
@@ -155,29 +150,29 @@ public class ReportModals {
         VBox extraFilters = new VBox(15);
 
         VBox projBox = new VBox(5);
-        Label projLbl = new Label("PROJECT SELECTION");
+        Label projLbl = new Label(I18n.t("PROJECT SELECTION"));
         projLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
-        ComboBox<String> projectCombo = UIFactory.inputComboBox("All Projects");
-        projectCombo.getItems().add("All Projects");
+        ComboBox<String> projectCombo = UIFactory.inputComboBox(I18n.t("All Projects"));
+        projectCombo.getItems().add(I18n.t("All Projects"));
         projectCombo.getItems().addAll(vm.getAvailableProjects().stream().map(Project::getName).collect(Collectors.toList()));
-        projectCombo.setValue("All Projects");
+        projectCombo.setValue(I18n.t("All Projects"));
         vm.getAvailableProjects().addListener((ListChangeListener<Project>) c -> {
             java.util.List<String> names = vm.getAvailableProjects().stream().map(Project::getName).collect(Collectors.toList());
             javafx.application.Platform.runLater(() -> {
                 String current = projectCombo.getValue();
-                projectCombo.getItems().setAll("All Projects");
+                projectCombo.getItems().setAll(I18n.t("All Projects"));
                 projectCombo.getItems().addAll(names);
-                if (projectCombo.getItems().contains(current)) projectCombo.setValue(current); else projectCombo.setValue("All Projects");
+                if (projectCombo.getItems().contains(current)) projectCombo.setValue(current);
+                else projectCombo.setValue(I18n.t("All Projects"));
             });
         });
         projectCombo.setMinHeight(44); projectCombo.setPrefHeight(44);
         projectCombo.setMaxHeight(44); projectCombo.setMaxWidth(Double.MAX_VALUE);
 
-        // Wire project selection → ViewModel
         projectCombo.setOnAction(e -> {
             String selected = projectCombo.getValue();
-            vm.setSelectedProject("All Projects".equals(selected) ? null : selected);
+            vm.setSelectedProject(I18n.t("All Projects").equals(selected) ? null : selected);
         });
 
         projBox.getChildren().addAll(projLbl, projectCombo);
@@ -186,33 +181,26 @@ public class ReportModals {
         groupAndToggles.setAlignment(Pos.TOP_LEFT);
 
         VBox groupBox = new VBox(5);
-        Label groupLbl = new Label("GROUPING");
+        Label groupLbl = new Label(I18n.t("GROUPING"));
         groupLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
-        HBox groupBtns = createSegmentedControl("Month", "Quarter",
+        HBox groupBtns = createSegmentedControl(I18n.t("Month"), I18n.t("Quarter"),
                 selected -> vm.setGrouping(selected));
         groupBox.getChildren().addAll(groupLbl, groupBtns);
 
         Region centerSpacer = new Region();
         HBox.setHgrow(centerSpacer, Priority.ALWAYS);
 
-        // Show Zero Line — local state only, wired to chart
         VBox togglesBox = new VBox(8);
-        togglesBox.getChildren().add(createToggle("Show Zero Line", true, (on) -> chart.setZeroLineVisible(on)));
+        togglesBox.getChildren().add(createToggle(I18n.t("Show Zero Line"), true, (on) -> chart.setZeroLineVisible(on)));
         HBox.setMargin(togglesBox, new Insets(17, 0, 0, 0));
 
         groupAndToggles.getChildren().addAll(groupBox, centerSpacer, togglesBox);
         extraFilters.getChildren().addAll(projBox, groupAndToggles);
 
-        showBaseModal(owner, "Net Profit Trend", chart, extraFilters, vm, null);
+        showBaseModal(owner, I18n.t("Net Profit Trend"), chart, extraFilters, vm, null);
     }
 
     // --- SHARED MODAL LOGIC ---
-    /**
-     * @param chartNode     The real reactive chart for the left panel.
-     * @param extraFilters  Chart-specific filter controls (right panel, lower section).
-     * @param vm            ReportsViewModel — shared filters are wired to it here.
-     * @param onApplyExtra  Optional additional logic run on Apply (e.g. local threshold filter).
-     */
     private static void showBaseModal(Stage owner,
                                       String titleText,
                                       Node chartNode,
@@ -254,7 +242,7 @@ public class ReportModals {
         VBox titleBox = new VBox(2);
         Label title = new Label(titleText);
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
-        Label subTitle = new Label("Fiscal Year 2024 · Global Portfolio Breakdown");
+        Label subTitle = new Label(I18n.t("Fiscal Year 2024 · Global Portfolio Breakdown"));
         subTitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
         titleBox.getChildren().addAll(title, subTitle);
 
@@ -267,102 +255,97 @@ public class ReportModals {
         closeBtn.setOnAction(e -> closeWithAnimation(modal, container));
         header.getChildren().addAll(titleBox, spacer, closeBtn);
 
-        // Body: chart on left, filters on right
+        // Body
         HBox body = new HBox(30);
 
-        // Left: real chart
         VBox chartWrapper = new VBox(chartNode);
         chartWrapper.setStyle("-fx-background-color: #F8FAFC; -fx-background-radius: 12; -fx-border-color: #E2E8F0; -fx-border-radius: 12; -fx-padding: 15;");
         chartWrapper.setPrefSize(650, 480);
         HBox.setHgrow(chartWrapper, Priority.ALWAYS);
         VBox.setVgrow(chartNode, Priority.ALWAYS);
 
-        // Right: filters
         VBox filtersPanel = new VBox(20);
         filtersPanel.setPrefWidth(320);
         filtersPanel.setMinWidth(320);
 
         HBox fHeader = new HBox();
-        Label fTitle = new Label("Filters");
+        Label fTitle = new Label(I18n.t("Filters"));
         fTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
         Region fSpacer = new Region();
         HBox.setHgrow(fSpacer, Priority.ALWAYS);
-        Label reset = new Label("RESET ALL");
+        Label reset = new Label(I18n.t("RESET ALL"));
         reset.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.PRIMARY + "; -fx-cursor: hand;");
         fHeader.getChildren().addAll(fTitle, fSpacer, reset);
 
-        // TIME PERIOD — wired to vm.selectedPeriodProperty()
+        // TIME PERIOD
         VBox timeBox = new VBox(5);
-        Label timeLbl = new Label("TIME PERIOD");
+        Label timeLbl = new Label(I18n.t("TIME PERIOD"));
         timeLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
-        ComboBox<String> timeCombo = UIFactory.inputComboBox("Select Period");
-        timeCombo.getItems().addAll("This Month", "Last Month", "This Quarter", "This Year", "Custom");
+        ComboBox<String> timeCombo = UIFactory.inputComboBox(I18n.t("Select Period"));
+        timeCombo.getItems().addAll(
+                I18n.t("This Month"), I18n.t("Last Month"),
+                I18n.t("This Quarter"), I18n.t("This Year"), I18n.t("Custom")
+        );
         timeCombo.setValue(vm.getPeriodAsString());
         timeCombo.setMinHeight(44); timeCombo.setPrefHeight(44);
         timeCombo.setMaxHeight(44); timeCombo.setMaxWidth(Double.MAX_VALUE);
 
-        // Wire to ViewModel via string-to-enum helper
         timeCombo.valueProperty().addListener((obs, oldVal, newVal) -> vm.setPeriodFromString(newVal));
         timeBox.getChildren().addAll(timeLbl, timeCombo);
 
-        // CUSTOM DATE RANGE — shown/hidden based on "Custom" selection
+        // CUSTOM DATE RANGE
         HBox customDates = new HBox(10);
 
         VBox fromBox = new VBox(5);
-        Label fromLbl = new Label("FROM");
+        Label fromLbl = new Label(I18n.t("FROM"));
         fromLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
         DatePicker fromDP = UIFactory.inputDatePicker("mm/dd/yyyy");
         fromDP.setMinHeight(44); fromDP.setPrefHeight(44);
         fromDP.setMaxHeight(44); fromDP.setMaxWidth(Double.MAX_VALUE);
-        // Bind to ViewModel
         fromDP.valueProperty().bindBidirectional(vm.customFromProperty());
         fromBox.getChildren().addAll(fromLbl, fromDP);
         HBox.setHgrow(fromBox, Priority.ALWAYS);
 
         VBox toBox = new VBox(5);
-        Label toLbl = new Label("TO");
+        Label toLbl = new Label(I18n.t("TO"));
         toLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
         DatePicker toDP = UIFactory.inputDatePicker("mm/dd/yyyy");
         toDP.setMinHeight(44); toDP.setPrefHeight(44);
         toDP.setMaxHeight(44); toDP.setMaxWidth(Double.MAX_VALUE);
-        // Bind to ViewModel
         toDP.valueProperty().bindBidirectional(vm.customToProperty());
         toBox.getChildren().addAll(toLbl, toDP);
         HBox.setHgrow(toBox, Priority.ALWAYS);
 
         customDates.getChildren().addAll(fromBox, toBox);
 
-        // Show custom dates only when "Custom" is selected
-        boolean isCustom = "Custom".equals(timeCombo.getValue());
+        boolean isCustom = I18n.t("Custom").equals(timeCombo.getValue());
         customDates.setVisible(isCustom);
         customDates.setManaged(isCustom);
         timeCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
-            boolean custom = "Custom".equals(newVal);
+            boolean custom = I18n.t("Custom").equals(newVal);
             customDates.setVisible(custom);
             customDates.setManaged(custom);
         });
 
-        // PROJECT STATUS — wired to vm.setSelectedStatus()
+        // PROJECT STATUS
         VBox statusBox = new VBox(8);
-        Label statusLbl = new Label("PROJECT STATUS");
+        Label statusLbl = new Label(I18n.t("PROJECT STATUS"));
         statusLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
-        RadioButton r1 = new RadioButton("All Projects");   r1.setSelected(true);  r1.getStyleClass().add("custom-radio");
-        RadioButton r2 = new RadioButton("Active only");    r2.getStyleClass().add("custom-radio");
-        RadioButton r3 = new RadioButton("Inactive only");  r3.getStyleClass().add("custom-radio");
+        RadioButton r1 = new RadioButton(I18n.t("All Projects"));  r1.setSelected(true); r1.getStyleClass().add("custom-radio");
+        RadioButton r2 = new RadioButton(I18n.t("Active only"));   r2.getStyleClass().add("custom-radio");
+        RadioButton r3 = new RadioButton(I18n.t("Inactive only")); r3.getStyleClass().add("custom-radio");
 
         ToggleGroup tg = new ToggleGroup();
         r1.setToggleGroup(tg); r2.setToggleGroup(tg); r3.setToggleGroup(tg);
 
-        // Wire to ViewModel — null means "All"
         tg.selectedToggleProperty().addListener((obs, oldT, newT) -> {
             if (newT == r2) vm.setSelectedStatus("Active");
             else if (newT == r3) vm.setSelectedStatus("Inactive");
             else vm.setSelectedStatus(null);
         });
 
-        // Reset ALL resets ViewModel properties + UI
         reset.setOnMouseClicked(e -> {
             vm.setPeriodFromString("This Year");
             vm.customFromProperty().set(null);
@@ -376,12 +359,12 @@ public class ReportModals {
 
         // Action buttons
         HBox actions = new HBox(10);
-        Button applyBtn = new Button("Apply Filters");
+        Button applyBtn = new Button(I18n.t("Apply Filters"));
         applyBtn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-insets: 0;");
         applyBtn.setMinHeight(44); applyBtn.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(applyBtn, Priority.ALWAYS);
 
-        Button exportBtn = new Button("Export PDF");
+        Button exportBtn = new Button(I18n.t("Export PDF"));
         exportBtn.setStyle("-fx-background-color: #F1F5F9; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-insets: 0;");
         exportBtn.setMinHeight(44); exportBtn.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(exportBtn, Priority.ALWAYS);
@@ -389,7 +372,6 @@ public class ReportModals {
         addClickEffect(applyBtn);
         addClickEffect(exportBtn);
 
-        // Apply Filters: recompute via ViewModel (charts react via ListChangeListener)
         applyBtn.setOnAction(e -> {
             vm.recompute();
             if (onApplyExtra != null) onApplyExtra.run();
@@ -402,7 +384,7 @@ public class ReportModals {
 
         // Footer
         HBox footer = new HBox();
-        Label syncLabel = new Label("LAST SYNCHRONIZED: 12 MINUTES AGO");
+        Label syncLabel = new Label(I18n.t("LAST SYNCHRONIZED: 12 MINUTES AGO"));
         syncLabel.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
         footer.getChildren().add(syncLabel);
 
@@ -424,7 +406,7 @@ public class ReportModals {
         modal.show();
     }
 
-    // --- Quick Filters (table-level, same ViewModel wiring) ---
+    // --- Quick Filters ---
     public static void showQuickFilters(Stage owner, ReportsViewModel vm) {
         Stage modal = new Stage();
         modal.initOwner(owner);
@@ -461,7 +443,7 @@ public class ReportModals {
         Label titleIcon = new Label();
         titleIcon.setGraphic(IconFactory.getIcon("sliders-vertical", 18));
         titleIcon.setPadding(new Insets(0, 10, 0, 0));
-        Label title = new Label("Quick Filters");
+        Label title = new Label(I18n.t("Quick Filters"));
         title.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -471,13 +453,12 @@ public class ReportModals {
         closeBtn.setOnAction(e -> closeWithAnimation(modal, container));
         header.getChildren().addAll(titleIcon, title, spacer, closeBtn);
 
-        // Preset period segmented control
-        HBox presetBtns = createSegmentedControl("This Month", "Last 6 Months");
+        HBox presetBtns = createSegmentedControl(I18n.t("This Month"), I18n.t("Last 6 Months"));
 
-        // Date Range — bound to ViewModel
+        // Date Range
         HBox dateBox = new HBox(15);
         VBox startBox = new VBox(5);
-        Label startLbl = new Label("START DATE");
+        Label startLbl = new Label(I18n.t("START DATE"));
         startLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
         DatePicker startDP = UIFactory.inputDatePicker("Jan 01, 2024");
         startDP.setMinHeight(44); startDP.setPrefHeight(44);
@@ -487,7 +468,7 @@ public class ReportModals {
         HBox.setHgrow(startBox, Priority.ALWAYS);
 
         VBox endBox = new VBox(5);
-        Label endLbl = new Label("END DATE");
+        Label endLbl = new Label(I18n.t("END DATE"));
         endLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
         DatePicker endDP = UIFactory.inputDatePicker("Mar 31, 2024");
         endDP.setMinHeight(44); endDP.setPrefHeight(44);
@@ -498,9 +479,9 @@ public class ReportModals {
 
         dateBox.getChildren().addAll(startBox, endBox);
 
-        // Projects list — wired to ViewModel
+        // Projects list
         VBox projBox = new VBox(10);
-        Label projLbl = new Label("PROJECTS");
+        Label projLbl = new Label(I18n.t("PROJECTS"));
         projLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
         ToggleGroup tg = new ToggleGroup();
@@ -508,7 +489,7 @@ public class ReportModals {
             projBox.getChildren().clear();
             projBox.getChildren().add(projLbl);
             if (projects.isEmpty()) {
-                Label placeholder = new Label("No projects");
+                Label placeholder = new Label(I18n.t("No projects"));
                 placeholder.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + ";");
                 projBox.getChildren().add(placeholder);
                 return;
@@ -523,23 +504,20 @@ public class ReportModals {
         };
 
         rebuildRadios.accept(vm.getAvailableProjects());
-
         vm.getAvailableProjects().addListener((ListChangeListener<Project>) c -> rebuildRadios.accept(vm.getAvailableProjects()));
 
         tg.selectedToggleProperty().addListener((obs, oldT, newT) -> {
             if (newT instanceof RadioButton rb) {
-                String label = rb.getText();
-                vm.setSelectedProject(label);
+                vm.setSelectedProject(rb.getText());
             }
         });
-
 
         // Footer
         HBox actions = new HBox();
         actions.setAlignment(Pos.CENTER_LEFT);
         actions.setPadding(new Insets(10, 0, 0, 0));
 
-        Button resetBtn = new Button("⟲ Reset");
+        Button resetBtn = new Button(I18n.t("⟲ Reset"));
         resetBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-cursor: hand; -fx-font-weight: bold;");
         resetBtn.setOnAction(e -> {
             vm.setPeriodFromString("This Year");
@@ -553,7 +531,7 @@ public class ReportModals {
         Region actionSpacer = new Region();
         HBox.setHgrow(actionSpacer, Priority.ALWAYS);
 
-        Button applyBtn = new Button("Apply Filters");
+        Button applyBtn = new Button(I18n.t("Apply Filters"));
         applyBtn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 24; -fx-cursor: hand;");
         applyBtn.setOnAction(e -> {
             vm.recompute();
@@ -623,9 +601,6 @@ public class ReportModals {
         return box;
     }
 
-    /**
-     * Functional toggle — calls onChange with current on/off state.
-     */
     private static HBox createToggle(String label, boolean initialOn, java.util.function.Consumer<Boolean> onChange) {
         HBox box = new HBox(8);
         box.setAlignment(Pos.CENTER_LEFT);
@@ -671,7 +646,7 @@ public class ReportModals {
         Button b1 = new Button(opt1);
         b1.setMinHeight(38); b1.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(b1, Priority.ALWAYS);
-        b1.setStyle(activeStyle); // opt1 active by default
+        b1.setStyle(activeStyle);
 
         Button b2 = new Button(opt2);
         b2.setMinHeight(38); b2.setMaxWidth(Double.MAX_VALUE);

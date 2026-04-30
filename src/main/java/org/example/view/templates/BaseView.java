@@ -99,10 +99,10 @@ public abstract class BaseView {
 
         ImageView lockIcon = IconFactory.getWhiteIcon("lock", 52);
 
-        Label msg = new Label("Access Denied");
+        Label msg = new Label(I18n.t("Access Denied"));
         msg.setStyle("-fx-font-size: 24px; -fx-font-weight: 900; -fx-text-fill: white;");
 
-        Label sub = new Label("You don't have permission to view this screen.");
+        Label sub = new Label(I18n.t("You don't have permission to view this screen."));
         sub.setStyle("-fx-font-size: 14px; -fx-text-fill: rgba(255,255,255,0.65);");
 
         VBox content = new VBox(14, lockIcon, msg, sub);

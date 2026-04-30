@@ -33,8 +33,8 @@ public class ReportFilterBar extends VBox {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         ComboBox<String> timeFilter = new ComboBox<>();
-        timeFilter.getItems().addAll("Last 6 Months", "This Year", "All Time");
-        timeFilter.setValue("Last 6 Months");
+        timeFilter.getItems().addAll(I18n.t("Last 6 Months"), I18n.t("This Year"), I18n.t("All Time"));
+        timeFilter.setValue(I18n.t("Last 6 Months"));
         timeFilter.setStyle("-fx-background-color: #F8FAFC; -fx-background-radius: 8; -fx-border-color: #E2E8F0; -fx-border-radius: 8;");
 
         header.getChildren().addAll(title, spacer, timeFilter);

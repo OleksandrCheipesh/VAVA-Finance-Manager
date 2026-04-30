@@ -14,11 +14,11 @@ import javafx.util.Duration;
 public class ToastManager {
 
     public static void showSuccess(Stage ownerStage, String message) {
-        showToast(ownerStage, "Success", message, Themes.TEXT_SUCCESS, "✔");
+        showToast(ownerStage, I18n.t("Success"), message, Themes.TEXT_SUCCESS, "✔");
     }
 
     public static void showError(Stage ownerStage, String message) {
-        showToast(ownerStage, "Error", message, Themes.TEXT_ERROR, "⚠");
+        showToast(ownerStage, I18n.t("Error"), message, Themes.TEXT_ERROR, "⚠");
     }
 
     private static void showToast(Stage ownerStage, String titleText, String messageText, String colorHex, String iconText) {

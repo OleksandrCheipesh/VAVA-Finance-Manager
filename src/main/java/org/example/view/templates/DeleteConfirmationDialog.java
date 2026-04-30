@@ -85,10 +85,10 @@ public class DeleteConfirmationDialog {
         VBox textContainer = new VBox(10);
         textContainer.setAlignment(Pos.CENTER);
 
-        Label title = new Label("Delete Item?");
+        Label title = new Label(I18n.t("Delete Item?"));
         title.setStyle("-fx-font-size: 22px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
-        Label message = new Label("Are you sure you want to permanently remove\n'" + itemName + "'? This action cannot be undone.");
+        Label message = new Label(I18n.t("Are you sure you want to permanently remove") + "\n'" + itemName + "'? " + I18n.t("This action cannot be undone."));
         message.setStyle("-fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-line-spacing: 4px;");
         message.setTextAlignment(TextAlignment.CENTER);
 
@@ -100,12 +100,12 @@ public class DeleteConfirmationDialog {
         actionBox.setAlignment(Pos.CENTER);
         actionBox.setPadding(new Insets(15, 0, 0, 0));
 
-        Button cancelBtn = new Button("Keep It");
+        Button cancelBtn = new Button(I18n.t("Keep It"));
 
         cancelBtn.setStyle("-fx-background-color: #F1F5F9; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-weight: bold; -fx-padding: 12 24; -fx-background-radius: 8; -fx-cursor: hand; -fx-font-size: 14px;");
         cancelBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
 
-        Button deleteBtn = new Button("Yes, Delete");
+        Button deleteBtn = new Button(I18n.t("Yes, Delete"));
 
         String delNormal = "-fx-background-color: " + Themes.TEXT_ERROR + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 24; -fx-background-radius: 8; -fx-cursor: hand; -fx-font-size: 14px;";
         String delHover = "-fx-background-color: #DC2626; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 24; -fx-background-radius: 8; -fx-cursor: hand; -fx-font-size: 14px;";

@@ -38,18 +38,13 @@ public class ProjectDetailsDialog {
         modal.initModality(Modality.APPLICATION_MODAL);
         modal.initStyle(StageStyle.TRANSPARENT);
 
-        // Background Blur & Darken
         Scene ownerScene = owner.getScene();
-
         Paint originalFill = ownerScene.getFill();
-
         ownerScene.setFill(Color.web(Themes.TEXT_DARK));
 
         Node backgroundRoot = ownerScene.getRoot();
-
         ColorAdjust darken = new ColorAdjust();
         darken.setBrightness(-0.3);
-
         GaussianBlur blur = new GaussianBlur(15);
         blur.setInput(darken);
         backgroundRoot.setEffect(blur);
@@ -60,7 +55,6 @@ public class ProjectDetailsDialog {
         });
 
         VBox root = new VBox(20);
-
         root.setPadding(new Insets(35, 45, 35, 45));
         root.setStyle(
                 "-fx-background-color: white;" +
@@ -88,10 +82,10 @@ public class ProjectDetailsDialog {
 
         VBox headerTitles = new VBox(2);
 
-        Label headerTop = new Label("PROJECT DETAILS");
+        Label headerTop = new Label(I18n.t("PROJECT DETAILS"));
         headerTop.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
-        Label headerSub = new Label("ID: " + project.getName() + " • Strategic");
+        Label headerSub = new Label("ID: " + project.getName() + " • " + I18n.t("Strategic"));
         headerSub.setStyle("-fx-font-size: 12px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
         headerTitles.getChildren().addAll(headerTop, headerSub);
 
@@ -99,7 +93,6 @@ public class ProjectDetailsDialog {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         Button closeBtn = new Button("X");
-
         closeBtn.setMinSize(32, 32);
         closeBtn.setMaxSize(32, 32);
         closeBtn.setStyle(
@@ -111,7 +104,6 @@ public class ProjectDetailsDialog {
                         "-fx-font-size: 16px;" +
                         "-fx-padding: 0;"
         );
-
         HBox.setMargin(closeBtn, new Insets(0, -15, 0, 0));
         closeBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
 
@@ -119,7 +111,6 @@ public class ProjectDetailsDialog {
 
         // Inner Content Area
         VBox innerCard = new VBox(25);
-
         innerCard.setAlignment(Pos.TOP_CENTER);
         innerCard.setPadding(new Insets(20, 0, 20, 0));
         innerCard.setStyle("-fx-background-color: transparent;");
@@ -128,7 +119,7 @@ public class ProjectDetailsDialog {
         Label projName = new Label(project.getName());
         projName.setStyle("-fx-font-size: 32px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
-        Label pill = new Label("STRATEGIC INITIATIVE");
+        Label pill = new Label(I18n.t("STRATEGIC INITIATIVE"));
         pill.setStyle("-fx-background-color: " + Themes.PRIMARY + "33; -fx-text-fill: " + Themes.PRIMARY + "; -fx-font-size: 10px; -fx-font-weight: 900; -fx-padding: 6 15; -fx-background-radius: 16;");
 
         Label desc = new Label(project.getDescription());
@@ -136,15 +127,15 @@ public class ProjectDetailsDialog {
         desc.setAlignment(Pos.CENTER);
         desc.setStyle("-fx-font-size: 13px; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-text-alignment: center; -fx-padding: 10 0;");
 
-        // Stats Row (Budget, Spend, Remaining)
+        // Stats Row
         HBox statsRow = new HBox(0);
         statsRow.setAlignment(Pos.CENTER);
 
         BigDecimal remaining = project.getBudgetLimit().subtract(project.getCurrentSpend());
 
-        VBox col1 = createStatColumn("BUDGET LIMIT", currencyFormat.format(project.getBudgetLimit()), Themes.TEXT_DARK);
-        VBox col2 = createStatColumn("CURRENT SPEND", currencyFormat.format(project.getCurrentSpend()), Themes.PRIMARY);
-        VBox col3 = createStatColumn("REMAINING", currencyFormat.format(remaining), Themes.TEXT_DARK);
+        VBox col1 = createStatColumn(I18n.t("BUDGET LIMIT"),    currencyFormat.format(project.getBudgetLimit()),    Themes.TEXT_DARK);
+        VBox col2 = createStatColumn(I18n.t("CURRENT SPEND"),   currencyFormat.format(project.getCurrentSpend()),   Themes.PRIMARY);
+        VBox col3 = createStatColumn(I18n.t("REMAINING"),       currencyFormat.format(remaining),                   Themes.TEXT_DARK);
 
         col1.prefWidthProperty().bind(innerCard.widthProperty().divide(3));
         col2.prefWidthProperty().bind(innerCard.widthProperty().divide(3));
@@ -161,7 +152,7 @@ public class ProjectDetailsDialog {
 
         VBox pTitles = new VBox(0);
 
-        Label pTop = new Label("BUDGET");
+        Label pTop = new Label(I18n.t("BUDGET"));
         pTop.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
         Label pValue = new Label(percent + "%");
@@ -171,13 +162,12 @@ public class ProjectDetailsDialog {
         Region pSpacer = new Region();
         HBox.setHgrow(pSpacer, Priority.ALWAYS);
 
-        Label pStatus = new Label("On Frontend");
+        Label pStatus = new Label(I18n.t("On Frontend"));
         pStatus.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: " + Themes.PRIMARY + "; -fx-alignment: bottom-right;");
 
         pHeader.getChildren().addAll(pTitles, pSpacer, pStatus);
         pHeader.setAlignment(Pos.BOTTOM_CENTER);
 
-        // Custom drawn bar
         HBox barTrack = new HBox();
         barTrack.setStyle("-fx-background-color: #F1F5F9; -fx-background-radius: 6; -fx-pref-height: 8px;");
 
@@ -193,10 +183,8 @@ public class ProjectDetailsDialog {
         datesRow.setPadding(new Insets(20, 0, 0, 0));
 
         VBox startBox = new VBox(5);
-
-        Label sLbl = new Label("START DATE");
+        Label sLbl = new Label(I18n.t("START DATE"));
         sLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
-
         Label sVal = new Label(project.getStartDate().format(dateFormatter));
         sVal.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
         startBox.getChildren().addAll(sLbl, sVal);
@@ -210,13 +198,10 @@ public class ProjectDetailsDialog {
         Region dSpacer2 = new Region(); HBox.setHgrow(dSpacer2, Priority.ALWAYS);
 
         VBox endBox = new VBox(5);
-
-        Label eLbl = new Label("END DATE");
+        Label eLbl = new Label(I18n.t("END DATE"));
         eLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
-
         Label eVal = new Label(project.getEndDate().format(dateFormatter));
         eVal.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
-
         endBox.getChildren().addAll(eLbl, eVal);
         endBox.setAlignment(Pos.CENTER_RIGHT);
 
@@ -228,14 +213,11 @@ public class ProjectDetailsDialog {
         HBox bottomButtons = new HBox(15);
         bottomButtons.setPadding(new Insets(10, 0, 0, 0));
 
-        Button editBtn = new Button("Edit Project");
-
+        Button editBtn = new Button(I18n.t("Edit Project"));
         editBtn.setGraphic(IconFactory.getWhiteIcon("square-pen", 18));
         editBtn.setMinHeight(52);
         editBtn.setMaxWidth(Double.MAX_VALUE);
-
         HBox.setHgrow(editBtn, Priority.ALWAYS);
-
         editBtn.setStyle(
                 "-fx-background-color: " + Themes.PRIMARY + ";" +
                         "-fx-text-fill: white;" +
@@ -246,64 +228,44 @@ public class ProjectDetailsDialog {
                         "-fx-icon-text-gap: 10px;"
         );
         editBtn.setOnAction(e ->
-            closeWithAnimation(modal, shadowWrapper, () ->
-                AddProjectDialog.show(owner, project, updatedProject -> onUpdate.accept(updatedProject))
-            )
+                closeWithAnimation(modal, shadowWrapper, () ->
+                        AddProjectDialog.show(owner, project, updatedProject -> onUpdate.accept(updatedProject))
+                )
         );
-
-        editBtn.setOnMousePressed(e -> {
-            editBtn.setScaleX(0.98);
-            editBtn.setScaleY(0.98);
-        });
-        editBtn.setOnMouseReleased(e -> {
-            editBtn.setScaleX(1.0);
-            editBtn.setScaleY(1.0);
-        });
+        editBtn.setOnMousePressed(e -> { editBtn.setScaleX(0.98); editBtn.setScaleY(0.98); });
+        editBtn.setOnMouseReleased(e -> { editBtn.setScaleX(1.0); editBtn.setScaleY(1.0); });
 
         Button deleteBtn = new Button();
         deleteBtn.setGraphic(IconFactory.getIcon("trash", 24));
         deleteBtn.setMinSize(52, 52);
 
         String normalDeleteStyle = "-fx-background-color: #FEE2E2; -fx-background-radius: 12; -fx-cursor: hand;";
-        String hoverDeleteStyle = "-fx-background-color: #FECACA; -fx-background-radius: 12; -fx-cursor: hand;";
+        String hoverDeleteStyle  = "-fx-background-color: #FECACA; -fx-background-radius: 12; -fx-cursor: hand;";
         deleteBtn.setStyle(normalDeleteStyle);
-
         deleteBtn.setOnMouseEntered(e -> deleteBtn.setStyle(hoverDeleteStyle));
         deleteBtn.setOnMouseExited(e -> deleteBtn.setStyle(normalDeleteStyle));
-
         deleteBtn.setOnAction(e -> {
             closeWithAnimation(modal, shadowWrapper);
             onDelete.accept(project);
         });
-
-        deleteBtn.setOnMousePressed(e -> {
-            deleteBtn.setScaleX(0.95);
-            deleteBtn.setScaleY(0.95);
-        });
-        deleteBtn.setOnMouseReleased(e -> {
-            deleteBtn.setScaleX(1.0);
-            deleteBtn.setScaleY(1.0);
-        });
+        deleteBtn.setOnMousePressed(e -> { deleteBtn.setScaleX(0.95); deleteBtn.setScaleY(0.95); });
+        deleteBtn.setOnMouseReleased(e -> { deleteBtn.setScaleX(1.0); deleteBtn.setScaleY(1.0); });
 
         bottomButtons.getChildren().addAll(editBtn, deleteBtn);
 
-        // Assemble Modal
         root.getChildren().addAll(header, innerCard, bottomButtons);
 
         Scene scene = new Scene(shadowWrapper);
         scene.setFill(Color.TRANSPARENT);
         modal.setScene(scene);
 
-        // Animations
         shadowWrapper.setOpacity(0);
         shadowWrapper.setTranslateY(30);
 
         FadeTransition fadeIn = new FadeTransition(Duration.millis(300), shadowWrapper);
         fadeIn.setToValue(1);
-
         TranslateTransition slideUp = new TranslateTransition(Duration.millis(300), shadowWrapper);
         slideUp.setToY(0);
-
         new ParallelTransition(fadeIn, slideUp).play();
 
         modal.show();
@@ -327,22 +289,16 @@ public class ProjectDetailsDialog {
         closeWithAnimation(modal, animatedNode, null);
     }
 
-    // Overload that runs a callback AFTER the modal is fully closed.
-    // This ensures any follow-up dialog (e.g. AddProjectDialog) applies
-    // its own blur AFTER this dialog's setOnHidden has cleared its blur.
     private static void closeWithAnimation(Stage modal, Node animatedNode, Runnable onClosed) {
         FadeTransition fadeOut = new FadeTransition(Duration.millis(200), animatedNode);
         fadeOut.setToValue(0);
-
         TranslateTransition slideDown = new TranslateTransition(Duration.millis(200), animatedNode);
         slideDown.setToY(30);
-
         ParallelTransition exitAnimation = new ParallelTransition(fadeOut, slideDown);
         exitAnimation.setOnFinished(e -> {
-            modal.close();          // setOnHidden fires here — clears this dialog's blur
-            if (onClosed != null) onClosed.run();  // then open next dialog with fresh blur
+            modal.close();
+            if (onClosed != null) onClosed.run();
         });
-
         exitAnimation.play();
     }
 }

@@ -60,9 +60,9 @@ public class ClientDetailDialog {
         root.setPadding(new Insets(35, 40, 35, 40));
         root.setStyle(
                 "-fx-background-color: white;" +
-                "-fx-background-radius: 20;" +
-                "-fx-border-radius: 20;" +
-                "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 25, 0, 0, 10);"
+                        "-fx-background-radius: 20;" +
+                        "-fx-border-radius: 20;" +
+                        "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.12), 25, 0, 0, 10);"
         );
         root.setPrefWidth(520);
 
@@ -79,8 +79,8 @@ public class ClientDetailDialog {
         closeBtn.setMaxSize(32, 32);
         closeBtn.setStyle(
                 "-fx-background-color: transparent; -fx-cursor: hand;" +
-                "-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-weight: bold;" +
-                "-fx-font-size: 16px; -fx-padding: 0;"
+                        "-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-weight: bold;" +
+                        "-fx-font-size: 16px; -fx-padding: 0;"
         );
         closeBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper, null));
         HBox.setMargin(closeBtn, new Insets(0, -10, 0, 0));
@@ -105,8 +105,8 @@ public class ClientDetailDialog {
         nameLabel.setStyle("-fx-font-size: 26px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
 
         String memberSince = client.getCreatedAt() != null
-                ? "PREMIUM CLIENT • MEMBER SINCE " + client.getCreatedAt().getYear()
-                : "CLIENT";
+                ? I18n.t("PREMIUM CLIENT • MEMBER SINCE ") + client.getCreatedAt().getYear()
+                : I18n.t("CLIENT");
         Label memberLabel = new Label(memberSince);
         memberLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-letter-spacing: 0.5px;");
         nameBox.getChildren().addAll(nameLabel, memberLabel);
@@ -126,18 +126,18 @@ public class ClientDetailDialog {
         contactCard.setStyle("-fx-background-color: #F8FAFC; -fx-background-radius: 12; -fx-padding: 18 20;");
         HBox.setHgrow(contactCard, Priority.ALWAYS);
 
-        Label contactTitle = new Label("CONTACT DETAILS");
+        Label contactTitle = new Label(I18n.t("CONTACT DETAILS"));
         contactTitle.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-letter-spacing: 1px;");
 
         VBox emailRow = new VBox(2);
-        Label emailLbl = new Label("Email Address");
+        Label emailLbl = new Label(I18n.t("Email Address"));
         emailLbl.setStyle("-fx-font-size: 11px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
         Label emailVal = new Label(orDash(client.getEmail()));
         emailVal.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + Themes.DARK_TEXT + "; -fx-wrap-text: true;");
         emailRow.getChildren().addAll(emailLbl, emailVal);
 
         VBox phoneRow = new VBox(2);
-        Label phoneLbl = new Label("Phone Number");
+        Label phoneLbl = new Label(I18n.t("Phone Number"));
         phoneLbl.setStyle("-fx-font-size: 11px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
         Label phoneVal = new Label(orDash(client.getPhone()));
         phoneVal.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + Themes.DARK_TEXT + ";");
@@ -149,10 +149,10 @@ public class ClientDetailDialog {
         financialCard.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-background-radius: 12; -fx-padding: 18 20;");
         financialCard.setPrefWidth(180);
 
-        Label financialTitle = new Label("FINANCIAL STATUS");
+        Label financialTitle = new Label(I18n.t("FINANCIAL STATUS"));
         financialTitle.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: rgba(255,255,255,0.75); -fx-letter-spacing: 1px;");
 
-        Label incomeLbl = new Label("Monthly Income");
+        Label incomeLbl = new Label(I18n.t("Monthly Income"));
         incomeLbl.setStyle("-fx-font-size: 11px; -fx-text-fill: rgba(255,255,255,0.75);");
 
         String incomeText = client.getMonthlyIncome() != null
@@ -172,7 +172,7 @@ public class ClientDetailDialog {
 
         HBox txHeader = new HBox();
         txHeader.setAlignment(Pos.CENTER_LEFT);
-        Label txTitle = new Label("RECENT TRANSACTIONS");
+        Label txTitle = new Label(I18n.t("RECENT TRANSACTIONS"));
         txTitle.setStyle("-fx-font-size: 11px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-letter-spacing: 1px;");
         txHeader.getChildren().add(txTitle);
 
@@ -186,7 +186,7 @@ public class ClientDetailDialog {
         }
 
         if (transactions.isEmpty()) {
-            Label empty = new Label("No transactions found.");
+            Label empty = new Label(I18n.t("No transactions found."));
             empty.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
             txSection.getChildren().add(empty);
         } else {
@@ -200,15 +200,15 @@ public class ClientDetailDialog {
         HBox footer = new HBox(15);
         footer.setPadding(new Insets(10, 0, 0, 0));
 
-        Button editBtn = new Button("Edit Client");
+        Button editBtn = new Button(I18n.t("Edit Client"));
         editBtn.setGraphic(IconFactory.getWhiteIcon("square-pen", 18));
         editBtn.setMinHeight(52);
         editBtn.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(editBtn, Priority.ALWAYS);
         editBtn.setStyle(
                 "-fx-background-color: " + Themes.PRIMARY + ";" +
-                "-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: 900;" +
-                "-fx-background-radius: 12; -fx-cursor: hand; -fx-graphic-text-gap: 10;"
+                        "-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: 900;" +
+                        "-fx-background-radius: 12; -fx-cursor: hand; -fx-graphic-text-gap: 10;"
         );
         editBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper, onEdit));
         editBtn.setOnMousePressed(e -> { editBtn.setScaleX(0.98); editBtn.setScaleY(0.98); });

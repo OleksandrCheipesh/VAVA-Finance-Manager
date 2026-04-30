@@ -75,10 +75,10 @@ public class AddTransactionDialog {
         header.setAlignment(Pos.CENTER_LEFT);
 
         VBox titleBox = new VBox(4);
-        Label title = new Label("New Transaction");
+        Label title = new Label(I18n.t("New Transaction"));
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
-        Label subtitle = new Label("Record a new sale or purchase.");
+        Label subtitle = new Label(I18n.t("Record a new sale or purchase."));
         subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
 
         titleBox.getChildren().addAll(title, subtitle);
@@ -106,8 +106,8 @@ public class AddTransactionDialog {
         HBox toggleBox = new HBox();
         toggleBox.setStyle("-fx-background-color: " + Themes.BG_FIELD + "; -fx-background-radius: 8; -fx-padding: 4;");
 
-        Button saleBtn = new Button("+ Sale");
-        Button purchaseBtn = new Button("- Purchase");
+        Button saleBtn = new Button(I18n.t("+ Sale"));
+        Button purchaseBtn = new Button(I18n.t("- Purchase"));
 
         String activeStyle = "-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: default;";
         String inactiveStyle = "-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-weight: bold; -fx-cursor: hand;";
@@ -141,7 +141,7 @@ public class AddTransactionDialog {
         amountField.setPrefHeight(44);
 
         Label amountError = errorLabel();
-        VBox amountBox = createLabeledField("AMOUNT", amountField, amountError);
+        VBox amountBox = createLabeledField(I18n.t("AMOUNT"), amountField, amountError);
 
         TextField descField = UIFactory.inputField("Enter description");
 
@@ -149,10 +149,10 @@ public class AddTransactionDialog {
         descField.setPrefHeight(44);
 
         Label descError = errorLabel();
-        VBox descBox = createLabeledField("DESCRIPTION", descField, descError);
+        VBox descBox = createLabeledField(I18n.t("DESCRIPTION"), descField, descError);
 
         boolean hasAccounts = !accounts.isEmpty();
-        String accountPrompt = hasAccounts ? "Select Account" : "No accounts found";
+        String accountPrompt = hasAccounts ? I18n.t("Select Account") : I18n.t("No accounts found");
 
         ComboBox<Account> accountCombo = UIFactory.inputComboBox(accountPrompt);
 
@@ -184,7 +184,7 @@ public class AddTransactionDialog {
 
         Map<String, Integer> projectNameToId = new HashMap<>();
 
-        ComboBox<String> projectCombo = UIFactory.inputComboBox("Select Project");
+        ComboBox<String> projectCombo = UIFactory.inputComboBox(I18n.t("Select Project"));
 
         projectCombo.setMaxWidth(Double.MAX_VALUE);
         projectCombo.setMinHeight(44);
@@ -209,10 +209,10 @@ public class AddTransactionDialog {
 
         Label accountError = errorLabel();
         Label projectError = errorLabel();
-        splitBox.add(createLabeledField("ACCOUNT", accountCombo, accountError), 0, 0);
-        splitBox.add(createLabeledField("PROJECT", projectCombo, projectError), 1, 0);
+        splitBox.add(createLabeledField(I18n.t("ACCOUNT"), accountCombo, accountError), 0, 0);
+        splitBox.add(createLabeledField(I18n.t("PROJECT"), projectCombo, projectError), 1, 0);
 
-        ComboBox<Client> clientCombo = UIFactory.inputComboBox("Select Client (optional)");
+        ComboBox<Client> clientCombo = UIFactory.inputComboBox(I18n.t("Select Client (optional)"));
         clientCombo.setMaxWidth(Double.MAX_VALUE);
         clientCombo.setMinHeight(44);
         clientCombo.setPrefHeight(44);
@@ -231,13 +231,13 @@ public class AddTransactionDialog {
                     setText(item.getName() + " " + item.getSurname());
                     setStyle("-fx-text-fill: " + Themes.TEXT_DARK + ";");
                 } else {
-                    setText("Select Client (optional)");
+                    setText(I18n.t("Select Client (optional)"));
                     setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + ";");
                 }
             }
         });
         Label clientError = errorLabel();
-        VBox clientBox = createLabeledField("CLIENT (OPTIONAL)", clientCombo, clientError);
+        VBox clientBox = createLabeledField(I18n.t("CLIENT (OPTIONAL)"), clientCombo, clientError);
 
         DatePicker datePicker = UIFactory.inputDatePicker("Select date");
 
@@ -257,7 +257,7 @@ public class AddTransactionDialog {
         });
 
         Label dateError = errorLabel();
-        VBox dateBox = createLabeledField("DATE", datePicker, dateError);
+        VBox dateBox = createLabeledField(I18n.t("DATE"), datePicker, dateError);
 
         form.getChildren().addAll(amountBox, descBox, splitBox, clientBox, dateBox);
 
@@ -265,7 +265,7 @@ public class AddTransactionDialog {
         actionBox.setAlignment(Pos.CENTER_RIGHT);
         actionBox.setPadding(new Insets(10, 0, 0, 0));
 
-        Button cancelBtn = new Button("Cancel");
+        Button cancelBtn = new Button(I18n.t("Cancel"));
         cancelBtn.setMinWidth(Region.USE_PREF_SIZE);
         cancelBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-padding: 10 20;");
         cancelBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
@@ -280,7 +280,7 @@ public class AddTransactionDialog {
             cancelBtn.setScaleY(1.0);
         });
 
-        StateButton saveBtn = new StateButton("Save", StateButton.ButtonType.PRIMARY);
+        StateButton saveBtn = new StateButton(I18n.t("Save"), StateButton.ButtonType.PRIMARY);
         saveBtn.setMinHeight(50);
         saveBtn.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(saveBtn, Priority.ALWAYS);
@@ -315,39 +315,39 @@ public class AddTransactionDialog {
             BigDecimal amount = null;
             String amountText = amountField.getText().trim();
             if (amountText.isBlank()) {
-                showFieldError(amountField, errorBorder, amountError, "Amount is required");
+                showFieldError(amountField, errorBorder, amountError, I18n.t("Amount is required"));
                 valid = false;
             } else {
                 try {
                     amount = new BigDecimal(amountText);
                     if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-                        showFieldError(amountField, errorBorder, amountError, "Amount must be greater than zero");
+                        showFieldError(amountField, errorBorder, amountError, I18n.t("Amount must be greater than zero"));
                         valid = false;
                     }
                 } catch (NumberFormatException ex) {
-                    showFieldError(amountField, errorBorder, amountError, "Enter a valid number (e.g. 1500.00)");
+                    showFieldError(amountField, errorBorder, amountError, I18n.t("Enter a valid number (e.g. 1500.00)"));
                     valid = false;
                 }
             }
 
             if (descField.getText().isBlank()) {
-                showFieldError(descField, errorBorder, descError, "Description is required");
+                showFieldError(descField, errorBorder, descError, I18n.t("Description is required"));
                 valid = false;
             }
 
             if (datePicker.getValue() == null) {
-                showFieldError(datePicker, errorBorder, dateError, "Please select a date");
+                showFieldError(datePicker, errorBorder, dateError, I18n.t("Please select a date"));
                 valid = false;
             }
 
             if (accountCombo.getValue() == null) {
                 showFieldError(accountCombo, errorBorder, accountError,
-                        accounts.isEmpty() ? "No accounts available — create one first" : "Please select an account");
+                        accounts.isEmpty() ? I18n.t("No accounts available — create one first") : I18n.t("Please select an account"));
                 valid = false;
             }
 
             if (!valid) {
-                ToastManager.showError(owner, "Please fix the highlighted fields.");
+                ToastManager.showError(owner, I18n.t("Please fix the highlighted fields."));
                 return;
             }
 
@@ -369,7 +369,7 @@ public class AddTransactionDialog {
                         closeWithAnimation(modal, shadowWrapper);
                     } catch (Exception ex) {
                         saveBtn.setLoading(false);
-                        ToastManager.showError(owner, "Something went wrong. Please try again.");
+                        ToastManager.showError(owner, I18n.t("Something went wrong. Please try again."));
                         var logger = AppLog.getLogger(AddTransactionDialog.class);
                         logger.error("Unexpected error saving transaction: {}", ex.getMessage(), ex);
                     }

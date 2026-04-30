@@ -34,10 +34,10 @@ public class IncomeExpenseBarChart extends VBox {
         chart.getStyleClass().add("income-expense-chart");
 
         incomeSeries = new XYChart.Series<>();
-        incomeSeries.setName("Income");
+        incomeSeries.setName(I18n.t("Income"));
 
         expenseSeries = new XYChart.Series<>();
-        expenseSeries.setName("Expenses");
+        expenseSeries.setName(I18n.t("Expenses"));
 
         chart.getData().addAll(incomeSeries, expenseSeries);
 

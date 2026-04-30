@@ -35,7 +35,7 @@ public class TrendLineChart extends VBox {
         chart.getStyleClass().add("trend-line-chart");
 
         series = new XYChart.Series<>();
-        series.setName("Net Profit");
+        series.setName(I18n.t("Net Profit"));
         chart.getData().add(series);
 
         VBox.setVgrow(chart, Priority.ALWAYS);
