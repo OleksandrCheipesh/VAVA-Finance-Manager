@@ -70,6 +70,19 @@ public class BudgetViewModel {
         }
     }
 
+    public void updateAccount(Account account) {
+        var logger = org.example.logging.AppLog.getLogger(BudgetViewModel.class);
+        try {
+            budgetModel.updateAccount(account);
+            loadAccounts();
+            message.set("Success: Account '" + account.getAccountName() + "' updated successfully!");
+            logger.info("Account updated: id={} name={}", account.getId(), account.getAccountName());
+        } catch (SQLException e) {
+            message.set("Error: Failed to update account.");
+            logger.error("Failed to update account id={}", account.getId(), e);
+        }
+    }
+
     public void deleteAccount(Account account) {
         var logger = org.example.logging.AppLog.getLogger(BudgetViewModel.class);
         try {

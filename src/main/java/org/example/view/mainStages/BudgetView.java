@@ -240,7 +240,7 @@ public class BudgetView extends BaseView {
     });
 
     addAccountBtnMid.setOnAction(e -> {
-      AddBudgetDialog.show(stage, newAccount -> {
+      AddBudgetDialog.show(stage, null, newAccount -> {
         viewModel.addAccount(newAccount);
         refreshDashboardState(cardWidthBinding);
       });
@@ -433,7 +433,10 @@ public class BudgetView extends BaseView {
         stage,
         account,
         viewModel,
-        () -> ToastManager.showError(stage, "Edit functionality coming in the next task."),
+        () -> AddBudgetDialog.show(stage, account, updatedAccount -> {
+          viewModel.updateAccount(updatedAccount);
+          refreshDashboardState(widthBinding);
+        }),
         () -> {
           viewModel.deleteAccount(account);
           refreshDashboardState(widthBinding);
