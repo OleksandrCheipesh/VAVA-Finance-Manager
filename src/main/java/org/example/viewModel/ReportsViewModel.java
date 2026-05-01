@@ -3,11 +3,15 @@ package org.example.viewModel;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.concurrent.Task;
+import org.example.SessionManager;
+import org.example.model.database.entity.Employee;
+import org.example.model.database.entity.Position;
 import org.example.model.database.entity.Project;
 import org.example.model.database.service.ProjectService;
-import org.example.model.reports.*;
 import org.example.model.models.ReportsModel;
-import javafx.concurrent.Task;
+import org.example.model.reports.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,42 +19,50 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import org.example.SessionManager;
-import org.example.model.database.entity.Position;
 
 public class ReportsViewModel {
 
     // ----------------------------------------------------------------
-    // Filter state — bound to ReportFilterBar in the view
+    // Filter state
     // ----------------------------------------------------------------
     private final ObjectProperty<Project>    selectedProject = new SimpleObjectProperty<>(null);
     private final ObjectProperty<PeriodType> selectedPeriod  = new SimpleObjectProperty<>(PeriodType.THIS_YEAR);
     private final ObjectProperty<LocalDate>  customFrom      = new SimpleObjectProperty<>();
     private final ObjectProperty<LocalDate>  customTo        = new SimpleObjectProperty<>();
 
-    // "Month" or "Quarter" — used by bar/line chart modals
     private final StringProperty grouping       = new SimpleStringProperty("Month");
-    private final StringProperty selectedStatus = new SimpleStringProperty(null);
+    private final StringProperty selectedStatus = new SimpleStringProperty(null); // project status (Active/Inactive)
     private       String         selectedProjectName = null;
 
-    private final StringProperty totalProfit = new SimpleStringProperty("$0.00");
-    private final StringProperty grossIncome = new SimpleStringProperty("$0.00");
-    private final StringProperty netExpense  = new SimpleStringProperty("$0.00");
+    // Per-panel filters
+    private final ObjectProperty<BigDecimal> incomeMinAmount    = new SimpleObjectProperty<>(null);
+    private final ObjectProperty<BigDecimal> expenseMinAmount   = new SimpleObjectProperty<>(null);
+    private final StringProperty             employeeStatus     = new SimpleStringProperty(null);
+    private final BooleanProperty            showOnlyProfitable = new SimpleBooleanProperty(false);
+    private final BooleanProperty            showOnlyLoss       = new SimpleBooleanProperty(false);
+
+    // ----------------------------------------------------------------
+    // Computed display strings (bound to summary cards)
+    // ----------------------------------------------------------------
+    private final StringProperty totalProfit    = new SimpleStringProperty("$0.00");
+    private final StringProperty grossIncome    = new SimpleStringProperty("$0.00");
+    private final StringProperty netExpense     = new SimpleStringProperty("$0.00");
     private final StringProperty netProfitTrend = new SimpleStringProperty("$0.00");
 
-    private final ReportsModel model = new ReportsModel();
+    private final ReportsModel   model          = new ReportsModel();
     private final ProjectService projectService = new ProjectService();
-    private final javafx.collections.ObservableList<Project> availableProjects = javafx.collections.FXCollections.observableArrayList();
 
     // ----------------------------------------------------------------
-    // Chart data — ObservableLists that charts listen to
+    // Observable data
     // ----------------------------------------------------------------
+    private final ObservableList<Project>            availableProjects = FXCollections.observableArrayList();
     private final ObservableList<ProjectSummaryDTO>  projectSummaries  = FXCollections.observableArrayList();
     private final ObservableList<MonthlySnapshotDTO> monthlySummaries  = FXCollections.observableArrayList();
     private final ObservableList<ExpenseCategoryDTO> expenseCategories = FXCollections.observableArrayList();
     private final ObservableList<IncomeBreakdownDTO> incomeBreakdown   = FXCollections.observableArrayList();
+    private final ObservableList<Employee>           employees         = FXCollections.observableArrayList();
+
+    private final FilteredList<Employee> filteredEmployees = new FilteredList<>(employees);
 
     // ----------------------------------------------------------------
     // UI state
@@ -62,30 +74,41 @@ public class ReportsViewModel {
         loadAvailableProjects();
         recompute();
 
-        selectedPeriod.addListener((obs, oldV, newV) -> recompute());
-        selectedProject.addListener((obs, oldV, newV) -> recompute());
-        customFrom.addListener((obs, oldV, newV) -> recompute());
-        customTo.addListener((obs, oldV, newV) -> recompute());
-        selectedStatus.addListener((obs, oldV, newV) -> recompute());
+        selectedPeriod.addListener((obs, o, n)  -> recompute());
+        selectedProject.addListener((obs, o, n) -> recompute());
+        customFrom.addListener((obs, o, n)      -> recompute());
+        customTo.addListener((obs, o, n)        -> recompute());
+        selectedStatus.addListener((obs, o, n)      -> recompute());
+        showOnlyProfitable.addListener((obs, o, n) -> recompute());
+        showOnlyLoss.addListener((obs, o, n)       -> recompute());
+        incomeMinAmount.addListener((obs, o, n)    -> recompute());
+        expenseMinAmount.addListener((obs, o, n)   -> recompute());
+
+        employeeStatus.addListener((obs, o, n)     -> updateEmployeeFilter());
+    }
+
+    private void updateEmployeeFilter() {
+        String s = employeeStatus.get();
+        filteredEmployees.setPredicate(
+            (s == null || s.isBlank()) ? null : e -> s.equalsIgnoreCase(e.getStatus())
+        );
     }
 
     private void loadAvailableProjects() {
         int companyId = SessionManager.getInstance().getCurrentCompanyId();
-        javafx.concurrent.Task<java.util.List<Project>> task = new javafx.concurrent.Task<>() {
-            @Override
-            protected java.util.List<Project> call() throws Exception {
+        Task<List<Project>> task = new Task<>() {
+            @Override protected List<Project> call() throws Exception {
                 return projectService.getProjectsByCompanyId(companyId);
             }
         };
-        task.setOnSucceeded(e -> javafx.application.Platform.runLater(() -> {
-            availableProjects.setAll(task.getValue());
-        }));
+        task.setOnSucceeded(e -> javafx.application.Platform.runLater(() ->
+                availableProjects.setAll(task.getValue())));
         task.setOnFailed(e -> task.getException().printStackTrace());
         new Thread(task).start();
     }
 
     // ----------------------------------------------------------------
-    // recompute() — real data loading
+    // recompute() — async data load
     // ----------------------------------------------------------------
     public void recompute() {
         LocalDate from = resolvedFrom();
@@ -93,9 +116,11 @@ public class ReportsViewModel {
         if (from == null || to == null) return;
 
         int companyId = SessionManager.getInstance().getCurrentCompanyId();
-        Integer pId = selectedProject.get() != null ? selectedProject.get().getId() : null;
-        String status = selectedStatus.get();
+        Integer pId   = selectedProject.get() != null ? selectedProject.get().getId() : null;
+        String  status = selectedStatus.get();
         if (status != null && status.isBlank()) status = null;
+        BigDecimal minInc = incomeMinAmount.get();
+        BigDecimal minExp = expenseMinAmount.get();
 
         loading.set(true);
         errorMessage.set("");
@@ -104,43 +129,41 @@ public class ReportsViewModel {
         Task<List<?>[]> task = new Task<>() {
             @Override
             protected List<?>[] call() throws Exception {
-                List<ProjectSummaryDTO> pSums = model.getProjectSummaries(companyId, from, to, pId, finalStatus);
-                List<MonthlySnapshotDTO> mSums = model.getMonthlySummaries(companyId, from, to, pId, finalStatus);
-                List<ExpenseCategoryDTO> eCats = model.getExpenseBreakdown(companyId, from, to, pId);
-                List<IncomeBreakdownDTO> iBrk  = model.getIncomeBreakdown(companyId, from, to, pId, finalStatus);
+                List<ProjectSummaryDTO>  ps   = model.getProjectSummaries(companyId, from, to, pId);
+                List<MonthlySnapshotDTO> ms   = model.getMonthlySnapshots(companyId, from, to, pId);
+                List<ExpenseCategoryDTO> ec   = model.getExpenseBreakdown(companyId, from, to, pId, minExp);
+                List<IncomeBreakdownDTO> ib   = model.getIncomeBreakdown(companyId, from, to, pId, minInc);
+                List<Employee>           emps = model.getEmployees(companyId, pId);
 
-                if ("Quarter".equals(grouping.get())) {
-                    mSums = groupByQuarter(mSums);
-                }
+                if ("Quarter".equals(grouping.get())) ms = groupByQuarter(ms);
 
-                return new List<?>[]{pSums, mSums, eCats, iBrk};
+                return new List<?>[]{ps, ms, ec, ib, emps};
             }
         };
 
         task.setOnSucceeded(e -> {
-            List<?>[] result = task.getValue();
+            List<?>[] r = task.getValue();
+            List<ProjectSummaryDTO>  psList  = (List<ProjectSummaryDTO>)  r[0];
+            List<MonthlySnapshotDTO> msList  = (List<MonthlySnapshotDTO>) r[1];
 
-            List<ProjectSummaryDTO> pSumsList = (List<ProjectSummaryDTO>) result[0];
-            List<MonthlySnapshotDTO> mSumsList = (List<MonthlySnapshotDTO>) result[1];
-
-            BigDecimal tProfit = pSumsList.stream().map(ProjectSummaryDTO::getNetProfit).reduce(BigDecimal.ZERO, BigDecimal::add);
-            BigDecimal gInc = mSumsList.stream().map(MonthlySnapshotDTO::getIncome).reduce(BigDecimal.ZERO, BigDecimal::add);
-            BigDecimal nExp = mSumsList.stream().map(MonthlySnapshotDTO::getExpense).reduce(BigDecimal.ZERO, BigDecimal::add);
-            BigDecimal nTrend = gInc.subtract(nExp);
-
+            BigDecimal tProfit = psList.stream().map(ProjectSummaryDTO::getNetProfit).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal gInc    = msList.stream().map(MonthlySnapshotDTO::getIncome)  .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal nExp    = msList.stream().map(MonthlySnapshotDTO::getExpense) .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal nTrend  = gInc.subtract(nExp);
             java.text.NumberFormat fmt = java.text.NumberFormat.getCurrencyInstance(java.util.Locale.US);
 
             javafx.application.Platform.runLater(() -> {
-                projectSummaries.setAll(pSumsList);
-                monthlySummaries.setAll(mSumsList);
-                expenseCategories.setAll((List<ExpenseCategoryDTO>) result[2]);
-                incomeBreakdown.setAll((List<IncomeBreakdownDTO>) result[3]);
+                projectSummaries.setAll(psList);
+                monthlySummaries.setAll(applyMonthlyFilters(msList));
+                expenseCategories.setAll((List<ExpenseCategoryDTO>) r[2]);
+                incomeBreakdown.setAll((List<IncomeBreakdownDTO>)   r[3]);
+                employees.setAll((List<Employee>) r[4]);
+                updateEmployeeFilter();
 
                 totalProfit.set(fmt.format(tProfit));
                 grossIncome.set(fmt.format(gInc));
                 netExpense.set(fmt.format(nExp));
                 netProfitTrend.set(fmt.format(nTrend));
-
                 loading.set(false);
             });
         });
@@ -154,36 +177,31 @@ public class ReportsViewModel {
         new Thread(task).start();
     }
 
-    /**
-     * Aggregates a list of monthly snapshots into quarters.
-     * Q1=Jan-Mar, Q2=Apr-Jun, Q3=Jul-Sep, Q4=Oct-Dec.
-     * Each resulting entry uses the YearMonth of the first month in the quarter
-     * as its period label.
-     */
+    private List<MonthlySnapshotDTO> applyMonthlyFilters(List<MonthlySnapshotDTO> raw) {
+        return raw.stream()
+            .filter(m -> !showOnlyProfitable.get() || m.getNetProfit().compareTo(BigDecimal.ZERO) > 0)
+            .filter(m -> !showOnlyLoss.get()       || m.getNetProfit().compareTo(BigDecimal.ZERO) < 0)
+            .collect(Collectors.toList());
+    }
+
     private List<MonthlySnapshotDTO> groupByQuarter(List<MonthlySnapshotDTO> monthly) {
-        // Group by (year, quarter-number)
         java.util.Map<String, List<MonthlySnapshotDTO>> buckets = new java.util.LinkedHashMap<>();
         for (MonthlySnapshotDTO s : monthly) {
-            int q    = (s.getPeriod().getMonthValue() - 1) / 3 + 1;
-            String key = s.getPeriod().getYear() + "-Q" + q;
-            buckets.computeIfAbsent(key, k -> new ArrayList<>()).add(s);
+            int q = (s.getPeriod().getMonthValue() - 1) / 3 + 1;
+            buckets.computeIfAbsent(s.getPeriod().getYear() + "-Q" + q, k -> new ArrayList<>()).add(s);
         }
-
         List<MonthlySnapshotDTO> quarters = new ArrayList<>();
         for (var entry : buckets.entrySet()) {
-            List<MonthlySnapshotDTO> bucket = entry.getValue();
-            BigDecimal income  = bucket.stream().map(MonthlySnapshotDTO::getIncome) .reduce(BigDecimal.ZERO, BigDecimal::add);
-            BigDecimal expense = bucket.stream().map(MonthlySnapshotDTO::getExpense).reduce(BigDecimal.ZERO, BigDecimal::add);
-            BigDecimal net     = income.subtract(expense);
-            YearMonth  period  = bucket.get(0).getPeriod();
-            quarters.add(new MonthlySnapshotDTO(period, income, expense, net));
+            List<MonthlySnapshotDTO> b = entry.getValue();
+            BigDecimal income  = b.stream().map(MonthlySnapshotDTO::getIncome) .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal expense = b.stream().map(MonthlySnapshotDTO::getExpense).reduce(BigDecimal.ZERO, BigDecimal::add);
+            quarters.add(new MonthlySnapshotDTO(b.get(0).getPeriod(), income, expense, income.subtract(expense)));
         }
         return quarters;
     }
 
-
     // ----------------------------------------------------------------
-    // Resolved date helpers
+    // Date helpers
     // ----------------------------------------------------------------
     public LocalDate resolvedFrom() {
         if (selectedPeriod.get() == null) return null;
@@ -191,8 +209,8 @@ public class ReportsViewModel {
             case THIS_MONTH   -> LocalDate.now().withDayOfMonth(1);
             case LAST_MONTH   -> LocalDate.now().minusMonths(1).withDayOfMonth(1);
             case THIS_QUARTER -> {
-                int startMonth = ((LocalDate.now().getMonthValue() - 1) / 3) * 3 + 1;
-                yield LocalDate.now().withMonth(startMonth).withDayOfMonth(1);
+                int sm = ((LocalDate.now().getMonthValue() - 1) / 3) * 3 + 1;
+                yield LocalDate.now().withMonth(sm).withDayOfMonth(1);
             }
             case THIS_YEAR    -> LocalDate.now().withDayOfYear(1);
             case CUSTOM       -> customFrom.get();
@@ -207,61 +225,59 @@ public class ReportsViewModel {
                 LocalDate lm = LocalDate.now().minusMonths(1);
                 yield lm.withDayOfMonth(lm.lengthOfMonth());
             }
-            case THIS_QUARTER -> LocalDate.now();
-            case THIS_YEAR    -> LocalDate.now();
-            case CUSTOM       -> customTo.get();
+            case THIS_QUARTER, THIS_YEAR -> LocalDate.now();
+            case CUSTOM -> customTo.get();
         };
     }
 
     // ----------------------------------------------------------------
     // Period enum
     // ----------------------------------------------------------------
-    public enum PeriodType {
-        THIS_MONTH, LAST_MONTH, THIS_QUARTER, THIS_YEAR, CUSTOM
-    }
+    public enum PeriodType { THIS_MONTH, LAST_MONTH, THIS_QUARTER, THIS_YEAR, CUSTOM }
 
     // ----------------------------------------------------------------
     // Getters / setters
     // ----------------------------------------------------------------
-    public ObjectProperty<Project>            selectedProjectProperty()  { return selectedProject; }
-    public ObjectProperty<PeriodType>         selectedPeriodProperty()   { return selectedPeriod; }
-    public ObjectProperty<LocalDate>          customFromProperty()       { return customFrom; }
-    public ObjectProperty<LocalDate>          customToProperty()         { return customTo; }
-    public StringProperty                     groupingProperty()         { return grouping; }
-    public ObservableList<ProjectSummaryDTO>  getProjectSummaries()      { return projectSummaries; }
-    public ObservableList<MonthlySnapshotDTO> getMonthlySummaries()      { return monthlySummaries; }
-    public ObservableList<ExpenseCategoryDTO> getExpenseCategories()     { return expenseCategories; }
-    public ObservableList<IncomeBreakdownDTO> getIncomeBreakdown()       { return incomeBreakdown; }
-    public BooleanProperty                    loadingProperty()          { return loading; }
-    public StringProperty                     errorMessageProperty()     { return errorMessage; }
-    public StringProperty                     selectedStatusProperty()   { return selectedStatus; }
+    public ObjectProperty<Project>            selectedProjectProperty()    { return selectedProject; }
+    public ObjectProperty<PeriodType>         selectedPeriodProperty()     { return selectedPeriod; }
+    public ObjectProperty<LocalDate>          customFromProperty()         { return customFrom; }
+    public ObjectProperty<LocalDate>          customToProperty()           { return customTo; }
+    public StringProperty                     groupingProperty()           { return grouping; }
+    public StringProperty                     selectedStatusProperty()     { return selectedStatus; }
 
-    public StringProperty totalProfitProperty() { return totalProfit; }
-    public StringProperty grossIncomeProperty() { return grossIncome; }
-    public StringProperty netExpenseProperty() { return netExpense; }
-    public StringProperty netProfitTrendProperty() { return netProfitTrend; }
+    public ObjectProperty<BigDecimal>         incomeMinAmountProperty()    { return incomeMinAmount; }
+    public ObjectProperty<BigDecimal>         expenseMinAmountProperty()   { return expenseMinAmount; }
+    public StringProperty                     employeeStatusProperty()     { return employeeStatus; }
+    public BooleanProperty                    showOnlyProfitableProperty() { return showOnlyProfitable; }
+    public BooleanProperty                    showOnlyLossProperty()       { return showOnlyLoss; }
+
+    public ObservableList<Project>            getAvailableProjects()       { return availableProjects; }
+    public ObservableList<ProjectSummaryDTO>  getProjectSummaries()        { return projectSummaries; }
+    public ObservableList<MonthlySnapshotDTO> getMonthlySummaries()        { return monthlySummaries; }
+    public ObservableList<ExpenseCategoryDTO> getExpenseCategories()       { return expenseCategories; }
+    public ObservableList<IncomeBreakdownDTO> getIncomeBreakdown()         { return incomeBreakdown; }
+    public ObservableList<Employee>           getEmployees()               { return employees; }
+    public FilteredList<Employee>             getFilteredEmployees()       { return filteredEmployees; }
+
+    public BooleanProperty                    loadingProperty()            { return loading; }
+    public StringProperty                     errorMessageProperty()       { return errorMessage; }
+    public StringProperty                     totalProfitProperty()        { return totalProfit; }
+    public StringProperty                     grossIncomeProperty()        { return grossIncome; }
+    public StringProperty                     netExpenseProperty()         { return netExpense; }
+    public StringProperty                     netProfitTrendProperty()     { return netProfitTrend; }
 
     public void setSelectedProject(String name) {
         selectedProjectName = name;
-        if (name == null || name.isBlank()) {
+        if (name == null || name.isBlank() || "All Projects".equals(name)) {
             selectedProject.set(null);
             return;
         }
-        if ("All Projects".equals(name)) {
-            selectedProject.set(null);
-            return;
-        }
-        Project match = availableProjects.stream().filter(p -> name.equals(p.getName())).findFirst().orElse(null);
-        selectedProject.set(match);
+        selectedProject.set(availableProjects.stream()
+            .filter(p -> name.equals(p.getName())).findFirst().orElse(null));
     }
 
-    public javafx.collections.ObservableList<Project> getAvailableProjects() { return availableProjects; }
+    public void setSelectedStatus(String status) { selectedStatus.set(status); }
 
-    public void setSelectedStatus(String status) {
-        selectedStatus.set(status);
-    }
-
-    /** Maps UI string → PeriodType enum. */
     public void setPeriodFromString(String label) {
         if (label == null) return;
         selectedPeriod.set(switch (label) {
@@ -274,7 +290,6 @@ public class ReportsViewModel {
         });
     }
 
-    /** Returns current period as UI display string. */
     public String getPeriodAsString() {
         if (selectedPeriod.get() == null) return "This Year";
         return switch (selectedPeriod.get()) {
@@ -286,7 +301,6 @@ public class ReportsViewModel {
         };
     }
 
-    /** Sets Month/Quarter grouping and immediately recomputes. */
     public void setGrouping(String value) {
         grouping.set(value);
         recompute();
@@ -294,7 +308,7 @@ public class ReportsViewModel {
 
     private final BooleanProperty hasAccess = new SimpleBooleanProperty(
             SessionManager.getInstance().getPosition() == Position.Director ||
-                    SessionManager.getInstance().getPosition() == Position.Analyst
+            SessionManager.getInstance().getPosition() == Position.Analyst
     );
     public BooleanProperty hasAccessProperty() { return hasAccess; }
 }

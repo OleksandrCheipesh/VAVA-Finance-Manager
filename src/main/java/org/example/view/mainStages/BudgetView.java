@@ -8,6 +8,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -86,7 +87,6 @@ public class BudgetView extends BaseView {
     topBar.getChildren().addAll(titleBox, spacer1);
 
     contentArea = new VBox(25);
-    VBox.setVgrow(contentArea, Priority.ALWAYS);
 
     DoubleBinding cardWidthBinding = contentArea.widthProperty()
       .subtract(80)
@@ -208,7 +208,13 @@ public class BudgetView extends BaseView {
     updateGrid(cardWidthBinding);
 
     contentArea.getChildren().addAll(summaryContainer, midHeader, accountsGrid);
-    mainContainer.getChildren().addAll(topBar, contentArea);
+    ScrollPane scrollPane = new ScrollPane(contentArea);
+    scrollPane.setFitToWidth(true);
+    scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+    scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+    scrollPane.setStyle("-fx-background: " + Themes.BG_DASHBOARD + "; -fx-background-color: " + Themes.BG_DASHBOARD + "; -fx-border-width: 0;");
+    VBox.setVgrow(scrollPane, Priority.ALWAYS);
+    mainContainer.getChildren().addAll(topBar, scrollPane);
 
     root.setCenter(mainContainer);
     scene = new Scene(root);
