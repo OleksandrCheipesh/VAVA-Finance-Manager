@@ -13,8 +13,8 @@ public class EmployeeService {
     public Employee addEmployee(Employee employee) throws SQLException {
         var logger = org.example.logging.AppLog.getLogger(EmployeeService.class);
         EmployeeValidator.validate(employee);
-        String sql = "INSERT INTO employees (company_id, name, surname, email, age, salary, position) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id, hired_at";
+        String sql = "INSERT INTO employees (company_id, name, surname, email, age, salary, position, status) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id, hired_at";
         logger.info("Adding employee: name={} surname={} email={} companyId={}", employee.getName(), employee.getSurname(), employee.getEmail(), employee.getCompanyId());
         try {
             try (Connection connection = ConnectionProvider.getConnection();
@@ -40,6 +40,8 @@ public class EmployeeService {
                     preparedStatement.setNull(6, Types.NUMERIC);
 
                 preparedStatement.setString(7, employee.getPosition());
+
+                preparedStatement.setObject(8, employee.getStatus(), Types.OTHER);
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
@@ -141,7 +143,7 @@ public class EmployeeService {
         EmployeeValidator.validate(employee);
         Employee before = getEmployeeById(employee.getId()).orElse(null);
         String sql = "UPDATE employees SET company_id = ?, name = ?, surname = ?, age = ?, " +
-                     "salary = ?, position = ?,email = ? WHERE id = ?";
+                     "salary = ?, position = ?,email = ?, status = ? WHERE id = ?";
         try (Connection connection = ConnectionProvider.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, employee.getCompanyId());
@@ -165,7 +167,8 @@ public class EmployeeService {
                 preparedStatement.setString(7, employee.getEmail());
             else
                 preparedStatement.setNull(7, Types.VARCHAR);
-            preparedStatement.setInt(8, employee.getId());
+            preparedStatement.setObject(8, employee.getStatus(), Types.OTHER);
+            preparedStatement.setInt(9, employee.getId());
             boolean updated = preparedStatement.executeUpdate() > 0;
             if (updated) {
                 StringBuilder changes = new StringBuilder();

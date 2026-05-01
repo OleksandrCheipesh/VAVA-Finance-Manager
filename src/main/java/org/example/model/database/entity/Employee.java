@@ -101,7 +101,9 @@ public class Employee extends Person {
     }
 
     public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public void setStatus(String status) {
+        this.status = status.toUpperCase();
+    }
 
     public String getDepartment() { return department; }
     public void setDepartment(String department) { this.department = department; }

@@ -32,7 +32,7 @@ public class EmployeesView extends BaseView {
     private StateButton addBtn;
     private HBox filterBar;
     private HBox topBar;
-
+    private TextField search;
     @Override
     protected void setContent() {
         root = new BorderPane();
@@ -85,10 +85,38 @@ public class EmployeesView extends BaseView {
         tabInactive.setStyle(inactiveTab);
         tabContractors.setStyle(inactiveTab);
 
-        tabAll.setOnMouseClicked(e -> { tabAll.setStyle(activeTab); tabActive.setStyle(inactiveTab); tabInactive.setStyle(inactiveTab); tabContractors.setStyle(inactiveTab); });
-        tabActive.setOnMouseClicked(e -> { tabActive.setStyle(activeTab); tabAll.setStyle(inactiveTab); tabInactive.setStyle(inactiveTab); tabContractors.setStyle(inactiveTab); });
-        tabInactive.setOnMouseClicked(e -> { tabInactive.setStyle(activeTab); tabAll.setStyle(inactiveTab); tabActive.setStyle(inactiveTab); tabContractors.setStyle(inactiveTab); });
-        tabContractors.setOnMouseClicked(e -> { tabContractors.setStyle(activeTab); tabAll.setStyle(inactiveTab); tabActive.setStyle(inactiveTab); tabInactive.setStyle(inactiveTab); });
+        tabAll.setOnMouseClicked(e -> {
+            tabAll.setStyle(activeTab);
+            tabActive.setStyle(inactiveTab);
+            tabInactive.setStyle(inactiveTab);
+            tabContractors.setStyle(inactiveTab);
+
+            viewModel.filterByStatus(null);
+        });
+        tabActive.setOnMouseClicked(e -> {
+            tabActive.setStyle(activeTab);
+            tabAll.setStyle(inactiveTab);
+            tabInactive.setStyle(inactiveTab);
+            tabContractors.setStyle(inactiveTab);
+
+            viewModel.filterByStatus("ACTIVE");
+        });
+        tabInactive.setOnMouseClicked(e -> {
+            tabInactive.setStyle(activeTab);
+            tabAll.setStyle(inactiveTab);
+            tabActive.setStyle(inactiveTab);
+            tabContractors.setStyle(inactiveTab);
+
+            viewModel.filterByStatus("INACTIVE");
+        });
+        tabContractors.setOnMouseClicked(e -> {
+            tabContractors.setStyle(activeTab);
+            tabAll.setStyle(inactiveTab);
+            tabActive.setStyle(inactiveTab);
+            tabInactive.setStyle(inactiveTab);
+
+            viewModel.filterByStatus("CONTRACTOR");
+        });
 
         tabs.getChildren().addAll(tabAll, tabActive, tabInactive, tabContractors);
 
@@ -137,7 +165,7 @@ public class EmployeesView extends BaseView {
         summaryContainer.getChildren().addAll(
                 createSummaryCard(I18n.t("TOTAL EMPLOYEES"), totalEmpLabel, totalEmpLabelSub, Themes.TEXT_SUCCESS),
                 createSummaryCard(I18n.t("ACTIVE"), activeLabel, activeLabelSub, Themes.TEXT_MUTED),
-                createSummaryCard(I18n.t("ONBOARDING"), onboardingLabel, onboardingLabelSub, "#F59E0B")
+                createSummaryCard(I18n.t("CONTRACTOR"), onboardingLabel, onboardingLabelSub, "#F59E0B")
         );
 
         table = new AppTable<>("");
@@ -164,6 +192,14 @@ public class EmployeesView extends BaseView {
 
         TableColumn<Employee, String> roleCol = new TableColumn<>(I18n.t("ROLE"));
         I18n.language.addListener((obs, o, v) -> roleCol.setText(I18n.t("ROLE")));
+
+        TableColumn<Employee, String> salaryCol = new TableColumn<>(I18n.t("SALARY"));
+        I18n.language.addListener((obs, o, v) -> salaryCol.setText(I18n.t("SALARY")));
+        salaryCol.setCellValueFactory(cellData -> {
+            var salary = cellData.getValue().getSalary();
+            return new SimpleStringProperty(salary != null ? salary.toString() : "");
+        });
+
         roleCol.setCellValueFactory(new PropertyValueFactory<>("position"));
 
         TableColumn<Employee, String> deptCol = new TableColumn<>(I18n.t("DEPARTMENT"));
@@ -213,20 +249,42 @@ public class EmployeesView extends BaseView {
             }
         });
 
+        salaryCol.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null || item.isBlank()) {
+                    setText(null);
+                } else {
+                    setText(item);
+                    setStyle(""); // сбрасываем стиль ячейки
+                }
+            }
+        });
         table.setOnMouseClicked(e -> {
             var selected = table.getSelectionModel().getSelectedItem();
             table.getSelectionModel().clearSelection();
             if (selected != null) openDetailsModal(selected);
         });
 
-        nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.18));
-        roleCol.prefWidthProperty().bind(table.widthProperty().multiply(0.18));
+        nameCol.prefWidthProperty().bind(table.widthProperty().multiply(0.17));
+        roleCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
+        salaryCol.prefWidthProperty().bind(table.widthProperty().multiply(0.12));
         deptCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
-        emailCol.prefWidthProperty().bind(table.widthProperty().multiply(0.25));
-        statusCol.prefWidthProperty().bind(table.widthProperty().multiply(0.12));
-        actionCol.prefWidthProperty().bind(table.widthProperty().multiply(0.10));
+        emailCol.prefWidthProperty().bind(table.widthProperty().multiply(0.24));
+        statusCol.prefWidthProperty().bind(table.widthProperty().multiply(0.09));
+        actionCol.prefWidthProperty().bind(table.widthProperty().multiply(0.08));
 
-        table.getColumns().addAll(nameCol, roleCol, deptCol, emailCol, statusCol, actionCol);
+        table.getColumns().addAll(
+                nameCol,
+                roleCol,
+                salaryCol,
+                deptCol,
+                emailCol,
+                statusCol,
+                actionCol
+        );
 
         contentArea.getChildren().addAll(filterBar, summaryContainer, table);
         mainContainer.getChildren().addAll(topBar, contentArea);
@@ -249,11 +307,11 @@ public class EmployeesView extends BaseView {
     private void openDetailsModal(Employee emp) {
         EmployeeDetailsDialog.show(stage, emp,
                 updatedEmp -> {
-                    table.refresh();
+                    viewModel.updateEmployee(updatedEmp);
                     ToastManager.showSuccess(stage, "Employee profile updated!");
                 },
                 deletedEmp -> {
-                    viewModel.getEmployees().remove(deletedEmp);
+                    viewModel.deleteEmployee(deletedEmp);
                     ToastManager.showSuccess(stage, "Employee deleted.");
                 }
         );
@@ -280,6 +338,9 @@ public class EmployeesView extends BaseView {
             } else if (newVal != null && newVal.startsWith("Error:")) {
                 ToastManager.showError(stage, newVal.replace("Error: ", ""));
             }
+        });
+        search.textProperty().addListener((obs, oldVal, newVal) -> {
+            viewModel.filterBySearch(newVal);
         });
     }
 
@@ -323,7 +384,7 @@ public class EmployeesView extends BaseView {
         searchIcon.setScaleX(0.8);
         searchIcon.setScaleY(0.8);
 
-        TextField search = new TextField();
+        search = new TextField();
         search.setStyle("-fx-background-color: transparent; -fx-border-width: 0; -fx-padding: 0; -fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
         StackPane searchPane = new StackPane();
