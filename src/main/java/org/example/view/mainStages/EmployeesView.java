@@ -258,7 +258,7 @@ public class EmployeesView extends BaseView {
         deptCol.prefWidthProperty().bind(table.widthProperty().multiply(0.15));
         emailCol.prefWidthProperty().bind(table.widthProperty().multiply(0.24));
         statusCol.prefWidthProperty().bind(table.widthProperty().multiply(0.09));
-        actionCol.prefWidthProperty().bind(table.widthProperty().multiply(0.8));
+        actionCol.prefWidthProperty().bind(table.widthProperty().multiply(0.08));
 
         table.getColumns().addAll(
                 nameCol,
