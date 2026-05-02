@@ -558,6 +558,307 @@ public class ReportModals {
         modal.show();
     }
 
+    // ----------------------------------------------------------------
+    // Per-tab filter modals (dispatched from the Filters button)
+    // ----------------------------------------------------------------
+    public static void showTabFilters(Stage owner, ReportsViewModel vm, int tabIndex) {
+        switch (tabIndex) {
+            case 0 -> showTabFilterModal(owner, vm, "P&L Filters",       null,                       null);
+            case 1 -> showTabFilterModal(owner, vm, "Income Filters",    buildMinAmountBox("MIN. INCOME AMOUNT"), vm.incomeMinAmountProperty());
+            case 2 -> showTabFilterModal(owner, vm, "Expense Filters",   buildMinAmountBox("MIN. EXPENSE AMOUNT"), vm.expenseMinAmountProperty());
+            case 3 -> showHRFilterModal(owner, vm);
+            case 4 -> showMonthlyFilterModal(owner, vm);
+        }
+    }
+
+    private static TextField buildMinAmountBox(String label) {
+        return UIFactory.inputField(label);
+    }
+
+    private static void showTabFilterModal(Stage owner, ReportsViewModel vm,
+                                           String title,
+                                           TextField minAmountField,
+                                           javafx.beans.property.ObjectProperty<java.math.BigDecimal> minAmountProp) {
+        Stage modal = buildModalStage(owner);
+        StackPane container = new StackPane();
+        container.setStyle("-fx-background-color: transparent;");
+        container.setPadding(new Insets(40));
+
+        VBox root = new VBox(20);
+        root.setPadding(new Insets(25, 30, 25, 30));
+        root.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 30, 0, 0, 10);");
+        root.setMaxWidth(380);
+
+        HBox header = new HBox();
+        header.setAlignment(Pos.CENTER_LEFT);
+        Label titleLbl = new Label(title);
+        titleLbl.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+        Region hSpacer = new Region(); HBox.setHgrow(hSpacer, Priority.ALWAYS);
+        Button closeBtn = makeCloseBtn(() -> closeWithAnimation(modal, container));
+        header.getChildren().addAll(titleLbl, hSpacer, closeBtn);
+
+        // Time period
+        VBox timeBox = new VBox(5);
+        Label timeLbl = new Label(I18n.t("TIME PERIOD"));
+        timeLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+        ComboBox<String> timeCombo = UIFactory.inputComboBox(I18n.t("Select Period"));
+        timeCombo.getItems().addAll(I18n.t("This Month"), I18n.t("Last Month"),
+                I18n.t("This Quarter"), I18n.t("This Year"), I18n.t("Custom"));
+        timeCombo.setValue(vm.getPeriodAsString());
+        timeCombo.setMinHeight(44); timeCombo.setPrefHeight(44);
+        timeCombo.setMaxHeight(44); timeCombo.setMaxWidth(Double.MAX_VALUE);
+        timeBox.getChildren().addAll(timeLbl, timeCombo);
+
+        // Project
+        VBox projBox = buildProjectPicker(vm);
+
+        // Optional min amount
+        VBox minSection = null;
+        if (minAmountField != null) {
+            minSection = new VBox(5);
+            Label lbl = new Label("MIN. AMOUNT");
+            lbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+            minAmountField.setMinHeight(44); minAmountField.setPrefHeight(44);
+            minAmountField.setMaxWidth(Double.MAX_VALUE);
+            if (minAmountProp.get() != null) minAmountField.setText(minAmountProp.get().toPlainString());
+            minSection.getChildren().addAll(lbl, minAmountField);
+        }
+
+        // Actions
+        HBox actions = new HBox(10);
+        actions.setAlignment(Pos.CENTER_RIGHT);
+        actions.setPadding(new Insets(5, 0, 0, 0));
+        Button resetBtn = new Button(I18n.t("⟲ Reset"));
+        resetBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-cursor: hand; -fx-font-weight: bold;");
+        Region actSpacer = new Region(); HBox.setHgrow(actSpacer, Priority.ALWAYS);
+        Button applyBtn = new Button(I18n.t("Apply Filters"));
+        applyBtn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 24; -fx-cursor: hand;");
+        addClickEffect(applyBtn);
+
+        TextField finalMinField = minAmountField;
+        javafx.beans.property.ObjectProperty<java.math.BigDecimal> finalProp = minAmountProp;
+        applyBtn.setOnAction(e -> {
+            vm.setPeriodFromString(timeCombo.getValue());
+            if (finalMinField != null && finalProp != null) {
+                String raw = finalMinField.getText().replaceAll("[$,\\s]", "");
+                try {
+                    finalProp.set(raw.isEmpty() ? null : new java.math.BigDecimal(raw));
+                } catch (NumberFormatException ignored) {}
+            }
+            closeWithAnimation(modal, container);
+        });
+
+        resetBtn.setOnAction(e -> {
+            vm.setPeriodFromString("This Year");
+            if (finalMinField != null) finalMinField.clear();
+            if (finalProp != null) finalProp.set(null);
+        });
+
+        actions.getChildren().addAll(resetBtn, actSpacer, applyBtn);
+        root.getChildren().addAll(header, timeBox, projBox);
+        if (minSection != null) root.getChildren().add(minSection);
+        root.getChildren().add(actions);
+
+        container.getChildren().add(root);
+        showModalWithAnimation(owner, modal, container);
+    }
+
+    private static void showHRFilterModal(Stage owner, ReportsViewModel vm) {
+        Stage modal = buildModalStage(owner);
+        StackPane container = new StackPane();
+        container.setStyle("-fx-background-color: transparent;");
+        container.setPadding(new Insets(40));
+
+        VBox root = new VBox(20);
+        root.setPadding(new Insets(25, 30, 25, 30));
+        root.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 30, 0, 0, 10);");
+        root.setMaxWidth(380);
+
+        HBox header = new HBox();
+        header.setAlignment(Pos.CENTER_LEFT);
+        Label titleLbl = new Label("HR Filters");
+        titleLbl.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+        Region hSpacer = new Region(); HBox.setHgrow(hSpacer, Priority.ALWAYS);
+        Button closeBtn = makeCloseBtn(() -> closeWithAnimation(modal, container));
+        header.getChildren().addAll(titleLbl, hSpacer, closeBtn);
+
+        VBox projBox = buildProjectPicker(vm);
+
+        // Employee status
+        VBox statusBox = new VBox(8);
+        Label statusLbl = new Label("EMPLOYEE STATUS");
+        statusLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+        ToggleGroup tg = new ToggleGroup();
+        RadioButton rAll        = new RadioButton("All");         rAll.setToggleGroup(tg); rAll.getStyleClass().add("custom-radio");
+        RadioButton rActive     = new RadioButton("ACTIVE");      rActive.setToggleGroup(tg); rActive.getStyleClass().add("custom-radio");
+        RadioButton rInactive   = new RadioButton("INACTIVE");    rInactive.setToggleGroup(tg); rInactive.getStyleClass().add("custom-radio");
+        RadioButton rContractor = new RadioButton("CONTRACTOR");  rContractor.setToggleGroup(tg); rContractor.getStyleClass().add("custom-radio");
+
+        String current = vm.employeeStatusProperty().get();
+        if ("ACTIVE".equalsIgnoreCase(current))          rActive.setSelected(true);
+        else if ("INACTIVE".equalsIgnoreCase(current))   rInactive.setSelected(true);
+        else if ("CONTRACTOR".equalsIgnoreCase(current)) rContractor.setSelected(true);
+        else                                              rAll.setSelected(true);
+
+        statusBox.getChildren().addAll(statusLbl, rAll, rActive, rInactive, rContractor);
+
+        HBox actions = new HBox(10);
+        actions.setAlignment(Pos.CENTER_RIGHT);
+        actions.setPadding(new Insets(5, 0, 0, 0));
+        Button resetBtn = new Button(I18n.t("⟲ Reset"));
+        resetBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-cursor: hand; -fx-font-weight: bold;");
+        Region actSpacer = new Region(); HBox.setHgrow(actSpacer, Priority.ALWAYS);
+        Button applyBtn = new Button(I18n.t("Apply Filters"));
+        applyBtn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 24; -fx-cursor: hand;");
+        addClickEffect(applyBtn);
+
+        applyBtn.setOnAction(e -> {
+            Toggle sel = tg.getSelectedToggle();
+            if (sel == rActive)          vm.employeeStatusProperty().set("ACTIVE");
+            else if (sel == rInactive)   vm.employeeStatusProperty().set("INACTIVE");
+            else if (sel == rContractor) vm.employeeStatusProperty().set("CONTRACTOR");
+            else                         vm.employeeStatusProperty().set(null);
+            closeWithAnimation(modal, container);
+        });
+        resetBtn.setOnAction(e -> {
+            tg.selectToggle(rAll);
+            vm.employeeStatusProperty().set(null);
+        });
+
+        actions.getChildren().addAll(resetBtn, actSpacer, applyBtn);
+        root.getChildren().addAll(header, projBox, statusBox, actions);
+        container.getChildren().add(root);
+        showModalWithAnimation(owner, modal, container);
+    }
+
+    private static void showMonthlyFilterModal(Stage owner, ReportsViewModel vm) {
+        Stage modal = buildModalStage(owner);
+        StackPane container = new StackPane();
+        container.setStyle("-fx-background-color: transparent;");
+        container.setPadding(new Insets(40));
+
+        VBox root = new VBox(20);
+        root.setPadding(new Insets(25, 30, 25, 30));
+        root.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 30, 0, 0, 10);");
+        root.setMaxWidth(380);
+
+        HBox header = new HBox();
+        header.setAlignment(Pos.CENTER_LEFT);
+        Label titleLbl = new Label("Monthly Filters");
+        titleLbl.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
+        Region hSpacer = new Region(); HBox.setHgrow(hSpacer, Priority.ALWAYS);
+        Button closeBtn = makeCloseBtn(() -> closeWithAnimation(modal, container));
+        header.getChildren().addAll(titleLbl, hSpacer, closeBtn);
+
+        // Time period
+        VBox timeBox = new VBox(5);
+        Label timeLbl = new Label(I18n.t("TIME PERIOD"));
+        timeLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+        ComboBox<String> timeCombo = UIFactory.inputComboBox(I18n.t("Select Period"));
+        timeCombo.getItems().addAll(I18n.t("This Month"), I18n.t("Last Month"),
+                I18n.t("This Quarter"), I18n.t("This Year"), I18n.t("Custom"));
+        timeCombo.setValue(vm.getPeriodAsString());
+        timeCombo.setMinHeight(44); timeCombo.setPrefHeight(44);
+        timeCombo.setMaxHeight(44); timeCombo.setMaxWidth(Double.MAX_VALUE);
+        timeBox.getChildren().addAll(timeLbl, timeCombo);
+
+        VBox projBox = buildProjectPicker(vm);
+
+        // Toggles
+        HBox profitToggle = createToggle("Show only profitable months", vm.showOnlyProfitableProperty().get(),
+                on -> vm.showOnlyProfitableProperty().set(on));
+        HBox lossToggle   = createToggle("Show only loss months",        vm.showOnlyLossProperty().get(),
+                on -> vm.showOnlyLossProperty().set(on));
+
+        VBox togglesBox = new VBox(10, profitToggle, lossToggle);
+
+        HBox actions = new HBox(10);
+        actions.setAlignment(Pos.CENTER_RIGHT);
+        actions.setPadding(new Insets(5, 0, 0, 0));
+        Button resetBtn = new Button(I18n.t("⟲ Reset"));
+        resetBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-cursor: hand; -fx-font-weight: bold;");
+        Region actSpacer = new Region(); HBox.setHgrow(actSpacer, Priority.ALWAYS);
+        Button applyBtn = new Button(I18n.t("Apply Filters"));
+        applyBtn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 24; -fx-cursor: hand;");
+        addClickEffect(applyBtn);
+
+        applyBtn.setOnAction(e -> {
+            vm.setPeriodFromString(timeCombo.getValue());
+            closeWithAnimation(modal, container);
+        });
+        resetBtn.setOnAction(e -> {
+            vm.setPeriodFromString("This Year");
+            vm.showOnlyProfitableProperty().set(false);
+            vm.showOnlyLossProperty().set(false);
+        });
+
+        actions.getChildren().addAll(resetBtn, actSpacer, applyBtn);
+        root.getChildren().addAll(header, timeBox, projBox, togglesBox, actions);
+        container.getChildren().add(root);
+        showModalWithAnimation(owner, modal, container);
+    }
+
+    private static VBox buildProjectPicker(ReportsViewModel vm) {
+        VBox projBox = new VBox(5);
+        Label projLbl = new Label(I18n.t("PROJECT"));
+        projLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+        ComboBox<String> projectCombo = UIFactory.inputComboBox(I18n.t("All Projects"));
+        projectCombo.getItems().add(I18n.t("All Projects"));
+        projectCombo.getItems().addAll(vm.getAvailableProjects().stream()
+                .map(org.example.model.database.entity.Project::getName).collect(java.util.stream.Collectors.toList()));
+        projectCombo.setValue(vm.selectedProjectProperty().get() != null
+                ? vm.selectedProjectProperty().get().getName() : I18n.t("All Projects"));
+        projectCombo.setMinHeight(44); projectCombo.setPrefHeight(44);
+        projectCombo.setMaxHeight(44); projectCombo.setMaxWidth(Double.MAX_VALUE);
+        projectCombo.setOnAction(e -> {
+            String sel = projectCombo.getValue();
+            vm.setSelectedProject(I18n.t("All Projects").equals(sel) ? null : sel);
+        });
+        projBox.getChildren().addAll(projLbl, projectCombo);
+        return projBox;
+    }
+
+    private static Stage buildModalStage(Stage owner) {
+        Stage modal = new Stage();
+        modal.initOwner(owner);
+        modal.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        modal.initStyle(javafx.stage.StageStyle.TRANSPARENT);
+
+        javafx.scene.paint.Paint originalFill = owner.getScene().getFill();
+        javafx.scene.Node bgRoot = owner.getScene().getRoot();
+        javafx.scene.effect.ColorAdjust darken = new javafx.scene.effect.ColorAdjust();
+        darken.setBrightness(-0.3);
+        javafx.scene.effect.GaussianBlur blur = new javafx.scene.effect.GaussianBlur(15);
+        blur.setInput(darken);
+        bgRoot.setEffect(blur);
+        owner.getScene().setFill(Color.web(Themes.TEXT_DARK));
+        modal.setOnHidden(e -> { bgRoot.setEffect(null); owner.getScene().setFill(originalFill); });
+        return modal;
+    }
+
+    private static void showModalWithAnimation(Stage owner, Stage modal, StackPane container) {
+        Scene scene = new Scene(container);
+        scene.setFill(Color.TRANSPARENT);
+        try { scene.getStylesheets().add(ReportModals.class.getResource("/styles/global.css").toExternalForm()); } catch (Exception ignored) {}
+        modal.setScene(scene);
+        container.setOpacity(0);
+        container.setTranslateY(20);
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(300), container);
+        fadeIn.setToValue(1);
+        TranslateTransition slideUp = new TranslateTransition(Duration.millis(300), container);
+        slideUp.setToY(0);
+        new ParallelTransition(fadeIn, slideUp).play();
+        modal.show();
+    }
+
+    private static Button makeCloseBtn(Runnable onClose) {
+        Button btn = new Button("X");
+        btn.setMinSize(32, 32); btn.setMaxSize(32, 32);
+        btn.setStyle("-fx-background-color: transparent; -fx-background-radius: 8; -fx-cursor: hand; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-weight: bold; -fx-font-size: 16px; -fx-padding: 0;");
+        btn.setOnAction(e -> onClose.run());
+        return btn;
+    }
+
     // --- Helpers ---
     private static void closeWithAnimation(Stage modal, Node animatedNode) {
         FadeTransition fadeOut = new FadeTransition(Duration.millis(200), animatedNode);

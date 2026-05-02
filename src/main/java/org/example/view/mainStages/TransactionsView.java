@@ -131,7 +131,6 @@ public class TransactionsView extends BaseView {
 
         // Content area
         contentArea = new VBox(25);
-        VBox.setVgrow(contentArea, Priority.ALWAYS);
 
         // Filter Bar
         HBox filterBar = createCustomFilterBar();
@@ -170,6 +169,7 @@ public class TransactionsView extends BaseView {
         table.setItems(viewModel.getFilteredTransactions());
 
         VBox.setVgrow(table, Priority.ALWAYS);
+        table.setMinHeight(400);
 
         VBox emptyStateBox = new VBox(5);
         emptyStateBox.setAlignment(Pos.CENTER);
@@ -346,7 +346,13 @@ public class TransactionsView extends BaseView {
 
         // Merge layout
         contentArea.getChildren().addAll(filterBar, cardsBox, table);
-        mainContainer.getChildren().addAll(topBar, contentArea);
+        ScrollPane scrollPane = new ScrollPane(contentArea);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setStyle("-fx-background: " + Themes.BG_DASHBOARD + "; -fx-background-color: " + Themes.BG_DASHBOARD + "; -fx-border-width: 0;");
+        VBox.setVgrow(scrollPane, Priority.ALWAYS);
+        mainContainer.getChildren().addAll(topBar, scrollPane);
         root.setCenter(mainContainer);
 
         scene = new Scene(root);

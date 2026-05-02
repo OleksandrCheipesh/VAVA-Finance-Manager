@@ -70,7 +70,6 @@ public class ProjectsView extends BaseView {
         contentArea = new VBox(25);
         contentArea.setPadding(new Insets(30, 40, 40, 40));
         contentArea.setStyle("-fx-background-color: " + Themes.BG_DASHBOARD + ";");
-        VBox.setVgrow(contentArea, Priority.ALWAYS);
 
         // Header Row
         HBox contentHeader = new HBox(20);
@@ -135,15 +134,15 @@ public class ProjectsView extends BaseView {
         viewModel.getFilteredProjects().addListener((ListChangeListener<Project>) c -> refreshCards());
         refreshCards();
 
-        ScrollPane scroll = new ScrollPane(cardGrid);
-        scroll.setFitToWidth(true);
-        scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;");
-        scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        VBox.setVgrow(scroll, Priority.ALWAYS);
+        ScrollPane outerScroll = new ScrollPane(contentArea);
+        outerScroll.setFitToWidth(true);
+        outerScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        outerScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        outerScroll.setStyle("-fx-background: " + Themes.BG_DASHBOARD + "; -fx-background-color: " + Themes.BG_DASHBOARD + "; -fx-border-width: 0;");
+        VBox.setVgrow(outerScroll, Priority.ALWAYS);
 
-        contentArea.getChildren().addAll(contentHeader, scroll);
-        mainContainer.getChildren().addAll(topBar, contentArea);
+        contentArea.getChildren().addAll(contentHeader, cardGrid);
+        mainContainer.getChildren().addAll(topBar, outerScroll);
         root.setCenter(mainContainer);
 
         scene = new Scene(root);

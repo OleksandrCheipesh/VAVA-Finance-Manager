@@ -62,7 +62,6 @@ public class DashBoardView extends BaseView {
 
         // Content
         contentArea = new VBox(25);
-        VBox.setVgrow(contentArea, Priority.ALWAYS);
 
         HBox mainContentSplit = new HBox(25);
         VBox.setVgrow(mainContentSplit, Priority.ALWAYS);
@@ -227,7 +226,13 @@ public class DashBoardView extends BaseView {
         mainContentSplit.getChildren().addAll(leftColumn, rightColumn);
         contentArea.getChildren().add(mainContentSplit);
 
-        mainContainer.getChildren().addAll(topBar, contentArea);
+        ScrollPane scrollPane = new ScrollPane(contentArea);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setStyle("-fx-background: " + Themes.BG_DASHBOARD + "; -fx-background-color: " + Themes.BG_DASHBOARD + "; -fx-border-width: 0;");
+        VBox.setVgrow(scrollPane, Priority.ALWAYS);
+        mainContainer.getChildren().addAll(topBar, scrollPane);
         root.setCenter(mainContainer);
 
         scene = new Scene(root);

@@ -68,7 +68,6 @@ public class SettingsView extends BaseView {
         topBar.getChildren().add(titleBox);
 
         contentArea = new VBox(25);
-        VBox.setVgrow(contentArea, Priority.ALWAYS);
 
         HBox topRow = new HBox(25);
         VBox companyProfile = buildCompanyProfile();
@@ -84,9 +83,10 @@ public class SettingsView extends BaseView {
 
         ScrollPane scrollPane = new ScrollPane(contentArea);
         scrollPane.setFitToWidth(true);
-        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.setStyle("-fx-background-color: transparent; -fx-background-insets: 0; -fx-padding: 0;");
+        scrollPane.setStyle("-fx-background: " + Themes.BG_DASHBOARD + "; -fx-background-color: " + Themes.BG_DASHBOARD + "; -fx-border-width: 0;");
+        VBox.setVgrow(scrollPane, Priority.ALWAYS);
 
         mainContainer.getChildren().addAll(topBar, scrollPane);
         root.setCenter(mainContainer);

@@ -250,7 +250,6 @@ public class ReportService {
         e.setPosition(rs.getString("position"));
         e.setHiredAt(rs.getObject("hired_at", java.time.OffsetDateTime.class));
         e.setStatus(rs.getString("status"));
-        e.setDepartment(rs.getString("department"));
         return e;
     }
 }
