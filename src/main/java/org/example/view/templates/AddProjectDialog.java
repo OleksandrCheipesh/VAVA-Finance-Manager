@@ -19,17 +19,13 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.example.SessionManager;
-import org.example.logging.AppLog;
 import org.example.model.database.entity.Project;
 import org.example.model.validation.ProjValExept;
 import org.example.model.validation.ProjectValidator;
-import org.example.view.templates.StateButton;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.function.Consumer;
-
-import static org.example.model.validation.ProjValExept.ProjErrorCode.*;
 
 public class AddProjectDialog {
 
@@ -48,7 +44,6 @@ public class AddProjectDialog {
         Node backgroundRoot = ownerScene.getRoot();
         ColorAdjust darken = new ColorAdjust();
         darken.setBrightness(-0.3);
-
         GaussianBlur blur = new GaussianBlur(15);
         blur.setInput(darken);
         backgroundRoot.setEffect(blur);
@@ -76,15 +71,12 @@ public class AddProjectDialog {
             if (e.getTarget() == shadowWrapper) closeWithAnimation(modal, shadowWrapper);
         });
 
-        // Header
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER_LEFT);
 
         VBox titleBox = new VBox(4);
-
         Label title = new Label(isEditMode ? I18n.t("Edit Project") : I18n.t("Add New Project"));
         title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + ";");
-
         Label subtitle = new Label(isEditMode ? I18n.t("Update the project details below.") : I18n.t("Define the scope and resources for your next initiative."));
         subtitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
         titleBox.getChildren().addAll(title, subtitle);
@@ -107,50 +99,37 @@ public class AddProjectDialog {
         HBox.setHgrow(spacer, Priority.ALWAYS);
         header.getChildren().addAll(titleBox, spacer, closeBtn);
 
-        // Form Fields
         VBox form = new VBox(15);
 
         TextField nameField = UIFactory.inputField("e.g., Global Expansion phase 1");
-        nameField.setMinHeight(44);
-        nameField.setPrefHeight(44);
-
+        nameField.setMinHeight(44); nameField.setPrefHeight(44);
         VBox nameBox = createLabeledField(I18n.t("PROJECT NAME"), nameField);
 
         TextField descField = UIFactory.inputField("Describe the objectives and key outcomes...");
-        descField.setMinHeight(44);
-        descField.setPrefHeight(44);
-
+        descField.setMinHeight(44); descField.setPrefHeight(44);
         VBox descBox = createLabeledField(I18n.t("DESCRIPTION"), descField);
 
-        TextField budgetField = UIFactory.inputField("$ 0.00");
-        budgetField.setMinHeight(44);
-        budgetField.setPrefHeight(44);
-
+        TextField budgetField = UIFactory.inputField(CurrencyFormatter.symbol() + " 0.00");
+        budgetField.setMinHeight(44); budgetField.setPrefHeight(44);
         VBox budgetBox = createLabeledField(I18n.t("BUDGET LIMIT"), budgetField);
 
         DatePicker startDateField = UIFactory.inputDatePicker("mm/dd/yyyy");
-        startDateField.setMinHeight(44);
-        startDateField.setPrefHeight(44);
+        startDateField.setMinHeight(44); startDateField.setPrefHeight(44);
         startDateField.setMaxWidth(Double.MAX_VALUE);
-
         VBox startBox = createLabeledField(I18n.t("START DATE"), startDateField);
 
         DatePicker endDateField = UIFactory.inputDatePicker("mm/dd/yyyy");
-        endDateField.setMinHeight(44);
-        endDateField.setPrefHeight(44);
+        endDateField.setMinHeight(44); endDateField.setPrefHeight(44);
         endDateField.setMaxWidth(Double.MAX_VALUE);
-
         VBox endBox = createLabeledField(I18n.t("END DATE"), endDateField);
 
         HBox splitDates = new HBox(15);
         HBox.setHgrow(startBox, Priority.ALWAYS);
         HBox.setHgrow(endBox, Priority.ALWAYS);
-
         splitDates.getChildren().addAll(startBox, endBox);
 
         form.getChildren().addAll(nameBox, descBox, budgetBox, splitDates);
 
-        // Pre-fill fields when editing an existing project
         if (isEditMode) {
             nameField.setText(projectToEdit.getName() != null ? projectToEdit.getName() : "");
             descField.setText(projectToEdit.getDescription() != null ? projectToEdit.getDescription() : "");
@@ -160,7 +139,6 @@ public class AddProjectDialog {
             endDateField.setValue(projectToEdit.getEndDate());
         }
 
-        // Bottom Buttons
         HBox actionBox = new HBox(20);
         actionBox.setAlignment(Pos.CENTER_RIGHT);
         actionBox.setPadding(new Insets(10, 0, 0, 0));
@@ -169,13 +147,11 @@ public class AddProjectDialog {
         cancelBtn.setMinWidth(Region.USE_PREF_SIZE);
         cancelBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #475569; -fx-font-weight: bold; -fx-font-size: 15px; -fx-cursor: hand; -fx-padding: 10 20;");
         cancelBtn.setOnAction(e -> closeWithAnimation(modal, shadowWrapper));
-
         setupScaleEffect(cancelBtn, 0.98);
 
         StateButton saveBtn = new StateButton(isEditMode ? I18n.t("Save Changes") : I18n.t("Add New Project"), StateButton.ButtonType.PRIMARY);
         saveBtn.setMinHeight(50);
         saveBtn.setMaxWidth(Double.MAX_VALUE);
-
         HBox.setHgrow(saveBtn, Priority.ALWAYS);
         setupScaleEffect(saveBtn, 0.98);
 
@@ -184,11 +160,9 @@ public class AddProjectDialog {
         final String origBudgetStyle = budgetField.getStyle();
         final String origStartStyle = startDateField.getStyle();
         final String origEndStyle = endDateField.getStyle();
-
         String errorBorder = "-fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8;";
 
         saveBtn.setOnAction(e -> {
-            // Reset styles
             nameField.setStyle(origNameStyle);
             descField.setStyle(origDescStyle);
             budgetField.setStyle(origBudgetStyle);
@@ -202,10 +176,9 @@ public class AddProjectDialog {
                     try {
                         String name = nameField.getText().trim();
                         String desc = descField.getText().trim();
-                        String budgetStr = budgetField.getText().replaceAll("[$,]", "");
+                        String budgetStr = budgetField.getText().replaceAll("[" + CurrencyFormatter.symbol() + "$,]", "").trim();
 
                         BigDecimal budget = budgetStr.isEmpty() ? BigDecimal.ZERO : new BigDecimal(budgetStr);
-
                         LocalDate start = startDateField.getValue() != null ? startDateField.getValue() : LocalDate.now();
                         LocalDate end = endDateField.getValue() != null ? endDateField.getValue() : LocalDate.now().plusMonths(3);
 
@@ -214,6 +187,7 @@ public class AddProjectDialog {
                                 : SessionManager.getInstance().getCurrentCompanyId();
                         Project newProj = new Project(companyId, name, desc, budget, start, end, true);
                         if (isEditMode) newProj.setId(projectToEdit.getId());
+
                         try {
                             ProjectValidator.validate(newProj);
                         } catch (ProjValExept pe) {
@@ -257,24 +231,19 @@ public class AddProjectDialog {
 
         FadeTransition fadeIn = new FadeTransition(Duration.millis(300), shadowWrapper);
         fadeIn.setToValue(1);
-
         TranslateTransition slideUp = new TranslateTransition(Duration.millis(300), shadowWrapper);
         slideUp.setToY(0);
 
         modal.show();
-
         new ParallelTransition(fadeIn, slideUp).play();
     }
 
     private static VBox createLabeledField(String labelText, Node field) {
         Label label = new Label(labelText);
         label.setStyle("-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-size: 13px;");
-
         VBox box = new VBox(5, label, field);
         box.setMaxWidth(Double.MAX_VALUE);
-
         HBox.setHgrow(box, Priority.ALWAYS);
-
         return box;
     }
 
@@ -286,13 +255,10 @@ public class AddProjectDialog {
     private static void closeWithAnimation(Stage modal, Node animatedNode) {
         FadeTransition fadeOut = new FadeTransition(Duration.millis(200), animatedNode);
         fadeOut.setToValue(0);
-
         TranslateTransition slideDown = new TranslateTransition(Duration.millis(200), animatedNode);
         slideDown.setToY(30);
-
         ParallelTransition exitAnimation = new ParallelTransition(fadeOut, slideDown);
         exitAnimation.setOnFinished(e -> modal.close());
-
         exitAnimation.play();
     }
 }

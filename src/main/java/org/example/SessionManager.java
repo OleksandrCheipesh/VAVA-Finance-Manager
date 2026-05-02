@@ -1,6 +1,5 @@
 package org.example;
 
-
 import org.example.model.database.entity.Company;
 import org.example.model.database.entity.Position;
 import org.example.model.database.entity.User;
@@ -8,7 +7,6 @@ import org.example.logging.AppLog;
 import org.example.model.database.service.CompanyService;
 
 import java.sql.SQLException;
-
 
 public final class SessionManager {
 
@@ -24,7 +22,6 @@ public final class SessionManager {
         this.currentUser = null;
     }
 
-
     public static SessionManager getInstance() {
         if (instance == null) {
             synchronized (SessionManager.class) {
@@ -35,7 +32,6 @@ public final class SessionManager {
         }
         return instance;
     }
-
 
     public synchronized void login(User user) {
         var logger = AppLog.getLogger(SessionManager.class);
@@ -57,6 +53,12 @@ public final class SessionManager {
                 throw new IllegalStateException(e.getMessage(), e);
             }
         }
+
+        if (currentCompany != null && currentCompany.getCurrency() != null) {
+            this.currency = currentCompany.getCurrency();
+            this.currencySymbol = extractSymbol(currentCompany.getCurrency());
+        }
+
         logger.info("User login: id={} email={}", user.getId(), user.getEmail());
         AppLog.pushSession(getStatus());
     }
@@ -70,13 +72,25 @@ public final class SessionManager {
         this.currentUser = user;
         this.currentCompany = currentCompany;
         this.language = user.getLanguage() != null ? user.getLanguage() : "English";
+
+        if (currentCompany != null && currentCompany.getCurrency() != null) {
+            this.currency = currentCompany.getCurrency();
+            this.currencySymbol = extractSymbol(currentCompany.getCurrency());
+        }
+
         logger.info("User login: id={} email={}", user.getId(), user.getEmail());
         AppLog.pushSession(getStatus());
     }
 
-    /**
-     * Terminate the current session.
-     */
+    private String extractSymbol(String currencyString) {
+        int open = currencyString.indexOf('(');
+        int close = currencyString.indexOf(')');
+        if (open >= 0 && close > open) {
+            return currencyString.substring(open + 1, close);
+        }
+        return currencyString;
+    }
+
     public synchronized void logout() {
         var logger = AppLog.getLogger(SessionManager.class);
         if (this.currentUser != null) {
@@ -91,12 +105,6 @@ public final class SessionManager {
         AppLog.clearSession();
     }
 
-    /**
-     * Get the currently logged-in user.
-     *
-     * @return The current user
-     * @throws IllegalStateException if no user is logged in
-     */
     public synchronized User getCurrentUser() {
         if (currentUser == null) {
             throw new IllegalStateException("No authenticated user in session");
@@ -107,7 +115,6 @@ public final class SessionManager {
     public synchronized int getCurrentCompanyId() {
         User user = getCurrentUser();
         Integer companyId = user.getCompanyId();
-
         if (companyId == null) {
             throw new IllegalStateException("Current user is not associated with any company");
         }
@@ -155,18 +162,9 @@ public final class SessionManager {
         }
     }
 
-    public record SessionStatus(
-            int userId,
-            String email,
-            Integer companyId
-    ) {}
+    public record SessionStatus(int userId, String email, Integer companyId) {}
 
-    public record PendingRegistration(
-            String name,
-            String surname,
-            String email,
-            String passwordHash
-    ) {}
+    public record PendingRegistration(String name, String surname, String email, String passwordHash) {}
 
     public Company getCurrentCompany() {
         if (currentCompany == null) {
@@ -177,10 +175,8 @@ public final class SessionManager {
 
     public synchronized String getLanguage() { return language; }
     public synchronized void setLanguage(String language) { this.language = language; }
-
     public synchronized String getCurrency() { return currency; }
     public synchronized void setCurrency(String currency) { this.currency = currency; }
-
     public synchronized String getCurrencySymbol() { return currencySymbol; }
     public synchronized void setCurrencySymbol(String currencySymbol) { this.currencySymbol = currencySymbol; }
 }

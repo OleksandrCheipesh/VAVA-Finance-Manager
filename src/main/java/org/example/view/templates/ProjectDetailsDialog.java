@@ -21,14 +21,13 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.example.model.database.entity.Project;
 
+
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Consumer;
 
 public class ProjectDetailsDialog {
 
-    private static final DecimalFormat currencyFormat = new DecimalFormat("$#,##0");
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
     public static void show(Stage owner, Project project, Consumer<Project> onUpdate, Consumer<Project> onDelete) {
@@ -73,7 +72,6 @@ public class ProjectDetailsDialog {
             if (e.getTarget() == shadowWrapper) closeWithAnimation(modal, shadowWrapper);
         });
 
-        // Header Section
         HBox header = new HBox(15);
         header.setAlignment(Pos.CENTER_LEFT);
 
@@ -81,10 +79,8 @@ public class ProjectDetailsDialog {
         icon.setStyle("-fx-background-color: " + Themes.PRIMARY + "33; -fx-text-fill: " + Themes.PRIMARY + "; -fx-font-size: 18px; -fx-padding: 10 12; -fx-background-radius: 12;");
 
         VBox headerTitles = new VBox(2);
-
         Label headerTop = new Label(I18n.t("PROJECT DETAILS"));
         headerTop.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
-
         Label headerSub = new Label("ID: " + project.getName() + " • " + I18n.t("Strategic"));
         headerSub.setStyle("-fx-font-size: 12px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
         headerTitles.getChildren().addAll(headerTop, headerSub);
@@ -109,13 +105,11 @@ public class ProjectDetailsDialog {
 
         header.getChildren().addAll(icon, headerTitles, spacer, closeBtn);
 
-        // Inner Content Area
         VBox innerCard = new VBox(25);
         innerCard.setAlignment(Pos.TOP_CENTER);
         innerCard.setPadding(new Insets(20, 0, 20, 0));
         innerCard.setStyle("-fx-background-color: transparent;");
 
-        // Title & Pill
         Label projName = new Label(project.getName());
         projName.setStyle("-fx-font-size: 32px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
 
@@ -127,15 +121,14 @@ public class ProjectDetailsDialog {
         desc.setAlignment(Pos.CENTER);
         desc.setStyle("-fx-font-size: 13px; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-text-alignment: center; -fx-padding: 10 0;");
 
-        // Stats Row
         HBox statsRow = new HBox(0);
         statsRow.setAlignment(Pos.CENTER);
 
         BigDecimal remaining = project.getBudgetLimit().subtract(project.getCurrentSpend());
 
-        VBox col1 = createStatColumn(I18n.t("BUDGET LIMIT"),    currencyFormat.format(project.getBudgetLimit()),    Themes.TEXT_DARK);
-        VBox col2 = createStatColumn(I18n.t("CURRENT SPEND"),   currencyFormat.format(project.getCurrentSpend()),   Themes.PRIMARY);
-        VBox col3 = createStatColumn(I18n.t("REMAINING"),       currencyFormat.format(remaining),                   Themes.TEXT_DARK);
+        VBox col1 = createStatColumn(I18n.t("BUDGET LIMIT"),  CurrencyFormatter.format(project.getBudgetLimit()),  Themes.TEXT_DARK);
+        VBox col2 = createStatColumn(I18n.t("CURRENT SPEND"), CurrencyFormatter.format(project.getCurrentSpend()), Themes.PRIMARY);
+        VBox col3 = createStatColumn(I18n.t("REMAINING"),     CurrencyFormatter.format(remaining),                 Themes.TEXT_DARK);
 
         col1.prefWidthProperty().bind(innerCard.widthProperty().divide(3));
         col2.prefWidthProperty().bind(innerCard.widthProperty().divide(3));
@@ -143,7 +136,6 @@ public class ProjectDetailsDialog {
 
         statsRow.getChildren().addAll(col1, col2, col3);
 
-        // Progress Bar Section
         VBox progressBox = new VBox(10);
         progressBox.setPadding(new Insets(15, 0, 0, 0));
 
@@ -151,10 +143,8 @@ public class ProjectDetailsDialog {
         int percent = (int)(project.getSpendPercentage() * 100);
 
         VBox pTitles = new VBox(0);
-
         Label pTop = new Label(I18n.t("BUDGET"));
         pTop.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
-
         Label pValue = new Label(percent + "%");
         pValue.setStyle("-fx-font-size: 24px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
         pTitles.getChildren().addAll(pTop, pValue);
@@ -170,7 +160,6 @@ public class ProjectDetailsDialog {
 
         HBox barTrack = new HBox();
         barTrack.setStyle("-fx-background-color: #F1F5F9; -fx-background-radius: 6; -fx-pref-height: 8px;");
-
         Region barFill = new Region();
         barFill.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-background-radius: 6;");
         barFill.prefWidthProperty().bind(barTrack.widthProperty().multiply(Math.min(project.getSpendPercentage(), 1.0)));
@@ -178,7 +167,6 @@ public class ProjectDetailsDialog {
 
         progressBox.getChildren().addAll(pHeader, barTrack);
 
-        // Dates Section
         HBox datesRow = new HBox();
         datesRow.setPadding(new Insets(20, 0, 0, 0));
 
@@ -191,10 +179,8 @@ public class ProjectDetailsDialog {
         startBox.setAlignment(Pos.CENTER_LEFT);
 
         Region dSpacer1 = new Region(); HBox.setHgrow(dSpacer1, Priority.ALWAYS);
-
         Line divider = new Line(0, 0, 0, 30);
         divider.setStroke(Color.web("#E2E8F0"));
-
         Region dSpacer2 = new Region(); HBox.setHgrow(dSpacer2, Priority.ALWAYS);
 
         VBox endBox = new VBox(5);
@@ -209,7 +195,6 @@ public class ProjectDetailsDialog {
 
         innerCard.getChildren().addAll(projName, pill, desc, statsRow, progressBox, datesRow);
 
-        // Bottom Buttons
         HBox bottomButtons = new HBox(15);
         bottomButtons.setPadding(new Insets(10, 0, 0, 0));
 
@@ -238,7 +223,6 @@ public class ProjectDetailsDialog {
         Button deleteBtn = new Button();
         deleteBtn.setGraphic(IconFactory.getIcon("trash", 24));
         deleteBtn.setMinSize(52, 52);
-
         String normalDeleteStyle = "-fx-background-color: #FEE2E2; -fx-background-radius: 12; -fx-cursor: hand;";
         String hoverDeleteStyle  = "-fx-background-color: #FECACA; -fx-background-radius: 12; -fx-cursor: hand;";
         deleteBtn.setStyle(normalDeleteStyle);
@@ -252,7 +236,6 @@ public class ProjectDetailsDialog {
         deleteBtn.setOnMouseReleased(e -> { deleteBtn.setScaleX(1.0); deleteBtn.setScaleY(1.0); });
 
         bottomButtons.getChildren().addAll(editBtn, deleteBtn);
-
         root.getChildren().addAll(header, innerCard, bottomButtons);
 
         Scene scene = new Scene(shadowWrapper);
@@ -274,14 +257,11 @@ public class ProjectDetailsDialog {
     private static VBox createStatColumn(String title, String value, String valueColor) {
         VBox box = new VBox(5);
         box.setAlignment(Pos.CENTER);
-
         Label lblTitle = new Label(title);
         lblTitle.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
-
         Label lblVal = new Label(value);
         lblVal.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: " + valueColor + ";");
         box.getChildren().addAll(lblTitle, lblVal);
-
         return box;
     }
 
