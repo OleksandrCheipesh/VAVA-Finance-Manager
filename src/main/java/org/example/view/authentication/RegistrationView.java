@@ -20,7 +20,7 @@ public class RegistrationView extends BaseView {
     private StackPane leftPanel;
     private VBox rightPanel, formBox, buttonBox;
     private TextField nameField, surnameField, emailField;
-    private PasswordField passwordField;
+    private PasswordField passwordField, confirmPasswordField;
     private Button registerButton;
     private Label titleLabel, subtitleLabel, messageLabel;
     private Hyperlink loginLink;
@@ -45,7 +45,8 @@ public class RegistrationView extends BaseView {
         nameField      = UIFactory.inputField("Name");
         surnameField   = UIFactory.inputField("Surname");
         emailField     = UIFactory.inputField("E-mail");
-        passwordField  = UIFactory.passwordField("Password");
+        passwordField        = UIFactory.passwordField("Password");
+        confirmPasswordField = UIFactory.passwordField("Confirm Password");
 
         // Submit button and navigation link
         registerButton = UIFactory.primaryButton("Create Account", Themes.FORM_MAX_WIDTH);
@@ -67,7 +68,7 @@ public class RegistrationView extends BaseView {
         messageLabel.textProperty().bind(viewModel.messageProperty());
 
         buttonBox.getChildren().addAll(registerButton, loginLink);
-        formBox.getChildren().addAll(titleLabel, subtitleLabel, nameField, surnameField, emailField, passwordField, buttonBox, messageLabel);
+        formBox.getChildren().addAll(titleLabel, subtitleLabel, nameField, surnameField, emailField, passwordField, confirmPasswordField, buttonBox, messageLabel);
         rightPanel.getChildren().add(formBox);
         root.getChildren().addAll(leftPanel, rightPanel);
 
@@ -95,9 +96,16 @@ public class RegistrationView extends BaseView {
     @Override
     protected void setLogic() {
         // Send registration data to ViewModel
-        registerButton.setOnAction(e ->
-                viewModel.register(nameField.getText(), surnameField.getText(), emailField.getText(), passwordField.getText())
-        );
+        registerButton.setOnAction(e -> {
+            if (!passwordField.getText().equals(confirmPasswordField.getText())) {
+                messageLabel.textProperty().unbind();
+                messageLabel.setTextFill(Color.web(Themes.TEXT_ERROR));
+                messageLabel.setText("Passwords do not match.");
+                return;
+            }
+            messageLabel.textProperty().bind(viewModel.messageProperty());
+            viewModel.register(nameField.getText(), surnameField.getText(), emailField.getText(), passwordField.getText());
+        });
 
         // Navigate back to login
         loginLink.setOnAction(e -> navigateTo(new LoginView()));
