@@ -378,9 +378,7 @@ public class BudgetView extends BaseView {
     nameLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: 800; -fx-text-fill: " + Themes.DARK_TEXT + ";");
 
     String categoryDisplay = formatCategory(account.getCategory()).toUpperCase();
-    String currency = account.getCurrency() != null ? account.getCurrency() : "USD";
-    Label categoryLabel = new Label(categoryDisplay + " • " + currency);
-    categoryLabel.setStyle("-fx-font-size: 11px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_GRAY + "; -fx-letter-spacing: 1px;");
+    Label categoryLabel = new Label(categoryDisplay + " • " + CurrencyFormatter.symbol());    categoryLabel.setStyle("-fx-font-size: 11px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_GRAY + "; -fx-letter-spacing: 1px;");
     texts.getChildren().addAll(nameLabel, categoryLabel);
 
     AccountCategory category = account.getCategory();
@@ -393,8 +391,8 @@ public class BudgetView extends BaseView {
 
     double balance = displayBalance.doubleValue();
     String balanceText = isCreditLine
-      ? String.format(Locale.US, "%s %,.2f", currency, Math.abs(balance))
-      : String.format(Locale.US, "%s %,.2f", currency, balance);
+            ? CurrencyFormatter.symbol() + String.format(Locale.US, "%,.2f", Math.abs(balance))
+            : CurrencyFormatter.symbol() + String.format(Locale.US, "%,.2f", balance);
     String balanceColor = isCreditLine
       ? (balance < 0 ? Themes.TEXT_ERROR : Themes.DARK_GREEN)
       : Themes.DARK_GREEN;
