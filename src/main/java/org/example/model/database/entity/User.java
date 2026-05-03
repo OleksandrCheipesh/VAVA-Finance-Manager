@@ -1,15 +1,21 @@
 package org.example.model.database.entity;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.OffsetDateTime;
 
-public class User extends Person{
+@Getter
+@Setter
+@NoArgsConstructor
+public class User extends Person {
+
     private String passwordHash;
     private Position position;
     private Integer companyId;
     private OffsetDateTime createdAt;
     private String language = "English";
-
-    public User() {}
 
     public User(String name, String surname, String email, String passwordHash, Position position, Integer companyId) {
         this.name = name;
@@ -18,68 +24,5 @@ public class User extends Person{
         this.passwordHash = passwordHash;
         this.position = position;
         this.companyId = companyId;
-    }
-
-    public int getId() {
-        return id;
-    }
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getSurname() {
-        return surname;
-    }
-    public void setSurname(String surname) {
-        this.surname = surname;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
-    public Position getPosition() {
-        return position;
-    }
-    public void setPosition(Position position) {
-        this.position = position;
-    }
-
-    public Integer getCompanyId() {
-        return companyId;
-    }
-    public void setCompanyId(Integer companyId) {
-        this.companyId = companyId;
-    }
-
-    public OffsetDateTime getCreatedAt() {
-        return createdAt;
-    }
-    public void setCreatedAt(OffsetDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public String getLanguage() {
-        return language;
-    }
-    public void setLanguage(String language) {
-        this.language = language;
     }
 }

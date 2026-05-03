@@ -1,8 +1,10 @@
 package org.example.model.database.entity;
 
-/**
- * Base class for person-like entities (User, Employee, Client).
- */
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public abstract class Person {
     protected int id;
     protected String name;

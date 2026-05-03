@@ -1,10 +1,18 @@
 package org.example.model.database.entity;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
+@Getter
+@Setter
+@NoArgsConstructor
 public class Project {
+
     private int id;
     private int companyId;
     private String name;
@@ -15,8 +23,6 @@ public class Project {
     private boolean isActive;
     private OffsetDateTime createdAt;
     private BigDecimal currentSpend = BigDecimal.ZERO;
-
-    public Project() {}
 
     public Project(int companyId, String name, String description, BigDecimal budgetLimit,
                    LocalDate startDate, LocalDate endDate, boolean isActive) {
@@ -29,75 +35,8 @@ public class Project {
         this.isActive = isActive;
     }
 
-    public int getId() {
-        return id;
-    }
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getCompanyId() {
-        return companyId;
-    }
-    public void setCompanyId(int companyId) {
-        this.companyId = companyId;
-    }
-
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getBudgetLimit() {
-        return budgetLimit;
-    }
-    public void setBudgetLimit(BigDecimal budgetLimit) {
-        this.budgetLimit = budgetLimit;
-    }
-
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-    }
-
-    public LocalDate getEndDate() {
-        return endDate;
-    }
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
-    }
-
-    public boolean isActive() {
-        return isActive;
-    }
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-
-    public OffsetDateTime getCreatedAt() {
-        return createdAt;
-    }
-    public void setCreatedAt(OffsetDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
     public BigDecimal getCurrentSpend() {
         return currentSpend == null ? BigDecimal.ZERO : currentSpend;
-    }
-
-    public void setCurrentSpend(BigDecimal currentSpend) {
-        this.currentSpend = currentSpend;
     }
 
     public double getSpendPercentage() {
@@ -105,4 +44,3 @@ public class Project {
         return getCurrentSpend().divide(budgetLimit, 4, java.math.RoundingMode.HALF_UP).doubleValue();
     }
 }
-
