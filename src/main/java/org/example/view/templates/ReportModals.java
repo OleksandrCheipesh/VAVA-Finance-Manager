@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.example.viewModel.ReportsViewModel;
+import org.example.view.templates.ToastManager;
 
 import java.math.BigDecimal;
 import java.util.stream.Collectors;
@@ -376,6 +377,7 @@ public class ReportModals {
             vm.recompute();
             if (onApplyExtra != null) onApplyExtra.run();
         });
+        exportBtn.setOnAction(e -> ToastManager.showSuccess(owner, "Coming soon"));
 
         actions.getChildren().addAll(applyBtn, exportBtn);
 
