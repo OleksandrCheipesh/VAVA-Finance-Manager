@@ -62,6 +62,7 @@ class ProjectValidatorTest {
     void zero_budget_passes() {
         Project p = validProject();
         p.setBudgetLimit(BigDecimal.ZERO);
+        p.setCurrentSpend(BigDecimal.ZERO);
 
         assertDoesNotThrow(() -> ProjectValidator.validate(p));
     }
