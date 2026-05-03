@@ -145,20 +145,7 @@ public class DashBoardView extends BaseView {
         I18n.language.addListener((obs, o, v) -> chartSubtitle.setText(I18n.t("Quarterly financial performance analysis")));
         chartTitleBox.getChildren().addAll(chartTitle, chartSubtitle);
 
-        Region chartSpacer = new Region();
-        HBox.setHgrow(chartSpacer, Priority.ALWAYS);
-
-        HBox toggleBox = new HBox(2);
-        toggleBox.setAlignment(Pos.CENTER);
-        toggleBox.setStyle("-fx-background-color: #F8FAFC; -fx-background-radius: 10; -fx-padding: 4;");
-        toggleBox.setMaxHeight(Region.USE_PREF_SIZE);
-
-        Button dailyBtn = createToggleButton("Daily", false);
-        Button weeklyBtn = createToggleButton("Weekly", true);
-        Button monthlyBtn = createToggleButton("Monthly", false);
-        toggleBox.getChildren().addAll(dailyBtn, weeklyBtn, monthlyBtn);
-
-        chartHeader.getChildren().addAll(chartTitleBox, chartSpacer, toggleBox);
+        chartHeader.getChildren().add(chartTitleBox);
 
         TrendLineChart trendChart = new TrendLineChart(reportsViewModel.getMonthlySummaries());
         VBox.setVgrow(trendChart, Priority.ALWAYS);
@@ -352,15 +339,4 @@ public class DashBoardView extends BaseView {
         return pane;
     }
 
-    private Button createToggleButton(String text, boolean isActive) {
-        Button btn = new Button(text);
-
-        if (isActive) {
-            btn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: 900; -fx-background-radius: 8; -fx-padding: 8 16; -fx-font-size: 13px; -fx-cursor: hand; -fx-background-insets: 0;");
-        } else {
-            btn.setStyle("-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-weight: 900; -fx-background-radius: 8; -fx-padding: 8 16; -fx-font-size: 13px; -fx-cursor: hand; -fx-background-insets: 0;");
-        }
-
-        return btn;
-    }
 }
