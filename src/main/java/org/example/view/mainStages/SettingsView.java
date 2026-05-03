@@ -40,6 +40,8 @@ public class SettingsView extends BaseView {
     private PasswordField confirmPassField;
     private Button savePassBtn;
 
+    private String lastSavedCurrency;
+
     @Override
     protected void setContent() {
         BorderPane root = new BorderPane();
@@ -119,6 +121,11 @@ public class SettingsView extends BaseView {
         industryBox.valueProperty().bindBidirectional(viewModel.industryProperty());
         dateBox.valueProperty().bindBidirectional(viewModel.dateFormatProperty());
 
+        lastSavedCurrency = normalizeCurrency(currencyBox.getValue());
+        if (lastSavedCurrency == null) {
+            lastSavedCurrency = normalizeCurrency(viewModel.currencyProperty().get());
+        }
+
         table.setItems(viewModel.getUsers());
 
         String activeStyle = "-fx-background-color: white; -fx-background-radius: 16; -fx-text-fill: " + Themes.PRIMARY + "; -fx-font-weight: bold; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 4, 0, 0, 1); -fx-background-insets: 0;";
@@ -147,15 +154,25 @@ public class SettingsView extends BaseView {
             String normalStyleCombo = "-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 5; -fx-border-color: transparent; -fx-border-width: 2; -fx-border-radius: 8;";
             String errorStyleCombo = "-fx-background-color: #F3F4F6; -fx-background-radius: 8; -fx-padding: 0 5; -fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-width: 2; -fx-border-radius: 8;";
 
+            String selectedCurrency = normalizeCurrency(currencyBox.getValue());
+            if (selectedCurrency == null) {
+                selectedCurrency = normalizeCurrency(viewModel.currencyProperty().get());
+            }
+
             try {
                 industryBox.setStyle(normalStyleCombo);
                 countryBox.setStyle(normalStyleCombo);
                 currencyBox.setStyle(normalStyleCombo);
                 companyNameField.setStyle(normalStyleField);
 
-                viewModel.saveCompanyProfile(this.companyNameField.getText(),this.industryBox.getValue(),this.countryBox.getValue(),this.currencyBox.getValue());
+                viewModel.saveCompanyProfile(this.companyNameField.getText(), this.industryBox.getValue(), this.countryBox.getValue(), this.currencyBox.getValue());
 
-                ToastManager.showSuccess(stage, "Company profile updated successfully.");
+                if (selectedCurrency != null && !selectedCurrency.equals(lastSavedCurrency)) {
+                    ToastManager.showSuccess(stage, I18n.t("Please restart the application to apply the settings."));
+                } else {
+                    ToastManager.showSuccess(stage, I18n.t("Changes saved successfully."));
+                }
+                lastSavedCurrency = selectedCurrency;
             } catch (CompanyValExept ex) {
                 switch (ex.getCode()) {
                     case NAME_ERR:
@@ -174,7 +191,11 @@ public class SettingsView extends BaseView {
                 ToastManager.showError(stage, ex.getMessage());
             }
         });
-        applyPrefsBtn.setOnAction(e -> viewModel.applyPreferences());
+
+        applyPrefsBtn.setOnAction(e -> {
+            viewModel.applyPreferences();
+            ToastManager.showSuccess(stage, I18n.t("Please restart the application to apply the settings."));
+        });
 
         addUserBtn.setOnAction(e -> AddUserDialog.show(stage, viewModel.getUsers(), viewModel::addUser));
         I18n.language.addListener((obs, o, v) -> table.refresh());
@@ -193,6 +214,17 @@ public class SettingsView extends BaseView {
         addClickEffect(applyPrefsBtn);
         addClickEffect(addUserBtn);
         addClickEffect(savePassBtn);
+    }
+
+    private String normalizeCurrency(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        String trimmed = value.trim();
+        if (trimmed.length() >= 3) {
+            return trimmed.substring(0, 3).toUpperCase();
+        }
+        return trimmed.toUpperCase();
     }
 
     private void addClickEffect(Button btn) {
@@ -559,3 +591,4 @@ public class SettingsView extends BaseView {
         return box;
     }
 }
+

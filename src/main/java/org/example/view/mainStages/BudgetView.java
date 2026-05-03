@@ -15,6 +15,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import org.example.model.database.entity.Account;
 import org.example.model.database.entity.AccountCategory;
+import org.example.exceptions.PermissionException;
 import org.example.view.templates.*;
 import org.example.viewModel.BudgetViewModel;
 import org.example.view.templates.CurrencyFormatter;
@@ -230,7 +231,7 @@ public class BudgetView extends BaseView {
   @Override
   protected void setLogic() {
     if (!viewModel.hasAccessProperty().get()) {
-      showAccessDenied();
+      handlePermissionDenied();
       return;
     }
 
@@ -269,6 +270,14 @@ public class BudgetView extends BaseView {
   private void refreshDashboardState(DoubleBinding cardWidthBinding) {
     refreshSummaryCards();
     updateGrid(cardWidthBinding);
+  }
+
+  private void handlePermissionDenied() {
+    try {
+      throw new PermissionException(I18n.t("Access Denied"));
+    } catch (PermissionException ex) {
+      showAccessDenied();
+    }
   }
 
   private void refreshSummaryCards() {
