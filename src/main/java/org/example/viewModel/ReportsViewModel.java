@@ -310,4 +310,23 @@ public class ReportsViewModel {
             SessionManager.getInstance().getPosition() == Position.Analyst
     );
     public BooleanProperty hasAccessProperty() { return hasAccess; }
+    public SummaryDTO getSummary() {
+        BigDecimal totalRevenue = monthlySummaries.stream()
+                .map(MonthlySnapshotDTO::getIncome)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalCosts = monthlySummaries.stream()
+                .map(MonthlySnapshotDTO::getExpense)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal netProfit = totalRevenue.subtract(totalCosts);
+
+        return new SummaryDTO(
+                totalRevenue,
+                totalCosts,
+                netProfit,
+                netProfit
+        );
+    }
+
 }
