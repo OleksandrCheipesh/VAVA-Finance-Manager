@@ -100,18 +100,6 @@ gradlew.bat run
 3. You are now the **Director** of your company and have full access to all screens.
 4. To add more users, go to **Settings → User Management** and use the **Add User** button.
 
-## Role Permissions
-
-| Screen | Employee | Director |
-|---|---|---|
-| Dashboard | View only | Full access |
-| Transactions | View only | Add / Edit / Delete |
-| Employees | View only | Add / Edit / Delete |
-| Clients | View only | Add / Edit / Delete |
-| Projects | View only | Add / Edit / Delete |
-| Budget | View only | Add / Edit |
-| Reports | View only | View + XML export |
-| Settings — User Management | Hidden | Full access |
 
 ## XML Import / Export
 
