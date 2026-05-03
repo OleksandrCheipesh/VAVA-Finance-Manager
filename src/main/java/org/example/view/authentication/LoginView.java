@@ -108,6 +108,8 @@ public class LoginView extends BaseView {
             if (newVal != null && newVal.contains("successful")) {
                 messageLabel.setTextFill(Color.web(Themes.TEXT_SUCCESS));
                 I18n.setLanguage(SessionManager.getInstance().getLanguage());
+                System.out.println("Currency symbol: " + SessionManager.getInstance().getCurrencySymbol());
+                System.out.println("Currency: " + SessionManager.getInstance().getCurrency());
                 navigateTo(new DashBoardView());
             } else if (newVal != null && !newVal.isEmpty()) {
                 messageLabel.setTextFill(Color.web(Themes.TEXT_ERROR));

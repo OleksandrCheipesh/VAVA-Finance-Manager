@@ -156,7 +156,7 @@ public class ClientDetailDialog {
         incomeLbl.setStyle("-fx-font-size: 11px; -fx-text-fill: rgba(255,255,255,0.75);");
 
         String incomeText = client.getMonthlyIncome() != null
-                ? String.format(Locale.US, "$%,.2f", client.getMonthlyIncome().doubleValue())
+                ? CurrencyFormatter.format(client.getMonthlyIncome())
                 : "—";
         Label incomeVal = new Label(incomeText);
         incomeVal.setStyle("-fx-font-size: 24px; -fx-font-weight: 900; -fx-text-fill: white; -fx-wrap-text: true;");
@@ -278,7 +278,7 @@ public class ClientDetailDialog {
         dateLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
         descBox.getChildren().addAll(descLabel, dateLabel);
 
-        String amountText = amountPrefix + String.format(Locale.US, "$%,.2f", tx.getAmount().doubleValue());
+        String amountText = amountPrefix + CurrencyFormatter.symbol() + String.format(Locale.US, "%,.2f", tx.getAmount().doubleValue());
         Label amountLabel = new Label(amountText);
         amountLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: 900; -fx-text-fill: " + amountColor + ";");
 

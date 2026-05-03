@@ -137,21 +137,23 @@ public class DashboardViewModel {
     }
 
     private static String formatCurrency(BigDecimal value) {
-        if (value == null) return "$0.00";
+        String symbol = org.example.view.templates.CurrencyFormatter.symbol();
+        System.out.println("formatCurrency called, symbol=" + symbol + " value=" + value);
+        if (value == null) return symbol + "0.00";
 
         BigDecimal abs = value.abs();
 
         if (abs.compareTo(BigDecimal.valueOf(1_000_000)) >= 0) {
-            return "$" + value.divide(BigDecimal.valueOf(1_000_000))
+            return symbol + value.divide(BigDecimal.valueOf(1_000_000))
                     .setScale(2, RoundingMode.HALF_UP) + "M";
         }
 
         if (abs.compareTo(BigDecimal.valueOf(1_000)) >= 0) {
-            return "$" + value.divide(BigDecimal.valueOf(1_000))
+            return symbol + value.divide(BigDecimal.valueOf(1_000))
                     .setScale(2, RoundingMode.HALF_UP) + "K";
         }
 
-        return "$" + value.setScale(2, RoundingMode.HALF_UP);
+        return symbol + value.setScale(2, RoundingMode.HALF_UP);
     }
     public static ObservableList<Project> getProjects() {
         return projects;

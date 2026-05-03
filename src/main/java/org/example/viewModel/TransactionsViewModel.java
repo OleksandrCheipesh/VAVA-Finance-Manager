@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
+import org.example.view.templates.CurrencyFormatter;
 
 public class TransactionsViewModel {
 
@@ -46,10 +47,10 @@ public class TransactionsViewModel {
     private final StringProperty message = new SimpleStringProperty("");
 
     // Summary card properties
-    private final StringProperty totalIncome = new SimpleStringProperty("0.00$");
-    private final StringProperty totalExpenses = new SimpleStringProperty("0.00$");
-    private final StringProperty netBalance = new SimpleStringProperty("0.00$");
-    private final StringProperty largestAmount = new SimpleStringProperty("0.00$");
+    private final StringProperty totalIncome = new SimpleStringProperty(CurrencyFormatter.symbol() + "0.00");
+    private final StringProperty totalExpenses = new SimpleStringProperty(CurrencyFormatter.symbol() + "0.00");
+    private final StringProperty netBalance = new SimpleStringProperty(CurrencyFormatter.symbol() + "0.00");
+    private final StringProperty largestAmount = new SimpleStringProperty(CurrencyFormatter.symbol() + "0.00");
     private final StringProperty incomeSubtext = new SimpleStringProperty("0 sales");
     private final StringProperty expensesSubtext= new SimpleStringProperty("0 purchases");
 
@@ -295,10 +296,10 @@ public class TransactionsViewModel {
         }
 
         BigDecimal net = income.subtract(expenses);
-        totalIncome.set(df.format(income) + "$");
-        totalExpenses.set(df.format(expenses) + "$");
-        netBalance.set(df.format(net) + "$");
-        largestAmount.set(df.format(largest) + "$");
+        totalIncome.set(df.format(income) + org.example.view.templates.CurrencyFormatter.symbol());
+        totalExpenses.set(df.format(expenses) + org.example.view.templates.CurrencyFormatter.symbol());
+        netBalance.set(df.format(net) + org.example.view.templates.CurrencyFormatter.symbol());
+        largestAmount.set(df.format(largest) + org.example.view.templates.CurrencyFormatter.symbol());
         incomeSubtext.set(salesCount + " sales");
         expensesSubtext.set(purchaseCount + " purchases");
     }

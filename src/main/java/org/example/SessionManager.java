@@ -88,7 +88,14 @@ public final class SessionManager {
         if (open >= 0 && close > open) {
             return currencyString.substring(open + 1, close);
         }
-        return currencyString;
+        // fallback for old records without symbol
+        return switch (currencyString.trim().toUpperCase()) {
+            case "EUR" -> "€";
+            case "USD" -> "$";
+            case "GBP" -> "£";
+            case "CZK" -> "Kč";
+            default -> currencyString;
+        };
     }
 
     public synchronized void logout() {

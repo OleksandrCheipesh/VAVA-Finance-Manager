@@ -49,14 +49,13 @@ public class ClientsView extends BaseView {
 
         VBox mainContainer = new VBox();
 
-        // ── Top bar ───────────────────────────────────────────────────────────
         HBox topBar = new HBox(20);
         topBar.setAlignment(Pos.BOTTOM_LEFT);
         topBar.setStyle(
                 "-fx-background-color: " + Themes.BG_CARD + ";" +
-                "-fx-padding: 0 40;" +
-                "-fx-border-color: " + Themes.BORDER_LIGHT + ";" +
-                "-fx-border-width: 0 0 1 0;"
+                        "-fx-padding: 0 40;" +
+                        "-fx-border-color: " + Themes.BORDER_LIGHT + ";" +
+                        "-fx-border-width: 0 0 1 0;"
         );
         topBar.setMinHeight(85);
 
@@ -85,7 +84,6 @@ public class ClientsView extends BaseView {
 
         topBar.getChildren().addAll(titleBox, topSpacer, addBtn);
 
-        // ── Content area ──────────────────────────────────────────────────────
         contentArea = new VBox(25);
 
         HBox summaryRow = buildSummaryRow();
@@ -159,8 +157,6 @@ public class ClientsView extends BaseView {
         }));
     }
 
-    // ── Filter / sort logic ───────────────────────────────────────────────────
-
     private void updateFilter() {
         String query = searchField.getText().trim().toLowerCase();
         filtered.setPredicate(client -> {
@@ -177,28 +173,17 @@ public class ClientsView extends BaseView {
         String dv = dateSortCombo.getValue();
 
         Comparator<Client> comp = null;
-
         if ("Income ↑".equals(iv)) {
-            comp = Comparator.comparing(
-                    c -> c.getMonthlyIncome() != null ? c.getMonthlyIncome() : BigDecimal.ZERO,
-                    Comparator.naturalOrder()
-            );
+            comp = Comparator.comparing(c -> c.getMonthlyIncome() != null ? c.getMonthlyIncome() : BigDecimal.ZERO, Comparator.naturalOrder());
         } else if ("Income ↓".equals(iv)) {
-            comp = Comparator.comparing(
-                    (Client c) -> c.getMonthlyIncome() != null ? c.getMonthlyIncome() : BigDecimal.ZERO,
-                    Comparator.reverseOrder()
-            );
+            comp = Comparator.comparing((Client c) -> c.getMonthlyIncome() != null ? c.getMonthlyIncome() : BigDecimal.ZERO, Comparator.reverseOrder());
         }
 
         Comparator<Client> dateComp = null;
         if ("Newest first".equals(dv)) {
-            dateComp = Comparator.comparing(
-                    Client::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())
-            );
+            dateComp = Comparator.comparing(Client::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder()));
         } else if ("Oldest first".equals(dv)) {
-            dateComp = Comparator.comparing(
-                    Client::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())
-            );
+            dateComp = Comparator.comparing(Client::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()));
         }
 
         if (comp == null) comp = dateComp;
@@ -206,8 +191,6 @@ public class ClientsView extends BaseView {
 
         sorted.setComparator(comp);
     }
-
-    // ── Detail dialog ─────────────────────────────────────────────────────────
 
     private void openDetailDialog(Client client) {
         ClientDetailDialog.show(stage, client,
@@ -230,8 +213,6 @@ public class ClientsView extends BaseView {
                 }
         );
     }
-
-    // ── Table ─────────────────────────────────────────────────────────────────
 
     @SuppressWarnings("unchecked")
     private void buildTableColumns() {
@@ -259,7 +240,7 @@ public class ClientsView extends BaseView {
         I18n.language.addListener((obs, o, v) -> incomeCol.setText(I18n.t("MONTHLY INCOME")));
         incomeCol.setCellValueFactory(cd -> {
             BigDecimal income = cd.getValue().getMonthlyIncome();
-            String text = income != null ? String.format(Locale.US, "$%,.2f", income.doubleValue()) : "—";
+            String text = income != null ? CurrencyFormatter.format(income) : "—";
             return new SimpleStringProperty(text);
         });
         incomeCol.setStyle("-fx-alignment: CENTER-RIGHT;");
@@ -276,33 +257,20 @@ public class ClientsView extends BaseView {
         TableColumn<Client, Void> actionCol = new TableColumn<>(I18n.t("ACTION"));
         I18n.language.addListener((obs, o, v) -> actionCol.setText(I18n.t("ACTION")));
         actionCol.setCellFactory(col -> new TableCell<>() {
-            @Override
-            protected void updateItem(Void item, boolean empty) {
+            @Override protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    Label dots = new Label("⋮");
-                    dots.setPadding(Insets.EMPTY);
-                    dots.setStyle(
-                            "-fx-text-fill: #9CA3AF;" +
-                            "-fx-font-size: 24px;" +
-                            "-fx-font-weight: bold;" +
-                            "-fx-cursor: hand;" +
-                            "-fx-background-color: transparent;"
-                    );
-                    
-                    setGraphic(dots);
-                    setAlignment(Pos.CENTER_LEFT);
-                }
+                if (empty) { setGraphic(null); return; }
+                Label dots = new Label("⋮");
+                dots.setPadding(Insets.EMPTY);
+                dots.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 24px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-color: transparent;");
+                setGraphic(dots);
+                setAlignment(Pos.CENTER_LEFT);
             }
         });
         actionCol.prefWidthProperty().bind(table.widthProperty().multiply(0.09));
 
         table.getColumns().addAll(idCol, nameCol, emailCol, phoneCol, incomeCol, sinceCol, actionCol);
     }
-
-    // ── Summary row ───────────────────────────────────────────────────────────
 
     private HBox buildSummaryRow() {
         HBox row = new HBox(20);
@@ -331,8 +299,8 @@ public class ClientsView extends BaseView {
                     total.divide(BigDecimal.valueOf(count), 2, java.math.RoundingMode.HALF_UP);
 
             totalCountVal.setText(String.valueOf(count));
-            totalIncomeVal.setText(String.format(Locale.US, "$%,.2f", total.doubleValue()));
-            avgIncomeVal.setText(String.format(Locale.US, "$%,.2f", avg.doubleValue()));
+            totalIncomeVal.setText(CurrencyFormatter.format(total));
+            avgIncomeVal.setText(CurrencyFormatter.format(avg));
         };
 
         updateStats.run();
@@ -350,37 +318,32 @@ public class ClientsView extends BaseView {
         VBox card = new VBox(4);
         card.setStyle(
                 "-fx-background-color: " + Themes.BG_CARD + ";" +
-                "-fx-border-color: " + Themes.BORDER_LIGHT + ";" +
-                "-fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 18 20;"
+                        "-fx-border-color: " + Themes.BORDER_LIGHT + ";" +
+                        "-fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 18 20;"
         );
         HBox.setHgrow(card, Priority.ALWAYS);
-
         Label lblTitle = new Label(title);
         lblTitle.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 16px; -fx-font-weight: bold;");
         valueLabel.setStyle("-fx-font-size: 32px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";");
         subText.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + subColor + ";");
-
         card.getChildren().addAll(lblTitle, valueLabel, subText);
         return card;
     }
-
-    // ── Filter bar ────────────────────────────────────────────────────────────
 
     private HBox buildFilterBar() {
         HBox bar = new HBox(12);
         bar.setAlignment(Pos.CENTER_LEFT);
         bar.setStyle(
                 "-fx-background-color: " + Themes.BG_CARD + ";" +
-                "-fx-border-color: " + Themes.BORDER_LIGHT + ";" +
-                "-fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12 20;"
+                        "-fx-border-color: " + Themes.BORDER_LIGHT + ";" +
+                        "-fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 12 20;"
         );
 
         String comboStyle =
                 "-fx-background-color: #F8FAFC; -fx-border-color: #E2E8F0;" +
-                "-fx-border-radius: 6; -fx-background-radius: 6;" +
-                "-fx-font-size: 14px; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;";
+                        "-fx-border-radius: 6; -fx-background-radius: 6;" +
+                        "-fx-font-size: 14px; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;";
 
-        // ── Search ────────────────────────────────────────────────────────────
         HBox searchContainer = new HBox(8);
         searchContainer.setAlignment(Pos.CENTER_LEFT);
         searchContainer.setStyle(comboStyle + " -fx-padding: 0 12;");
@@ -390,8 +353,7 @@ public class ClientsView extends BaseView {
         SVGPath searchIcon = new SVGPath();
         searchIcon.setContent("M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z");
         searchIcon.setFill(Color.web(Themes.TEXT_MUTED));
-        searchIcon.setScaleX(0.8);
-        searchIcon.setScaleY(0.8);
+        searchIcon.setScaleX(0.8); searchIcon.setScaleY(0.8);
 
         searchField = new TextField();
         searchField.setStyle("-fx-background-color: transparent; -fx-border-width: 0; -fx-padding: 0; -fx-font-size: 14px; -fx-text-fill: " + Themes.TEXT_DARK + ";");
@@ -408,16 +370,13 @@ public class ClientsView extends BaseView {
         });
         searchPane.getChildren().addAll(searchField, searchPrompt);
         HBox.setHgrow(searchPane, Priority.ALWAYS);
-
         searchContainer.getChildren().addAll(searchIcon, searchPane);
 
-        // ── Income sort ───────────────────────────────────────────────────────
         incomeSortCombo = new ComboBox<>();
         incomeSortCombo.getItems().addAll(I18n.t("Income (default)"), I18n.t("Income ↑"), I18n.t("Income ↓"));
         incomeSortCombo.setValue(I18n.t("Income (default)"));
         incomeSortCombo.setStyle(comboStyle);
-        incomeSortCombo.setPrefHeight(40);
-        incomeSortCombo.setPrefWidth(155);
+        incomeSortCombo.setPrefHeight(40); incomeSortCombo.setPrefWidth(155);
         incomeSortCombo.setButtonCell(new ListCell<>() {
             @Override protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -426,13 +385,11 @@ public class ClientsView extends BaseView {
         });
         incomeSortCombo.valueProperty().addListener((obs, old, val) -> updateComparator());
 
-        // ── Date sort ─────────────────────────────────────────────────────────
         dateSortCombo = new ComboBox<>();
         dateSortCombo.getItems().addAll(I18n.t("Date (default)"), I18n.t("Newest first"), I18n.t("Oldest first"));
         dateSortCombo.setValue(I18n.t("Date (default)"));
         dateSortCombo.setStyle(comboStyle);
-        dateSortCombo.setPrefHeight(40);
-        dateSortCombo.setPrefWidth(145);
+        dateSortCombo.setPrefHeight(40); dateSortCombo.setPrefWidth(145);
         dateSortCombo.setButtonCell(new ListCell<>() {
             @Override protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -441,7 +398,6 @@ public class ClientsView extends BaseView {
         });
         dateSortCombo.valueProperty().addListener((obs, old, val) -> updateComparator());
 
-        // ── Clear ─────────────────────────────────────────────────────────────
         Button clearBtn = new Button("Clear");
         clearBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-weight: bold; -fx-cursor: hand;");
         clearBtn.setOnAction(e -> {
