@@ -92,7 +92,6 @@ class ProjectTest {
                 new BigDecimal("3")
         );
 
-        // 1 / 3 = 0.3333 (HALF_UP до 4 знаков)
         assertEquals(0.3333, p.getSpendPercentage());
     }
 }
