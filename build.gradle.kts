@@ -34,6 +34,8 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.4.11")
     implementation ("org.kordamp.ikonli:ikonli-javafx:12.3.1")
     implementation ("org.kordamp.ikonli:ikonli-fontawesome5-pack:12.3.1")
+    compileOnly("org.projectlombok:lombok:1.18.40")
+    annotationProcessor("org.projectlombok:lombok:1.18.40")
 }
 
 tasks.test {

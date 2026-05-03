@@ -1,9 +1,17 @@
 package org.example.model.database.entity;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
+@Getter
+@Setter
+@NoArgsConstructor
 public class Account {
+
     private int id;
     private int companyId;
     private String accountName;
@@ -14,79 +22,10 @@ public class Account {
     private AccountCategory category;
     private AccountCycle cycle;
 
-    public Account() {}
-
     public Account(int companyId, String accountName, BigDecimal currentBalance, String currency) {
         this.companyId = companyId;
         this.accountName = accountName;
         this.currentBalance = currentBalance;
         this.currency = currency;
     }
-
-    public Integer getLimitAmount() {
-        return limitAmount;
-    }
-
-    public void setLimitAmount(Integer limitAmount) {
-        this.limitAmount = limitAmount;
-    }
-
-    public AccountCategory getCategory() {
-        return category;
-    }
-
-    public void setCategory(AccountCategory category) {
-        this.category = category;
-    }
-
-    public AccountCycle getCycle() {
-        return cycle;
-    }
-
-    public void setCycle(AccountCycle cycle) {
-        this.cycle = cycle;
-    }
-
-    public int getId() {
-        return id;
-    }
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getCompanyId() {
-        return companyId;
-    }
-    public void setCompanyId(int companyId) {
-        this.companyId = companyId;
-    }
-
-    public String getAccountName() {
-        return accountName;
-    }
-    public void setAccountName(String accountName) {
-        this.accountName = accountName;
-    }
-
-    public BigDecimal getCurrentBalance() {
-        return currentBalance;
-    }
-    public void setCurrentBalance(BigDecimal currentBalance) {
-        this.currentBalance = currentBalance;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
-    public OffsetDateTime getCreatedAt() {
-        return createdAt;
-    }
-    public void setCreatedAt(OffsetDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
 }
-

@@ -44,10 +44,10 @@ public class ReportsViewModel {
     // ----------------------------------------------------------------
     // Computed display strings (bound to summary cards)
     // ----------------------------------------------------------------
-    private final StringProperty totalProfit    = new SimpleStringProperty("$0.00");
-    private final StringProperty grossIncome    = new SimpleStringProperty("$0.00");
-    private final StringProperty netExpense     = new SimpleStringProperty("$0.00");
-    private final StringProperty netProfitTrend = new SimpleStringProperty("$0.00");
+    private final StringProperty totalProfit    = new SimpleStringProperty("0.00");
+    private final StringProperty grossIncome    = new SimpleStringProperty("0.00");
+    private final StringProperty netExpense     = new SimpleStringProperty("0.00");
+    private final StringProperty netProfitTrend = new SimpleStringProperty("0.00");
 
     private final ReportsModel   model          = new ReportsModel();
     private final ProjectService projectService = new ProjectService();
@@ -150,7 +150,6 @@ public class ReportsViewModel {
             BigDecimal gInc    = msList.stream().map(MonthlySnapshotDTO::getIncome)  .reduce(BigDecimal.ZERO, BigDecimal::add);
             BigDecimal nExp    = msList.stream().map(MonthlySnapshotDTO::getExpense) .reduce(BigDecimal.ZERO, BigDecimal::add);
             BigDecimal nTrend  = gInc.subtract(nExp);
-            java.text.NumberFormat fmt = java.text.NumberFormat.getCurrencyInstance(java.util.Locale.US);
 
             javafx.application.Platform.runLater(() -> {
                 projectSummaries.setAll(psList);
@@ -160,10 +159,10 @@ public class ReportsViewModel {
                 employees.setAll((List<Employee>) r[4]);
                 updateEmployeeFilter();
 
-                totalProfit.set(fmt.format(tProfit));
-                grossIncome.set(fmt.format(gInc));
-                netExpense.set(fmt.format(nExp));
-                netProfitTrend.set(fmt.format(nTrend));
+                totalProfit.set(org.example.view.templates.CurrencyFormatter.format(tProfit));
+                grossIncome.set(org.example.view.templates.CurrencyFormatter.format(gInc));
+                netExpense.set(org.example.view.templates.CurrencyFormatter.format(nExp));
+                netProfitTrend.set(org.example.view.templates.CurrencyFormatter.format(nTrend));
                 loading.set(false);
             });
         });

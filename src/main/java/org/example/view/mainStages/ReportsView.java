@@ -19,11 +19,10 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
+import javafx.scene.effect.GaussianBlur;
 
 public class ReportsView extends BaseView {
 
@@ -32,11 +31,10 @@ public class ReportsView extends BaseView {
     private VBox contentArea;
     private StackPane panelHost;
 
-    private int activeTab = 4; // Monthly Table is default (index 4)
+    private int activeTab = 4;
     private final Node[] panelCache = new Node[5];
     private final List<Double> momValues = new ArrayList<>();
 
-    // Tab labels held as fields so we can restyle on click
     private Label tab1, tab2, tab3, tab4, tab5;
     private Button filterBtn, exportBtn;
 
@@ -53,7 +51,6 @@ public class ReportsView extends BaseView {
         VBox mainContainer = new VBox();
         mainContainer.setStyle("-fx-background-color: " + Themes.BG_DASHBOARD + ";");
 
-        // Top header
         HBox topBar = new HBox(20);
         topBar.setAlignment(Pos.BOTTOM_LEFT);
         topBar.setStyle("-fx-background-color: white; -fx-padding: 0 40; -fx-border-color: " + Themes.BORDER_LIGHT + "; -fx-border-width: 0 0 1 0;");
@@ -77,7 +74,6 @@ public class ReportsView extends BaseView {
         contentArea = new VBox(25);
         contentArea.setPadding(new Insets(30, 40, 40, 40));
 
-        // Top 3 chart cards
         HBox cardsRow = new HBox(25);
         VBox card1 = buildCard("PROJECT PROFIT DISTRIBUTION", viewModel.totalProfitProperty(), null, true,
                 new ProjectPieChart(viewModel.getProjectSummaries(), 200));
@@ -92,7 +88,6 @@ public class ReportsView extends BaseView {
         card1.setMaxWidth(Double.MAX_VALUE); card2.setMaxWidth(Double.MAX_VALUE); card3.setMaxWidth(Double.MAX_VALUE);
         cardsRow.getChildren().addAll(card1, card2, card3);
 
-        // Table section
         VBox tableSection = new VBox();
         tableSection.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-border-color: #E2E8F0; -fx-border-radius: 16;");
         tableSection.setMinHeight(500);
@@ -108,7 +103,6 @@ public class ReportsView extends BaseView {
 
         contentArea.getChildren().addAll(cardsRow, tableSection);
 
-        // Wrap contentArea in a ScrollPane so users can scroll past the chart cards
         ScrollPane scrollPane = new ScrollPane(contentArea);
         scrollPane.setFitToWidth(true);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
@@ -137,16 +131,34 @@ public class ReportsView extends BaseView {
 
     @Override
     protected void setLogic() {
+        if (!viewModel.hasAccessProperty().get()) {
+            GaussianBlur blur = new GaussianBlur(10);
+            contentArea.setEffect(blur);
+
+            Label lock = new Label("🔒");
+            lock.setStyle("-fx-font-size: 48px;");
+
+            Label msg = new Label("Access Denied");
+            msg.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+            VBox box = new VBox(10, lock, msg);
+            box.setAlignment(Pos.CENTER);
+
+            StackPane overlay = new StackPane();
+            overlay.setStyle("-fx-background-color: rgba(0,0,0,0.5);");
+            overlay.getChildren().add(box);
+
+            StackPane wrapper = new StackPane(contentArea, overlay);
+            VBox.setVgrow(wrapper, Priority.ALWAYS);
+            root.setCenter(wrapper);
+            return;
+        }
+
         exportBtn.setOnAction(e -> exportCSV());
         filterBtn.setOnAction(e -> ReportModals.showTabFilters(stage, viewModel, activeTab));
-
-        // Show default panel and mark active tab
         setActiveTab(activeTab);
     }
 
-    // ----------------------------------------------------------------
-    // Tab management
-    // ----------------------------------------------------------------
     private void setActiveTab(int idx) {
         activeTab = idx;
         Label[] tabs = {tab1, tab2, tab3, tab4, tab5};
@@ -174,24 +186,17 @@ public class ReportsView extends BaseView {
         return panelCache[idx];
     }
 
-    // ----------------------------------------------------------------
-    // Panel 0: P&L Summary
-    // ----------------------------------------------------------------
     private Node buildPLSummaryPanel() {
-        NumberFormat fmt = NumberFormat.getCurrencyInstance(Locale.US);
+        Label revVal   = new Label(CurrencyFormatter.symbol() + "0");
+        Label costsVal = new Label(CurrencyFormatter.symbol() + "0");
+        Label grossVal = new Label(CurrencyFormatter.symbol() + "0");
+        Label netVal   = new Label(CurrencyFormatter.symbol() + "0");
 
-        // Stat card labels
-        Label revVal   = new Label("$0");
-        Label costsVal = new Label("$0");
-        Label grossVal = new Label("$0");
-        Label netVal   = new Label("$0");
-
-        // Ledger labels
-        Label ledgerRevVal    = new Label("$0");
-        Label ledgerCostsVal  = new Label("$0");
-        Label ledgerGrossVal  = new Label("$0");
-        Label ledgerOpexVal   = new Label("$0");
-        Label ledgerNetVal    = new Label("$0");
+        Label ledgerRevVal    = new Label(CurrencyFormatter.symbol() + "0");
+        Label ledgerCostsVal  = new Label(CurrencyFormatter.symbol() + "0");
+        Label ledgerGrossVal  = new Label(CurrencyFormatter.symbol() + "0");
+        Label ledgerOpexVal   = new Label(CurrencyFormatter.symbol() + "0");
+        Label ledgerNetVal    = new Label(CurrencyFormatter.symbol() + "0");
         Label ledgerMarginVal = new Label("0.0%");
 
         Runnable refresh = () -> {
@@ -204,16 +209,16 @@ public class ReportsView extends BaseView {
             double margin     = rev.compareTo(BigDecimal.ZERO) == 0 ? 0
                     : net.divide(rev, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).doubleValue();
 
-            revVal.setText(fmt.format(rev));
-            costsVal.setText(fmt.format(costs));
-            grossVal.setText(fmt.format(gross));
-            netVal.setText(fmt.format(net));
+            revVal.setText(CurrencyFormatter.format(rev));
+            costsVal.setText(CurrencyFormatter.format(costs));
+            grossVal.setText(CurrencyFormatter.format(gross));
+            netVal.setText(CurrencyFormatter.format(net));
 
-            ledgerRevVal.setText(fmt.format(rev));
-            ledgerCostsVal.setText(fmt.format(costs));
-            ledgerGrossVal.setText(fmt.format(gross));
-            ledgerOpexVal.setText(fmt.format(costs));
-            ledgerNetVal.setText(fmt.format(net));
+            ledgerRevVal.setText(CurrencyFormatter.format(rev));
+            ledgerCostsVal.setText(CurrencyFormatter.format(costs));
+            ledgerGrossVal.setText(CurrencyFormatter.format(gross));
+            ledgerOpexVal.setText(CurrencyFormatter.format(costs));
+            ledgerNetVal.setText(CurrencyFormatter.format(net));
             ledgerMarginVal.setText(String.format("%.1f%%", margin));
 
             String grossColor  = gross.compareTo(BigDecimal.ZERO) >= 0 ? Themes.TEXT_SUCCESS : Themes.TEXT_ERROR;
@@ -227,7 +232,6 @@ public class ReportsView extends BaseView {
         refresh.run();
         viewModel.getProjectSummaries().addListener((ListChangeListener<ProjectSummaryDTO>) c -> refresh.run());
 
-        // 4 stat cards
         HBox cards = new HBox(16);
         cards.setPadding(new Insets(20, 20, 0, 20));
         cards.getChildren().addAll(
@@ -238,31 +242,25 @@ public class ReportsView extends BaseView {
         );
         for (Node c : cards.getChildren()) HBox.setHgrow(c, Priority.ALWAYS);
 
-        // Ledger
         GridPane ledger = new GridPane();
-        ledger.setHgap(0);
-        ledger.setVgap(0);
+        ledger.setHgap(0); ledger.setVgap(0);
         ledger.setPadding(new Insets(16, 20, 20, 20));
         ColumnConstraints cc1 = new ColumnConstraints(); cc1.setHgrow(Priority.ALWAYS);
         ColumnConstraints cc2 = new ColumnConstraints(); cc2.setMinWidth(160); cc2.setHalignment(javafx.geometry.HPos.RIGHT);
         ledger.getColumnConstraints().addAll(cc1, cc2);
 
         String[][] rows = {
-            {"Revenue",             null},
-            {"Cost of Goods",       null},
-            {"Gross Profit",        null},
-            {"Operating Expenses",  null},
-            {"Net Profit",          null},
-            {"Margin %",            null}
+                {"Revenue", null}, {"Cost of Goods", null}, {"Gross Profit", null},
+                {"Operating Expenses", null}, {"Net Profit", null}, {"Margin %", null}
         };
         Label[] valueLabels = {ledgerRevVal, ledgerCostsVal, ledgerGrossVal, ledgerOpexVal, ledgerNetVal, ledgerMarginVal};
         String[] defaultStyle = {
-            "-fx-font-size: 16px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";",
-            "-fx-font-size: 16px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";",
-            "-fx-font-size: 16px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_SUCCESS + ";",
-            "-fx-font-size: 16px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";",
-            "-fx-font-size: 16px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_SUCCESS + ";",
-            "-fx-font-size: 16px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_SUCCESS + ";"
+                "-fx-font-size: 16px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";",
+                "-fx-font-size: 16px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";",
+                "-fx-font-size: 16px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_SUCCESS + ";",
+                "-fx-font-size: 16px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_DARK + ";",
+                "-fx-font-size: 16px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_SUCCESS + ";",
+                "-fx-font-size: 16px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_SUCCESS + ";"
         };
 
         for (int i = 0; i < rows.length; i++) {
@@ -292,9 +290,6 @@ public class ReportsView extends BaseView {
         return panel;
     }
 
-    // ----------------------------------------------------------------
-    // Panel 1: Income
-    // ----------------------------------------------------------------
     private Node buildIncomePanel() {
         TableView<IncomeBreakdownDTO> table = new TableView<>();
         table.setItems(viewModel.getIncomeBreakdown());
@@ -302,28 +297,23 @@ public class ReportsView extends BaseView {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         VBox.setVgrow(table, Priority.ALWAYS);
 
-        NumberFormat fmt = NumberFormat.getCurrencyInstance(Locale.US);
-
         TableColumn<IncomeBreakdownDTO, String> srcCol = new TableColumn<>("SOURCE");
         srcCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(d.getValue().getProjectName()));
 
         TableColumn<IncomeBreakdownDTO, String> amtCol = new TableColumn<>("AMOUNT");
-        amtCol.setPrefWidth(130);
-        amtCol.setMaxWidth(130);
-        amtCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(fmt.format(d.getValue().getAmount())));
+        amtCol.setPrefWidth(130); amtCol.setMaxWidth(130);
+        amtCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(CurrencyFormatter.format(d.getValue().getAmount())));
         amtCol.setCellFactory(col -> centerAlignCell());
         amtCol.setStyle("-fx-alignment: CENTER;");
 
         TableColumn<IncomeBreakdownDTO, String> pctCol = new TableColumn<>("% OF TOTAL");
-        pctCol.setPrefWidth(120);
-        pctCol.setMaxWidth(120);
+        pctCol.setPrefWidth(120); pctCol.setMaxWidth(120);
         pctCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(String.format("%.1f%%", d.getValue().getPercentage())));
         pctCol.setCellFactory(col -> centerAlignCell());
         pctCol.setStyle("-fx-alignment: CENTER;");
 
         TableColumn<IncomeBreakdownDTO, IncomeBreakdownDTO> barCol = new TableColumn<>("");
-        barCol.setPrefWidth(160);
-        barCol.setMaxWidth(160);
+        barCol.setPrefWidth(160); barCol.setMaxWidth(160);
         barCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(d.getValue()));
         barCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(IncomeBreakdownDTO item, boolean empty) {
@@ -336,16 +326,12 @@ public class ReportsView extends BaseView {
         table.getColumns().addAll(srcCol, amtCol, pctCol, barCol);
 
         VBox panel = new VBox(0);
-        panel.setPadding(new Insets(0));
         panel.getChildren().add(table);
         VBox.setVgrow(table, Priority.ALWAYS);
         VBox.setVgrow(panel, Priority.ALWAYS);
         return panel;
     }
 
-    // ----------------------------------------------------------------
-    // Panel 2: Expenses
-    // ----------------------------------------------------------------
     private Node buildExpensePanel() {
         TableView<ExpenseCategoryDTO> table = new TableView<>();
         table.setItems(viewModel.getExpenseCategories());
@@ -353,14 +339,12 @@ public class ReportsView extends BaseView {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         VBox.setVgrow(table, Priority.ALWAYS);
 
-        NumberFormat fmt = NumberFormat.getCurrencyInstance(Locale.US);
-
         TableColumn<ExpenseCategoryDTO, String> catCol = new TableColumn<>("CATEGORY");
         catCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(d.getValue().getCategory()));
 
         TableColumn<ExpenseCategoryDTO, String> amtCol = new TableColumn<>("AMOUNT");
         amtCol.setPrefWidth(130); amtCol.setMaxWidth(130);
-        amtCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(fmt.format(d.getValue().getAmount())));
+        amtCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(CurrencyFormatter.format(d.getValue().getAmount())));
         amtCol.setCellFactory(col -> centerAlignCell());
         amtCol.setStyle("-fx-alignment: CENTER;");
 
@@ -390,17 +374,12 @@ public class ReportsView extends BaseView {
         return panel;
     }
 
-    // ----------------------------------------------------------------
-    // Panel 3: HR & Payroll
-    // ----------------------------------------------------------------
     private Node buildHRPanel() {
         TableView<Employee> table = new TableView<>();
         table.setItems(viewModel.getFilteredEmployees());
         table.setStyle("-fx-background-color: transparent; -fx-border-width: 0;");
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         VBox.setVgrow(table, Priority.ALWAYS);
-
-        NumberFormat fmt = NumberFormat.getCurrencyInstance(Locale.US);
 
         TableColumn<Employee, String> nameCol = new TableColumn<>("NAME");
         nameCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(d.getValue().getName() + " " + d.getValue().getSurname()));
@@ -417,7 +396,7 @@ public class ReportsView extends BaseView {
         TableColumn<Employee, String> salaryCol = new TableColumn<>("MONTHLY SALARY");
         salaryCol.setPrefWidth(150);
         salaryCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(
-                d.getValue().getSalary() != null ? fmt.format(d.getValue().getSalary()) : "—"));
+                d.getValue().getSalary() != null ? CurrencyFormatter.format(d.getValue().getSalary()) : "—"));
         salaryCol.setCellFactory(col -> centerAlignCell());
         salaryCol.setStyle("-fx-alignment: CENTER;");
 
@@ -431,11 +410,10 @@ public class ReportsView extends BaseView {
                 boolean active = "ACTIVE".equalsIgnoreCase(item);
                 Label pill = new Label(item);
                 pill.setStyle(
-                    "-fx-background-color: " + (active ? "#DCFCE7" : "#F3F4F6") + ";" +
-                    "-fx-text-fill: " + (active ? "#16A34A" : Themes.TEXT_MUTED) + ";" +
-                    "-fx-font-size: 11px; -fx-font-weight: bold;" +
-                    "-fx-background-radius: 12; -fx-padding: 3 8;");
-
+                        "-fx-background-color: " + (active ? "#DCFCE7" : "#F3F4F6") + ";" +
+                                "-fx-text-fill: " + (active ? "#16A34A" : Themes.TEXT_MUTED) + ";" +
+                                "-fx-font-size: 11px; -fx-font-weight: bold;" +
+                                "-fx-background-radius: 12; -fx-padding: 3 8;");
                 HBox box = new HBox(pill);
                 box.setAlignment(Pos.CENTER);
                 setGraphic(box);
@@ -445,10 +423,9 @@ public class ReportsView extends BaseView {
 
         table.getColumns().addAll(nameCol, posCol, deptCol, salaryCol, statusCol);
 
-        // Footer: total payroll
         Label payrollLbl = new Label("TOTAL PAYROLL");
         payrollLbl.setStyle("-fx-font-weight: 900; -fx-font-size: 13px; -fx-text-fill: " + Themes.TEXT_DARK + ";");
-        Label payrollVal = new Label("$0");
+        Label payrollVal = new Label(CurrencyFormatter.symbol() + "0");
         payrollVal.setStyle("-fx-font-weight: 900; -fx-font-size: 16px; -fx-text-fill: " + Themes.PRIMARY + ";");
 
         Runnable updateTotal = () -> {
@@ -456,7 +433,7 @@ public class ReportsView extends BaseView {
                     .filter(e -> e.getSalary() != null)
                     .map(Employee::getSalary)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            payrollVal.setText(fmt.format(total));
+            payrollVal.setText(CurrencyFormatter.format(total));
         };
         updateTotal.run();
         viewModel.getEmployees().addListener((ListChangeListener<Employee>) c -> updateTotal.run());
@@ -476,9 +453,6 @@ public class ReportsView extends BaseView {
         return panel;
     }
 
-    // ----------------------------------------------------------------
-    // Panel 4: Monthly Summary Table
-    // ----------------------------------------------------------------
     private Node buildMonthlyTablePanel() {
         TableView<MonthlySnapshotDTO> table = new TableView<>();
         table.setItems(viewModel.getMonthlySummaries());
@@ -486,7 +460,6 @@ public class ReportsView extends BaseView {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         VBox.setVgrow(table, Priority.ALWAYS);
 
-        NumberFormat fmt = NumberFormat.getCurrencyInstance(Locale.US);
         DateTimeFormatter periodFmt = DateTimeFormatter.ofPattern("MMM yyyy");
 
         TableColumn<MonthlySnapshotDTO, String> monthCol = new TableColumn<>("MONTH");
@@ -494,18 +467,18 @@ public class ReportsView extends BaseView {
         monthCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(d.getValue().getPeriod().format(periodFmt)));
 
         TableColumn<MonthlySnapshotDTO, String> incCol = new TableColumn<>("INCOME");
-        incCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(fmt.format(d.getValue().getIncome())));
+        incCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(CurrencyFormatter.format(d.getValue().getIncome())));
         incCol.setCellFactory(col -> centerAlignCell());
         incCol.setStyle("-fx-alignment: CENTER;");
 
         TableColumn<MonthlySnapshotDTO, String> expCol = new TableColumn<>("EXPENSES");
-        expCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(fmt.format(d.getValue().getExpense())));
+        expCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(CurrencyFormatter.format(d.getValue().getExpense())));
         expCol.setCellFactory(col -> centerAlignCell());
         expCol.setStyle("-fx-alignment: CENTER;");
 
         TableColumn<MonthlySnapshotDTO, BigDecimal> netCol = new TableColumn<>("NET PROFIT");
         netCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(d.getValue().getNetProfit()));
-        netCol.setCellFactory(col -> centerAlignDecimalCell(fmt, true));
+        netCol.setCellFactory(col -> centerAlignDecimalCell(true));
         netCol.setStyle("-fx-alignment: CENTER;");
 
         TableColumn<MonthlySnapshotDTO, MonthlySnapshotDTO> momCol = new TableColumn<>("MOM CHANGE");
@@ -530,7 +503,6 @@ public class ReportsView extends BaseView {
 
         table.getColumns().addAll(monthCol, incCol, expCol, netCol, momCol);
 
-        // Rebuild MoM values whenever the list changes
         Runnable rebuildMom = () -> {
             momValues.clear();
             List<MonthlySnapshotDTO> data = viewModel.getMonthlySummaries();
@@ -560,9 +532,6 @@ public class ReportsView extends BaseView {
         return panel;
     }
 
-    // ----------------------------------------------------------------
-    // Helpers
-    // ----------------------------------------------------------------
     private <T> TableCell<T, String> centerAlignCell() {
         return new TableCell<>() {
             @Override protected void updateItem(String item, boolean empty) {
@@ -573,16 +542,12 @@ public class ReportsView extends BaseView {
         };
     }
 
-    private <T> TableCell<T, BigDecimal> centerAlignDecimalCell(NumberFormat fmt, boolean colored) {
+    private <T> TableCell<T, BigDecimal> centerAlignDecimalCell(boolean colored) {
         return new TableCell<>() {
             @Override protected void updateItem(BigDecimal item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setStyle("-fx-alignment: CENTER; -fx-padding: 0;");
-                    return;
-                }
-                setText(fmt.format(item));
+                if (empty || item == null) { setText(null); setStyle("-fx-alignment: CENTER; -fx-padding: 0;"); return; }
+                setText(CurrencyFormatter.format(item));
                 String extraStyle = "";
                 if (colored) {
                     int cmp = item.compareTo(BigDecimal.ZERO);
@@ -596,39 +561,29 @@ public class ReportsView extends BaseView {
 
     private StackPane buildMiniBar(double pct) {
         double clampedPct = Math.max(0, Math.min(pct, 100));
-
         Region track = new Region();
-        track.setPrefSize(110, 8);
-        track.setMaxSize(110, 8);
+        track.setPrefSize(110, 8); track.setMaxSize(110, 8);
         track.setStyle("-fx-background-color: #E2E8F0; -fx-background-radius: 4;");
-
         Region fill = new Region();
-        fill.setPrefSize(clampedPct * 1.1, 8); // scale: 100% = 110px
-        fill.setMaxSize(clampedPct * 1.1, 8);
+        fill.setPrefSize(clampedPct * 1.1, 8); fill.setMaxSize(clampedPct * 1.1, 8);
         fill.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-background-radius: 4;");
-
         StackPane bar = new StackPane(track, fill);
         bar.setAlignment(Pos.CENTER_LEFT);
-        bar.setPrefSize(110, 8);
-        bar.setMaxSize(110, 8);
+        bar.setPrefSize(110, 8); bar.setMaxSize(110, 8);
         return bar;
     }
 
     private VBox createStatCard(String labelText, Label valueLabel, String accentColor) {
         VBox card = new VBox(6);
         card.setPadding(new Insets(16));
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 12; " +
-                "-fx-border-color: #E2E8F0; -fx-border-radius: 12;");
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E2E8F0; -fx-border-radius: 12;");
         card.setMaxWidth(Double.MAX_VALUE);
-
         Label lbl = new Label(labelText);
         lbl.setStyle("-fx-font-size: 10px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
         valueLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: 900; -fx-text-fill: " + accentColor + ";");
-
         Region accent = new Region();
         accent.setPrefHeight(3);
         accent.setStyle("-fx-background-color: " + accentColor + "; -fx-background-radius: 2;");
-
         card.getChildren().addAll(lbl, valueLabel, accent);
         return card;
     }
@@ -672,11 +627,7 @@ public class ReportsView extends BaseView {
         return header;
     }
 
-    // ----------------------------------------------------------------
-    // Existing card builder (unchanged)
-    // ----------------------------------------------------------------
-    private VBox buildCard(String titleKey, Object mainVal, Object subVal,
-                           boolean singleStat, Node chartContent) {
+    private VBox buildCard(String titleKey, Object mainVal, Object subVal, boolean singleStat, Node chartContent) {
         VBox card = new VBox(15);
         card.setPadding(new Insets(25));
         card.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-border-color: #E2E8F0; -fx-border-radius: 16; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 4);");
@@ -692,12 +643,7 @@ public class ReportsView extends BaseView {
         expandIcon.setOpacity(0.5);
         header.getChildren().addAll(titleLbl, spacer, expandIcon);
 
-        chartContent.setStyle(chartContent.getStyle() != null ? chartContent.getStyle() : "");
-        if (chartContent instanceof Region r) {
-            r.setMinHeight(160);
-            r.setPrefHeight(160);
-            r.setMaxHeight(160);
-        }
+        if (chartContent instanceof Region r) { r.setMinHeight(160); r.setPrefHeight(160); r.setMaxHeight(160); }
         VBox.setVgrow(chartContent, Priority.ALWAYS);
 
         HBox footer = new HBox(20);
@@ -708,20 +654,15 @@ public class ReportsView extends BaseView {
             VBox statBox = new VBox(2);
             statBox.setAlignment(Pos.CENTER);
             Label val = new Label();
-            if (mainVal instanceof javafx.beans.value.ObservableValue<?> strProp) {
+            if (mainVal instanceof javafx.beans.value.ObservableValue<?> strProp)
                 val.textProperty().bind((javafx.beans.value.ObservableValue<? extends String>) strProp);
-            } else if (mainVal != null) {
-                val.setText(mainVal.toString());
-            }
+            else if (mainVal != null) val.setText(mainVal.toString());
             val.setStyle("-fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: #111827;");
             Label sub = new Label();
-            if (subVal instanceof javafx.beans.value.ObservableValue<?> strProp) {
+            if (subVal instanceof javafx.beans.value.ObservableValue<?> strProp)
                 sub.textProperty().bind((javafx.beans.value.ObservableValue<? extends String>) strProp);
-            } else if (subVal != null) {
-                sub.setText(subVal.toString());
-            } else {
-                sub.setText("TOTAL");
-            }
+            else if (subVal != null) sub.setText(subVal.toString());
+            else sub.setText("TOTAL");
             sub.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
             statBox.getChildren().addAll(val, sub);
             footer.getChildren().add(statBox);
@@ -731,11 +672,9 @@ public class ReportsView extends BaseView {
             lbl1.setStyle("-fx-font-size: 9px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
             I18n.language.addListener((obs, o, v) -> lbl1.setText(I18n.t("GROSS INCOME")));
             Label val1 = new Label();
-            if (mainVal instanceof javafx.beans.value.ObservableValue<?> strProp) {
+            if (mainVal instanceof javafx.beans.value.ObservableValue<?> strProp)
                 val1.textProperty().bind((javafx.beans.value.ObservableValue<? extends String>) strProp);
-            } else if (mainVal != null) {
-                val1.setText(mainVal.toString());
-            }
+            else if (mainVal != null) val1.setText(mainVal.toString());
             val1.setStyle("-fx-font-size: 20px; -fx-font-weight: 900; -fx-text-fill: " + Themes.PRIMARY + ";");
             stat1.getChildren().addAll(lbl1, val1);
 
@@ -748,11 +687,9 @@ public class ReportsView extends BaseView {
             lbl2.setStyle("-fx-font-size: 9px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
             I18n.language.addListener((obs, o, v) -> lbl2.setText(I18n.t("NET EXPENSE")));
             Label val2 = new Label();
-            if (subVal instanceof javafx.beans.value.ObservableValue<?> strProp) {
+            if (subVal instanceof javafx.beans.value.ObservableValue<?> strProp)
                 val2.textProperty().bind((javafx.beans.value.ObservableValue<? extends String>) strProp);
-            } else if (subVal != null) {
-                val2.setText(subVal.toString());
-            }
+            else if (subVal != null) val2.setText(subVal.toString());
             val2.setStyle("-fx-font-size: 20px; -fx-font-weight: 900; -fx-text-fill: #111827;");
             stat2.getChildren().addAll(lbl2, val2);
             footer.getChildren().addAll(stat1, footerSpacer, stat2);
@@ -762,15 +699,11 @@ public class ReportsView extends BaseView {
         return card;
     }
 
-    // ----------------------------------------------------------------
-    // Pagination (static display)
-    // ----------------------------------------------------------------
     private HBox buildPagination() {
         HBox pagination = new HBox(10);
         pagination.setAlignment(Pos.CENTER_RIGHT);
         pagination.setPadding(new Insets(20));
         pagination.setStyle("-fx-border-color: #E2E8F0; -fx-border-width: 1 0 0 0;");
-
         Label info = new Label("Showing all records");
         info.setStyle("-fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-font-size: 13px;");
         Region spacer = new Region();
@@ -779,9 +712,6 @@ public class ReportsView extends BaseView {
         return pagination;
     }
 
-    // ----------------------------------------------------------------
-    // Export CSV
-    // ----------------------------------------------------------------
     private void exportCSV() {
         FileChooser fc = new FileChooser();
         fc.setTitle("Export Monthly Report");

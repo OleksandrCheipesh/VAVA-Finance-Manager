@@ -8,6 +8,7 @@ import org.example.SessionManager;
 import org.example.model.database.entity.Project;
 import org.example.model.database.service.ProjectService;
 import org.example.model.models.ProjectsModel;
+import org.example.view.templates.CurrencyFormatter;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -20,7 +21,7 @@ public class ProjectsViewModel {
     private final StringProperty message = new SimpleStringProperty("");
     private ProjectService db = new ProjectService();
     private final StringProperty activeProject = new SimpleStringProperty("");
-    private final StringProperty budget = new SimpleStringProperty("$2.4M");
+    private final StringProperty budget = new SimpleStringProperty("");
     private final BooleanProperty hasAccess = new SimpleBooleanProperty(new ProjectsModel().hasAccess());
 
     public StringProperty activeProjectProperty() { return activeProject; }
@@ -33,10 +34,8 @@ public class ProjectsViewModel {
 
     public void loadProjects() {
         var logger = org.example.logging.AppLog.getLogger(ProjectsViewModel.class);
-
         int companyId = SessionManager.getInstance().getCurrentCompanyId();
         logger.info("Loading projects for companyId={}", companyId);
-
         try {
             List<Project> dbProjects = db.getProjectsByCompanyId(companyId);
             projects.clear();
@@ -97,9 +96,7 @@ public class ProjectsViewModel {
                 .filter(Objects::nonNull)
                 .mapToDouble(BigDecimal::doubleValue)
                 .sum();
-        if (total >= 1_000_000) return String.format("%.1fM", total / 1_000_000);
-        if (total >= 1_000) return String.format("%.1fK", total / 1_000);
-        return String.format("%.1f $", total);
+        return CurrencyFormatter.formatCompact(total);
     }
 
     public void filterBySearch(String regex) {

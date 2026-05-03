@@ -38,7 +38,7 @@ public class ReportModals {
         Label threshLbl = new Label(I18n.t("MIN. PROFIT THRESHOLD"));
         threshLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
 
-        TextField thresholdField = UIFactory.inputField("$ 0.00");
+        TextField thresholdField = UIFactory.inputField(CurrencyFormatter.symbol() + " 0.00");
         thresholdField.setMinHeight(44);
         thresholdField.setPrefHeight(44);
         thresholdField.setMaxHeight(44);
@@ -49,9 +49,9 @@ public class ReportModals {
         HBox presets = new HBox(8);
         Label presetLbl = new Label(I18n.t("Quick preset:"));
         presetLbl.setStyle("-fx-font-size: 11px; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
-        Button p10  = createPresetBtn("$10k",  "10000",  thresholdField);
-        Button p50  = createPresetBtn("$50k",  "50000",  thresholdField);
-        Button p100 = createPresetBtn("$100k", "100000", thresholdField);
+        Button p10  = createPresetBtn(CurrencyFormatter.symbol() + "10k",  "10000",  thresholdField);
+        Button p50  = createPresetBtn(CurrencyFormatter.symbol() + "50k",  "50000",  thresholdField);
+        Button p100 = createPresetBtn(CurrencyFormatter.symbol() + "100k", "100000", thresholdField);
         presets.getChildren().addAll(presetLbl, p10, p50, p100);
         presets.setAlignment(Pos.CENTER_LEFT);
 

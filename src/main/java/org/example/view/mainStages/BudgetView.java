@@ -15,9 +15,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import org.example.model.database.entity.Account;
 import org.example.model.database.entity.AccountCategory;
+import org.example.exceptions.PermissionException;
 import org.example.view.templates.*;
 import org.example.viewModel.BudgetViewModel;
-
+import org.example.view.templates.CurrencyFormatter;
 import java.math.BigDecimal;
 import java.util.Locale;
 import java.util.Optional;
@@ -103,7 +104,7 @@ public class BudgetView extends BaseView {
     I18n.language.addListener((obs, o, v) -> c1Title.setText(I18n.t("TOTAL ASSETS")));
 
     BigDecimal totalAssets = viewModel.getTotalAssets();
-    c1Value = new Label(String.format(Locale.US, "$%,.2f", totalAssets));
+    c1Value = new Label(CurrencyFormatter.format(totalAssets));
     c1Value.setStyle("-fx-font-size: 34px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_GREEN + ";");
 
     card1.getChildren().addAll(c1Title, c1Value);
@@ -115,7 +116,7 @@ public class BudgetView extends BaseView {
     I18n.language.addListener((obs, o, v) -> c2Title.setText(I18n.t("TOTAL LIABILITIES")));
 
     BigDecimal totalLiabilities = viewModel.getTotalLiabilities();
-    c2Value = new Label(String.format(Locale.US, "$%,.2f", totalLiabilities.abs()));
+    c2Value = new Label(CurrencyFormatter.format(totalLiabilities.abs()));
     c2Value.setStyle("-fx-font-size: 34px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_TEXT + ";");
 
     card2.getChildren().addAll(c2Title, c2Value);
@@ -127,7 +128,7 @@ public class BudgetView extends BaseView {
     I18n.language.addListener((obs, o, v) -> c3Title.setText(I18n.t("NET POSITION")));
 
     BigDecimal netPosition = viewModel.getNetPosition();
-    c3Value = new Label(String.format(Locale.US, "$%,.2f", netPosition));
+    c3Value = new Label(CurrencyFormatter.format(netPosition));
     c3Value.setStyle("-fx-font-size: 34px; -fx-font-weight: 900; -fx-text-fill: " + (netPosition.compareTo(BigDecimal.ZERO) >= 0 ? "white" : "#FECACA") + ";");
 
     c3Sub = new Label(I18n.t(netPosition.compareTo(BigDecimal.ZERO) >= 0 ? "Available for allocation" : "Deficit"));
@@ -230,7 +231,7 @@ public class BudgetView extends BaseView {
   @Override
   protected void setLogic() {
     if (!viewModel.hasAccessProperty().get()) {
-      showAccessDenied();
+      handlePermissionDenied();
       return;
     }
 
@@ -271,14 +272,22 @@ public class BudgetView extends BaseView {
     updateGrid(cardWidthBinding);
   }
 
+  private void handlePermissionDenied() {
+    try {
+      throw new PermissionException(I18n.t("Access Denied"));
+    } catch (PermissionException ex) {
+      showAccessDenied();
+    }
+  }
+
   private void refreshSummaryCards() {
     BigDecimal totalAssets = viewModel.getTotalAssets();
     BigDecimal totalLiabilities = viewModel.getTotalLiabilities();
     BigDecimal netPosition = viewModel.getNetPosition();
 
-    c1Value.setText(String.format(Locale.US, "$%,.2f", totalAssets));
-    c2Value.setText(String.format(Locale.US, "$%,.2f", totalLiabilities.abs()));
-    c3Value.setText(String.format(Locale.US, "$%,.2f", netPosition));
+    c1Value.setText(CurrencyFormatter.format(totalAssets));
+    c2Value.setText(CurrencyFormatter.format(totalLiabilities.abs()));
+    c3Value.setText(CurrencyFormatter.format(netPosition));
     c3Value.setStyle("-fx-font-size: 34px; -fx-font-weight: 900; -fx-text-fill: " + (netPosition.compareTo(BigDecimal.ZERO) >= 0 ? "white" : "#FECACA") + ";");
     c3Sub.setText(I18n.t(netPosition.compareTo(BigDecimal.ZERO) >= 0 ? "Available for allocation" : "Deficit"));
     c3Sub.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + (netPosition.compareTo(BigDecimal.ZERO) >= 0 ? Themes.PRIMARY : "#FCA5A5") + ";");

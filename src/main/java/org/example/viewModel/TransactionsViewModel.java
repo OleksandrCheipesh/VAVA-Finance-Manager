@@ -19,6 +19,7 @@ import org.example.model.database.service.ClientService;
 import org.example.model.database.service.ProjectService;
 import org.example.model.database.service.TransactionService;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -28,6 +29,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import org.example.model.models.TransactionsModel;
+import org.example.view.templates.CurrencyFormatter;
+import org.example.model.models.TransactionsModel;
 
 public class TransactionsViewModel {
 
@@ -46,10 +51,10 @@ public class TransactionsViewModel {
     private final StringProperty message = new SimpleStringProperty("");
 
     // Summary card properties
-    private final StringProperty totalIncome = new SimpleStringProperty("0.00$");
-    private final StringProperty totalExpenses = new SimpleStringProperty("0.00$");
-    private final StringProperty netBalance = new SimpleStringProperty("0.00$");
-    private final StringProperty largestAmount = new SimpleStringProperty("0.00$");
+    private final StringProperty totalIncome = new SimpleStringProperty(CurrencyFormatter.symbol() + "0.00");
+    private final StringProperty totalExpenses = new SimpleStringProperty(CurrencyFormatter.symbol() + "0.00");
+    private final StringProperty netBalance = new SimpleStringProperty(CurrencyFormatter.symbol() + "0.00");
+    private final StringProperty largestAmount = new SimpleStringProperty(CurrencyFormatter.symbol() + "0.00");
     private final StringProperty incomeSubtext = new SimpleStringProperty("0 sales");
     private final StringProperty expensesSubtext= new SimpleStringProperty("0 purchases");
 
@@ -59,6 +64,16 @@ public class TransactionsViewModel {
     private Integer currentProjectId = null;
     private LocalDate fromDate = null;
     private LocalDate toDate = null;
+
+    private final TransactionsModel transactionsModel = new TransactionsModel();
+
+    public TransactionsViewModel.ImportResult importFromXml(File file) throws Exception {
+        TransactionsModel.ImportResult r = transactionsModel.importFromXml(file);
+        loadTransactions();
+        return new ImportResult(r.imported(), r.failed());
+    }
+
+    public record ImportResult(int imported, int failed) {}
 
     public TransactionsViewModel() {
         transactions.addListener((ListChangeListener<Transaction>) change -> recomputeStats());
@@ -295,10 +310,10 @@ public class TransactionsViewModel {
         }
 
         BigDecimal net = income.subtract(expenses);
-        totalIncome.set(df.format(income) + "$");
-        totalExpenses.set(df.format(expenses) + "$");
-        netBalance.set(df.format(net) + "$");
-        largestAmount.set(df.format(largest) + "$");
+        totalIncome.set(df.format(income) + org.example.view.templates.CurrencyFormatter.symbol());
+        totalExpenses.set(df.format(expenses) + org.example.view.templates.CurrencyFormatter.symbol());
+        netBalance.set(df.format(net) + org.example.view.templates.CurrencyFormatter.symbol());
+        largestAmount.set(df.format(largest) + org.example.view.templates.CurrencyFormatter.symbol());
         incomeSubtext.set(salesCount + " sales");
         expensesSubtext.set(purchaseCount + " purchases");
     }

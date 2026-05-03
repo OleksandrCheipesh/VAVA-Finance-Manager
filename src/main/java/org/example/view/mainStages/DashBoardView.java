@@ -314,8 +314,7 @@ public class DashBoardView extends BaseView {
             String amountColor = tx.getAmount() >= 0 ? Themes.TEXT_SUCCESS : Themes.TEXT_ERROR;
             String prefix = tx.getAmount() >= 0 ? "+ " : "- ";
 
-            Label amountLbl = new Label(prefix + String.format(Locale.US, "$%,.2f", Math.abs(tx.getAmount())));
-            amountLbl.setStyle("-fx-font-size: 14.5px; -fx-font-weight: 900; -fx-text-fill: " + amountColor + ";");
+            Label amountLbl = new Label(prefix + CurrencyFormatter.symbol() + String.format(Locale.US, "%,.2f", Math.abs(tx.getAmount())));            amountLbl.setStyle("-fx-font-size: 14.5px; -fx-font-weight: 900; -fx-text-fill: " + amountColor + ";");
 
             amountLbl.setMinWidth(Region.USE_PREF_SIZE);
 
