@@ -10,12 +10,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.FileChooser;
 import org.example.model.database.entity.Project;
 import org.example.logging.AppLog;
 import org.example.model.database.entity.Transaction;
 import org.example.view.templates.*;
 import org.example.viewModel.TransactionsViewModel;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -87,14 +89,19 @@ public class TransactionsView extends BaseView {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
+        StateButton importBtn = new StateButton("Import XML", StateButton.ButtonType.SECONDARY);
+        HBox.setMargin(importBtn, new Insets(0, 0, 20, 0));
+        importBtn.setOnMousePressed(e -> { importBtn.setScaleX(0.95); importBtn.setScaleY(0.95); });
+        importBtn.setOnMouseReleased(e -> { importBtn.setScaleX(1.0); importBtn.setScaleY(1.0); });
+        importBtn.setOnAction(e -> importXML());
+
         addBtn = new StateButton(I18n.t("+ Add Transaction"), StateButton.ButtonType.PRIMARY);
         I18n.language.addListener((obs, o, v) -> addBtn.setText(I18n.t("+ Add Transaction")));
         HBox.setMargin(addBtn, new Insets(0, 0, 20, 0));
-
         addBtn.setOnMousePressed(e -> { addBtn.setScaleX(0.95); addBtn.setScaleY(0.95); });
         addBtn.setOnMouseReleased(e -> { addBtn.setScaleX(1.0); addBtn.setScaleY(1.0); });
 
-        topBar.getChildren().addAll(titleBox, sep, tabs, spacer, addBtn);
+        topBar.getChildren().addAll(titleBox, sep, tabs, spacer, importBtn, addBtn);
 
         contentArea = new VBox(25);
 
@@ -329,6 +336,21 @@ public class TransactionsView extends BaseView {
                 ToastManager.showError(stage, newVal.replace("Error: ", ""));
             }
         });
+    }
+
+    private void importXML() {
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Import Transactions from XML");
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("XML Files", "*.xml"));
+        File file = fc.showOpenDialog(stage);
+        if (file == null) return;
+        try {
+            TransactionsViewModel.ImportResult result = viewModel.importFromXml(file);
+            ToastManager.showSuccess(stage, result.imported() + " transactions imported" +
+                    (result.failed() > 0 ? ", " + result.failed() + " skipped" : ""));
+        } catch (Exception ex) {
+            ToastManager.showError(stage, "Import failed: " + ex.getMessage());
+        }
     }
 
     private HBox createCustomFilterBar() {

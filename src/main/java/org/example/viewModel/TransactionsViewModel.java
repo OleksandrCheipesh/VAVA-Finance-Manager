@@ -19,6 +19,7 @@ import org.example.model.database.service.ClientService;
 import org.example.model.database.service.ProjectService;
 import org.example.model.database.service.TransactionService;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -28,7 +29,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import org.example.model.models.TransactionsModel;
 import org.example.view.templates.CurrencyFormatter;
+import org.example.model.models.TransactionsModel;
 
 public class TransactionsViewModel {
 
@@ -60,6 +64,16 @@ public class TransactionsViewModel {
     private Integer currentProjectId = null;
     private LocalDate fromDate = null;
     private LocalDate toDate = null;
+
+    private final TransactionsModel transactionsModel = new TransactionsModel();
+
+    public TransactionsViewModel.ImportResult importFromXml(File file) throws Exception {
+        TransactionsModel.ImportResult r = transactionsModel.importFromXml(file);
+        loadTransactions();
+        return new ImportResult(r.imported(), r.failed());
+    }
+
+    public record ImportResult(int imported, int failed) {}
 
     public TransactionsViewModel() {
         transactions.addListener((ListChangeListener<Transaction>) change -> recomputeStats());
