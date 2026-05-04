@@ -5,8 +5,11 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.effect.GaussianBlur;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import org.example.SessionManager;
 import org.example.model.database.entity.Position;
 import org.example.model.database.entity.User;
 import org.example.model.validation.CompanyValExept;
@@ -73,15 +76,64 @@ public class SettingsView extends BaseView {
 
         HBox topRow = new HBox(25);
         VBox companyProfile = buildCompanyProfile();
-        HBox.setHgrow(companyProfile, Priority.ALWAYS);
         VBox preferences = buildPreferences();
         preferences.setMinWidth(300);
-        topRow.getChildren().addAll(companyProfile, preferences);
+
+        boolean isDirector = SessionManager.getInstance().getPosition() == Position.Director;
+
+        if (isDirector) {
+            HBox.setHgrow(companyProfile, Priority.ALWAYS);
+            topRow.getChildren().addAll(companyProfile, preferences);
+        } else {
+            companyProfile.setEffect(new GaussianBlur(10));
+
+            ImageView companyLockIcon = IconFactory.getWhiteIcon("lock", 40);
+
+            Label companyMsg = new Label(I18n.t("Access Denied"));
+            companyMsg.setStyle("-fx-font-size: 20px; -fx-font-weight: 900; -fx-text-fill: white;");
+
+            Label companySub = new Label(I18n.t("Only Directors can edit company information."));
+            companySub.setStyle("-fx-font-size: 13px; -fx-text-fill: rgba(255,255,255,0.65);");
+
+            VBox companyOverlayContent = new VBox(12, companyLockIcon, companyMsg, companySub);
+            companyOverlayContent.setAlignment(Pos.CENTER);
+
+            StackPane companyOverlay = new StackPane(companyOverlayContent);
+            companyOverlay.setStyle("-fx-background-color: rgba(15,23,42,0.60); -fx-background-radius: 16;");
+
+            StackPane lockedCompany = new StackPane(companyProfile, companyOverlay);
+            HBox.setHgrow(lockedCompany, Priority.ALWAYS);
+            topRow.getChildren().addAll(lockedCompany, preferences);
+        }
 
         VBox userManagement = buildUserManagement();
         VBox security = buildSecurity();
 
-        contentArea.getChildren().addAll(topRow, userManagement, security);
+        if (isDirector) {
+            contentArea.getChildren().addAll(topRow, userManagement, security);
+        } else {
+            // Blur the card content
+            userManagement.setEffect(new GaussianBlur(10));
+
+            // Lock overlay content
+            ImageView lockIcon = IconFactory.getWhiteIcon("lock", 40);
+
+            Label accessMsg = new Label(I18n.t("Access Denied"));
+            accessMsg.setStyle("-fx-font-size: 20px; -fx-font-weight: 900; -fx-text-fill: white;");
+
+            Label accessSub = new Label(I18n.t("Only Directors can manage users."));
+            accessSub.setStyle("-fx-font-size: 13px; -fx-text-fill: rgba(255,255,255,0.65);");
+
+            VBox overlayContent = new VBox(12, lockIcon, accessMsg, accessSub);
+            overlayContent.setAlignment(Pos.CENTER);
+
+            StackPane overlay = new StackPane(overlayContent);
+            overlay.setStyle("-fx-background-color: rgba(15,23,42,0.60); -fx-background-radius: 16;");
+
+            StackPane lockedSection = new StackPane(userManagement, overlay);
+
+            contentArea.getChildren().addAll(topRow, lockedSection, security);
+        }
 
         ScrollPane scrollPane = new ScrollPane(contentArea);
         scrollPane.setFitToWidth(true);
