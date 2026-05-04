@@ -218,3 +218,28 @@
 .custom-radio:selected .dot {
     -fx-background-color: white;
 }
+
+/* --- HIDE ALL SCROLLBARS GLOBALLY --- */
+
+/* Compress the scrollbar to 0 size and make it invisible */
+.scroll-bar:horizontal,
+.scroll-bar:vertical {
+    -fx-opacity: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+    -fx-max-width: 0;
+    -fx-max-height: 0;
+    -fx-padding: 0;
+}
+
+/* Make all internal scrollbar components completely transparent and 0 size */
+.scroll-bar .track,
+.scroll-bar .track-background,
+.scroll-bar .thumb,
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button,
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
