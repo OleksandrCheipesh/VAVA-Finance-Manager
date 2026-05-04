@@ -247,16 +247,22 @@ public class DashBoardView extends BaseView {
         revenueBadgeLabel.textProperty().bind(DashboardViewModel.revenueGrowthProperty());
         activeProjectsValueLabel.textProperty().bind(DashboardViewModel.activeProjectsCountProperty().asString());
 
-        DashboardViewModel.revenueGrowthProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null && newVal.startsWith("-")) {
+        Runnable updateColors = () -> {
+            String val = revenueBadgeLabel.getText();
+            if (val != null && val.contains("-")) {
                 revenueBadgeLabel.setStyle("-fx-background-color: #FEE2E2; -fx-text-fill: " + Themes.TEXT_ERROR + "; -fx-padding: 4 10; -fx-background-radius: 12; -fx-font-size: 11px; -fx-font-weight: bold;");
+                revenueValueLabel.setStyle("-fx-font-size: 32px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_ERROR + ";");
             } else {
                 revenueBadgeLabel.setStyle("-fx-background-color: #D1FAE5; -fx-text-fill: " + Themes.TEXT_SUCCESS + "; -fx-padding: 4 10; -fx-background-radius: 12; -fx-font-size: 11px; -fx-font-weight: bold;");
+                revenueValueLabel.setStyle("-fx-font-size: 32px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_SUCCESS + ";");
             }
-        });
+        };
+
+        updateColors.run();
+
+        revenueBadgeLabel.textProperty().addListener((obs, oldVal, newVal) -> updateColors.run());
 
         updateTransactionsList();
-
         DashboardViewModel.getRecentTransactions().addListener((ListChangeListener<DashboardViewModel.TransactionDto>) c -> {
             updateTransactionsList();
         });

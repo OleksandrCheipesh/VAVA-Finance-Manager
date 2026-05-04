@@ -40,6 +40,12 @@ public class SummaryCard extends VBox {
 
         // Add text to cards
         this.getChildren().addAll(titleLabel, valueLabel, subLabel);
+
+        updateSubLabelVisibility(subText);
+    }
+
+    public void setValueColor(String color) {
+        valueLabel.setStyle("-fx-text-fill: " + color + "; -fx-font-size: 29px; -fx-font-weight: bold;");
     }
 
     public void setTitle(String title) {
@@ -52,5 +58,12 @@ public class SummaryCard extends VBox {
 
     public void setSubText(String subText) {
         subLabel.setText(subText);
+        updateSubLabelVisibility(subText);
+    }
+
+    private void updateSubLabelVisibility(String text) {
+        boolean hasText = text != null && !text.isEmpty();
+        subLabel.setVisible(hasText);
+        subLabel.setManaged(hasText);
     }
 }

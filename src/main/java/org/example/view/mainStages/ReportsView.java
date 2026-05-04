@@ -675,7 +675,7 @@ public class ReportsView extends BaseView {
             if (mainVal instanceof javafx.beans.value.ObservableValue<?> strProp)
                 val1.textProperty().bind((javafx.beans.value.ObservableValue<? extends String>) strProp);
             else if (mainVal != null) val1.setText(mainVal.toString());
-            val1.setStyle("-fx-font-size: 20px; -fx-font-weight: 900; -fx-text-fill: " + Themes.PRIMARY + ";");
+            val1.setStyle("-fx-font-size: 20px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_SUCCESS + ";");
             stat1.getChildren().addAll(lbl1, val1);
 
             Region footerSpacer = new Region();
@@ -690,7 +690,7 @@ public class ReportsView extends BaseView {
             if (subVal instanceof javafx.beans.value.ObservableValue<?> strProp)
                 val2.textProperty().bind((javafx.beans.value.ObservableValue<? extends String>) strProp);
             else if (subVal != null) val2.setText(subVal.toString());
-            val2.setStyle("-fx-font-size: 20px; -fx-font-weight: 900; -fx-text-fill: #111827;");
+            val2.setStyle("-fx-font-size: 20px; -fx-font-weight: 900; -fx-text-fill: " + Themes.TEXT_ERROR + ";");
             stat2.getChildren().addAll(lbl2, val2);
             footer.getChildren().addAll(stat1, footerSpacer, stat2);
         }

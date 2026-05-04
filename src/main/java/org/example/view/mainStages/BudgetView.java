@@ -90,10 +90,10 @@ public class BudgetView extends BaseView {
     contentArea = new VBox(25);
 
     DoubleBinding cardWidthBinding = contentArea.widthProperty()
-      .subtract(80)
-      .subtract(GRID_GAP * 2)
-      .divide(3)
-      .subtract(1);
+            .subtract(80)
+            .subtract(GRID_GAP * 2)
+            .divide(3)
+            .subtract(1);
 
     HBox summaryContainer = new HBox(GRID_GAP);
 
@@ -105,7 +105,8 @@ public class BudgetView extends BaseView {
 
     BigDecimal totalAssets = viewModel.getTotalAssets();
     c1Value = new Label(CurrencyFormatter.format(totalAssets));
-    c1Value.setStyle("-fx-font-size: 34px; -fx-font-weight: 900; -fx-text-fill: " + Themes.DARK_GREEN + ";");
+    String c1Color = totalAssets.compareTo(BigDecimal.ZERO) >= 0 ? Themes.DARK_GREEN : Themes.TEXT_ERROR;
+    c1Value.setStyle("-fx-font-size: 34px; -fx-font-weight: 900; -fx-text-fill: " + c1Color + ";");
 
     card1.getChildren().addAll(c1Title, c1Value);
 
@@ -236,10 +237,10 @@ public class BudgetView extends BaseView {
     }
 
     DoubleBinding cardWidthBinding = contentArea.widthProperty()
-      .subtract(80)
-      .subtract(GRID_GAP * 2)
-      .divide(3)
-      .subtract(1);
+            .subtract(80)
+            .subtract(GRID_GAP * 2)
+            .divide(3)
+            .subtract(1);
 
     viewModel.getFilteredAccounts().addListener((ListChangeListener<Account>) c -> {
       updateGrid(cardWidthBinding);
@@ -286,6 +287,9 @@ public class BudgetView extends BaseView {
     BigDecimal netPosition = viewModel.getNetPosition();
 
     c1Value.setText(CurrencyFormatter.format(totalAssets));
+    String c1Color = totalAssets.compareTo(BigDecimal.ZERO) >= 0 ? Themes.DARK_GREEN : Themes.TEXT_ERROR;
+    c1Value.setStyle("-fx-font-size: 34px; -fx-font-weight: 900; -fx-text-fill: " + c1Color + ";");
+
     c2Value.setText(CurrencyFormatter.format(totalLiabilities.abs()));
     c3Value.setText(CurrencyFormatter.format(netPosition));
     c3Value.setStyle("-fx-font-size: 34px; -fx-font-weight: 900; -fx-text-fill: " + (netPosition.compareTo(BigDecimal.ZERO) >= 0 ? "white" : "#FECACA") + ";");
@@ -342,11 +346,11 @@ public class BudgetView extends BaseView {
     card.minWidthProperty().bind(widthBinding);
 
     card.setStyle(
-      "-fx-background-color: white;" +
-        "-fx-border-color: " + Themes.BORDER_LIGHT + ";" +
-        "-fx-border-radius: 16; -fx-background-radius: 16;" +
-        "-fx-padding: 24;" +
-        "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 10, 0, 0, 4);"
+            "-fx-background-color: white;" +
+                    "-fx-border-color: " + Themes.BORDER_LIGHT + ";" +
+                    "-fx-border-radius: 16; -fx-background-radius: 16;" +
+                    "-fx-padding: 24;" +
+                    "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 10, 0, 0, 4);"
     );
 
     HBox cardHeader = new HBox();
@@ -393,9 +397,9 @@ public class BudgetView extends BaseView {
     String balanceText = isCreditLine
             ? CurrencyFormatter.symbol() + String.format(Locale.US, "%,.2f", Math.abs(balance))
             : CurrencyFormatter.symbol() + String.format(Locale.US, "%,.2f", balance);
-    String balanceColor = isCreditLine
-      ? (balance < 0 ? Themes.TEXT_ERROR : Themes.DARK_GREEN)
-      : Themes.DARK_GREEN;
+
+    String balanceColor = balance < 0 ? Themes.TEXT_ERROR : Themes.DARK_GREEN;
+
     Label balanceLabel = new Label(balanceText);
     balanceLabel.setStyle("-fx-font-size: 28px; -fx-font-weight: 900; -fx-text-fill: " + balanceColor + ";");
 
@@ -407,9 +411,9 @@ public class BudgetView extends BaseView {
 
       if (isCreditLine) {
         utilization = rawBalance.negate().max(BigDecimal.ZERO)
-          .divide(BigDecimal.valueOf(account.getLimitAmount()), 4, java.math.RoundingMode.HALF_UP)
-          .multiply(BigDecimal.valueOf(100.0))
-          .doubleValue();
+                .divide(BigDecimal.valueOf(account.getLimitAmount()), 4, java.math.RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100.0))
+                .doubleValue();
         progressLabelText = "CREDIT USED";
       } else {
         utilization = Math.min((rawBalance.doubleValue() / account.getLimitAmount()) * 100.0, 100.0);
@@ -456,17 +460,17 @@ public class BudgetView extends BaseView {
     card.setCursor(Cursor.HAND);
     card.setOnMouseClicked(e -> {
       BudgetDetailDialog.show(
-        stage,
-        account,
-        viewModel,
-        () -> AddBudgetDialog.show(stage, account, updatedAccount -> {
-          viewModel.updateAccount(updatedAccount);
-          refreshDashboardState(widthBinding);
-        }),
-        () -> {
-          viewModel.deleteAccount(account);
-          refreshDashboardState(widthBinding);
-        }
+              stage,
+              account,
+              viewModel,
+              () -> AddBudgetDialog.show(stage, account, updatedAccount -> {
+                viewModel.updateAccount(updatedAccount);
+                refreshDashboardState(widthBinding);
+              }),
+              () -> {
+                viewModel.deleteAccount(account);
+                refreshDashboardState(widthBinding);
+              }
       );
     });
 
@@ -483,10 +487,10 @@ public class BudgetView extends BaseView {
     String border = isDark ? "" : "-fx-border-color: " + Themes.BORDER_LIGHT + "; ";
 
     card.setStyle(
-      "-fx-background-color: " + bgColor + ";" + border +
-        "-fx-border-radius: 16; -fx-background-radius: 16;" +
-        "-fx-padding: 30;" +
-        (isDark ? "-fx-effect: dropshadow(three-pass-box, rgba(15,23,42,0.3), 15, 0, 0, 8);" : "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 4);")
+            "-fx-background-color: " + bgColor + ";" + border +
+                    "-fx-border-radius: 16; -fx-background-radius: 16;" +
+                    "-fx-padding: 30;" +
+                    (isDark ? "-fx-effect: dropshadow(three-pass-box, rgba(15,23,42,0.3), 15, 0, 0, 8);" : "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 4);")
     );
 
     return card;
