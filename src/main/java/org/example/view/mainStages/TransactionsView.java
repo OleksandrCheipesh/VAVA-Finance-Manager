@@ -21,6 +21,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import org.example.view.templates.CurrencyFormatter;
 
 public class TransactionsView extends BaseView {
@@ -31,6 +32,12 @@ public class TransactionsView extends BaseView {
     private AppTable<Transaction> table;
     private StateButton addBtn;
     private HBox topBar;
+
+    // UI Cards defined as fields so we can access them in setLogic
+    private SummaryCard incomeCard;
+    private SummaryCard expensesCard;
+    private SummaryCard netCard;
+    private SummaryCard largestCard;
 
     @Override
     protected void setContent() {
@@ -106,28 +113,15 @@ public class TransactionsView extends BaseView {
 
         HBox filterBar = createCustomFilterBar();
 
-        SummaryCard incomeCard   = new SummaryCard(I18n.t("INCOME"),      "0.00$", "0 sales",     Themes.TEXT_SUCCESS);
-        SummaryCard expensesCard = new SummaryCard(I18n.t("EXPENSES"),    "0.00$", "0 purchases", Themes.TEXT_ERROR);
-        SummaryCard netCard      = new SummaryCard(I18n.t("NET BALANCE"), "0.00$", "",            Themes.TEXT_SUCCESS);
-        SummaryCard largestCard  = new SummaryCard(I18n.t("LARGEST"),     "0.00$", "",            Themes.TEXT_SUCCESS);
+        incomeCard   = new SummaryCard(I18n.t("INCOME"),      "0.00$", "0 sales",     Themes.TEXT_SUCCESS);
+        expensesCard = new SummaryCard(I18n.t("EXPENSES"),    "0.00$", "0 purchases", Themes.TEXT_ERROR);
+        netCard      = new SummaryCard(I18n.t("NET BALANCE"), "0.00$", "",            Themes.TEXT_SUCCESS);
+        largestCard  = new SummaryCard(I18n.t("LARGEST"),     "0.00$", "",            Themes.TEXT_SUCCESS);
+
         I18n.language.addListener((obs, o, v) -> {
             incomeCard.setTitle(I18n.t("INCOME")); expensesCard.setTitle(I18n.t("EXPENSES"));
             netCard.setTitle(I18n.t("NET BALANCE")); largestCard.setTitle(I18n.t("LARGEST"));
         });
-
-        viewModel.totalIncomeProperty().addListener((obs, o, v) -> incomeCard.setValue(v));
-        viewModel.incomeSubtextProperty().addListener((obs, o, v) -> incomeCard.setSubText(v));
-        viewModel.totalExpensesProperty().addListener((obs, o, v) -> expensesCard.setValue(v));
-        viewModel.expensesSubtextProperty().addListener((obs, o, v) -> expensesCard.setSubText(v));
-        viewModel.netBalanceProperty().addListener((obs, o, v) -> netCard.setValue(v));
-        viewModel.largestAmountProperty().addListener((obs, o, v) -> largestCard.setValue(v));
-
-        incomeCard.setValue(viewModel.totalIncomeProperty().get());
-        incomeCard.setSubText(viewModel.incomeSubtextProperty().get());
-        expensesCard.setValue(viewModel.totalExpensesProperty().get());
-        expensesCard.setSubText(viewModel.expensesSubtextProperty().get());
-        netCard.setValue(viewModel.netBalanceProperty().get());
-        largestCard.setValue(viewModel.largestAmountProperty().get());
 
         HBox cardsBox = new HBox(20);
         cardsBox.getChildren().addAll(incomeCard, expensesCard, netCard, largestCard);
@@ -307,6 +301,37 @@ public class TransactionsView extends BaseView {
             showAccessDenied();
             return;
         }
+
+        // --- FIXED: Color logic for summary cards ---
+        viewModel.totalIncomeProperty().addListener((obs, o, v) -> incomeCard.setValue(v));
+        viewModel.incomeSubtextProperty().addListener((obs, o, v) -> incomeCard.setSubText(v));
+        viewModel.totalExpensesProperty().addListener((obs, o, v) -> expensesCard.setValue(v));
+        viewModel.expensesSubtextProperty().addListener((obs, o, v) -> expensesCard.setSubText(v));
+
+        viewModel.netBalanceProperty().addListener((obs, oldVal, newVal) -> {
+            netCard.setValue(newVal);
+            if (newVal != null && newVal.contains("-")) {
+                netCard.setValueColor(Themes.TEXT_ERROR);
+            } else {
+                netCard.setValueColor(Themes.TEXT_SUCCESS);
+            }
+        });
+
+        viewModel.largestAmountProperty().addListener((obs, o, v) -> largestCard.setValue(v));
+
+        // Initial update
+        incomeCard.setValue(viewModel.totalIncomeProperty().get());
+        incomeCard.setSubText(viewModel.incomeSubtextProperty().get());
+        expensesCard.setValue(viewModel.totalExpensesProperty().get());
+        expensesCard.setSubText(viewModel.expensesSubtextProperty().get());
+
+        String initialNet = viewModel.netBalanceProperty().get();
+        netCard.setValue(initialNet);
+        if (initialNet != null && initialNet.contains("-")) {
+            netCard.setValueColor(Themes.TEXT_ERROR);
+        }
+
+        largestCard.setValue(viewModel.largestAmountProperty().get());
 
         addBtn.setOnAction(e -> AddTransactionDialog.show(stage, viewModel.getAccounts(), viewModel.getProjects(), viewModel.getClients(), newTx -> viewModel.addTransaction(newTx)));
 

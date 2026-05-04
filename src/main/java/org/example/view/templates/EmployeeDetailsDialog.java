@@ -13,15 +13,16 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.GaussianBlur;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.example.model.database.entity.Employee;
-import org.example.view.templates.StateButton;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -34,14 +35,23 @@ public class EmployeeDetailsDialog {
         modal.initModality(Modality.APPLICATION_MODAL);
         modal.initStyle(StageStyle.TRANSPARENT);
 
-        javafx.scene.Node backgroundRoot = owner.getScene().getRoot();
-        GaussianBlur blur = new GaussianBlur(30);
-        ColorAdjust darken = new ColorAdjust();
-        darken.setBrightness(-0.4);
-        darken.setInput(blur);
-        backgroundRoot.setEffect(darken);
+        Scene ownerScene = owner.getScene();
+        Paint originalFill = ownerScene.getFill();
+        ownerScene.setFill(Color.web(Themes.TEXT_DARK));
 
-        modal.setOnHidden(e -> backgroundRoot.setEffect(null));
+        Node backgroundRoot = ownerScene.getRoot();
+
+        ColorAdjust darken = new ColorAdjust();
+        darken.setBrightness(-0.3);
+        GaussianBlur blur = new GaussianBlur(15);
+        blur.setInput(darken);
+
+        backgroundRoot.setEffect(blur);
+
+        modal.setOnHidden(e -> {
+            backgroundRoot.setEffect(null);
+            ownerScene.setFill(originalFill);
+        });
 
         StackPane modalContainer = new StackPane();
         modalContainer.setStyle("-fx-background-color: transparent;");
@@ -57,11 +67,20 @@ public class EmployeeDetailsDialog {
         StackPane.setAlignment(root, Pos.CENTER);
         modalContainer.setOnMouseClicked(e -> { if (e.getTarget() == modalContainer) closeWithAnimation(modal, root); });
 
-        // --- Top Right Close Button ---
         HBox closeBox = new HBox();
         closeBox.setAlignment(Pos.TOP_RIGHT);
-        Button closeBtn = new Button("✕");
-        closeBtn.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-weight: bold; -fx-font-size: 20px; -fx-text-fill: #9CA3AF; -fx-padding: 0;");
+        Button closeBtn = new Button("X");
+        closeBtn.setMinSize(32, 32);
+        closeBtn.setMaxSize(32, 32);
+        closeBtn.setStyle(
+                "-fx-background-color: transparent;" +
+                        "-fx-background-radius: 8;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-text-fill: " + Themes.TEXT_MUTED + ";" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-size: 16px;" +
+                        "-fx-padding: 0;"
+        );
         closeBtn.setOnAction(e -> closeWithAnimation(modal, root));
         closeBox.getChildren().add(closeBtn);
 
@@ -73,7 +92,7 @@ public class EmployeeDetailsDialog {
         avatarBox.setPrefSize(80, 80);
         avatarBox.setStyle("-fx-background-color: #F8FAFC; -fx-background-radius: 16; -fx-border-color: #E2E8F0; -fx-border-radius: 16;");
 
-        javafx.scene.image.ImageView personIcon = IconFactory.getIcon("user-round", 40);
+        ImageView personIcon = IconFactory.getIcon("user-round", 40);
         personIcon.setOpacity(0.5);
 
         boolean isActive = "Active".equalsIgnoreCase(employee.getStatus());

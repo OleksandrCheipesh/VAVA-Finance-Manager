@@ -1,25 +1,23 @@
 package org.example;
 
 import javafx.application.Application;
-
 import javafx.stage.Stage;
 import org.example.logging.AppLog;
+import org.example.view.authentication.LoginView;
 import org.example.view.authentication.RegistrationView;
 import org.example.model.database.ConnectionProvider;
 import org.example.model.database.DatabaseConfig;
 import org.example.model.database.Migrations;
 
-// точка входу — окремий клас, більше нічого не робить
 public class Main extends Application {
     @Override
     public void start(Stage stage) {
-        new RegistrationView().show(stage);
+        new LoginView().show(stage);
     }
 
     public static void main(String[] args) {
         var logger = AppLog.getLogger(Main.class);
 
-        // Global uncaught exception handler for any thread
         Thread.setDefaultUncaughtExceptionHandler((thread, ex) -> {
             logger.error("Unhandled exception in thread {}", thread.getName(), ex);
         });
@@ -35,10 +33,4 @@ public class Main extends Application {
         ConnectionProvider.init(config);
         launch();
     }
-
-//    @Override
-//    public void start(Stage stage) {
-//        // Add this line to test your components:
-//        new ComponentTestView().show(stage);
-//    }
 }
