@@ -20,12 +20,16 @@ import javafx.util.Duration;
 import org.example.SessionManager;
 import org.example.logging.AppLog;
 import org.example.model.database.entity.Client;
-import org.example.model.validation.ClientValidator;
 
 import java.math.BigDecimal;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 public class AddEditClientDialog {
+
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+            "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"
+    );
 
     public static void show(Stage owner, Client clientToEdit, Consumer<Client> onSuccess) {
         boolean isEditMode = (clientToEdit != null);
@@ -69,6 +73,7 @@ public class AddEditClientDialog {
             if (e.getTarget() == shadowWrapper) closeWithAnimation(modal, shadowWrapper);
         });
 
+        // ── Header ────────────────────────────────────────────────────────────
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER_LEFT);
 
@@ -89,46 +94,55 @@ public class AddEditClientDialog {
         HBox.setHgrow(headerSpacer, Priority.ALWAYS);
         header.getChildren().addAll(titleBox, headerSpacer, closeBtn);
 
+        // ── Form fields ───────────────────────────────────────────────────────
         VBox form = new VBox(15);
 
-        TextField nameField = UIFactory.inputField("First name");
-        nameField.setMinHeight(44);
-        nameField.setPrefHeight(44);
+        // First Name + Last Name row
+        TextField nameField = UIFactory.inputField(I18n.t("First name"));
+        nameField.setMinHeight(44); nameField.setPrefHeight(44);
+        Label nameError = errorLabel();
 
-        TextField surnameField = UIFactory.inputField("Last name");
-        surnameField.setMinHeight(44);
-        surnameField.setPrefHeight(44);
+        TextField surnameField = UIFactory.inputField(I18n.t("Last name"));
+        surnameField.setMinHeight(44); surnameField.setPrefHeight(44);
+        Label surnameError = errorLabel();
 
-        HBox splitName = new HBox(15);
-        HBox.setHgrow(nameField, Priority.ALWAYS);
-        HBox.setHgrow(surnameField, Priority.ALWAYS);
-        splitName.getChildren().addAll(
-                createLabeledField(I18n.t("FIRST NAME"), nameField),
-                createLabeledField(I18n.t("LAST NAME"), surnameField)
-        );
+        GridPane splitName = new GridPane();
+        splitName.setHgap(15);
+        ColumnConstraints nc = new ColumnConstraints(); nc.setPercentWidth(50);
+        ColumnConstraints sc = new ColumnConstraints(); sc.setPercentWidth(50);
+        splitName.getColumnConstraints().addAll(nc, sc);
+        splitName.add(createLabeledField(I18n.t("FIRST NAME"), nameField, nameError), 0, 0);
+        splitName.add(createLabeledField(I18n.t("LAST NAME"), surnameField, surnameError), 1, 0);
 
+        // Email + Phone row
         TextField emailField = UIFactory.inputField("email@example.com");
-        emailField.setMinHeight(44);
-        emailField.setPrefHeight(44);
+        emailField.setMinHeight(44); emailField.setPrefHeight(44);
+        Label emailError = errorLabel();
 
         TextField phoneField = UIFactory.inputField("+1 (555) 000-0000");
-        phoneField.setMinHeight(44);
-        phoneField.setPrefHeight(44);
+        phoneField.setMinHeight(44); phoneField.setPrefHeight(44);
+        Label phoneError = errorLabel();
 
-        HBox splitContact = new HBox(15);
-        HBox.setHgrow(emailField, Priority.ALWAYS);
-        HBox.setHgrow(phoneField, Priority.ALWAYS);
-        splitContact.getChildren().addAll(
-                createLabeledField(I18n.t("EMAIL"), emailField),
-                createLabeledField(I18n.t("PHONE"), phoneField)
+        GridPane splitContact = new GridPane();
+        splitContact.setHgap(15);
+        ColumnConstraints ec = new ColumnConstraints(); ec.setPercentWidth(50);
+        ColumnConstraints pc = new ColumnConstraints(); pc.setPercentWidth(50);
+        splitContact.getColumnConstraints().addAll(ec, pc);
+        splitContact.add(createLabeledField(I18n.t("EMAIL"), emailField, emailError), 0, 0);
+        splitContact.add(createLabeledField(I18n.t("PHONE"), phoneField, phoneError), 1, 0);
+
+        // Monthly Income
+        TextField incomeField = UIFactory.inputField("0.00");
+        incomeField.setMinHeight(44); incomeField.setPrefHeight(44);
+        Label incomeError = errorLabel();
+
+        form.getChildren().addAll(
+                splitName,
+                splitContact,
+                createLabeledField(I18n.t("MONTHLY INCOME"), incomeField, incomeError)
         );
 
-        TextField incomeField = UIFactory.inputField("0.00");
-        incomeField.setMinHeight(44);
-        incomeField.setPrefHeight(44);
-
-        form.getChildren().addAll(splitName, splitContact, createLabeledField(I18n.t("MONTHLY INCOME"), incomeField));
-
+        // ── Pre-fill for edit mode ────────────────────────────────────────────
         if (isEditMode) {
             nameField.setText(clientToEdit.getName() != null ? clientToEdit.getName() : "");
             surnameField.setText(clientToEdit.getSurname() != null ? clientToEdit.getSurname() : "");
@@ -138,11 +152,7 @@ public class AddEditClientDialog {
                 incomeField.setText(clientToEdit.getMonthlyIncome().toPlainString());
         }
 
-        Label errorLabel = new Label();
-        errorLabel.setStyle("-fx-text-fill: " + Themes.TEXT_ERROR + "; -fx-font-size: 13px; -fx-wrap-text: true;");
-        errorLabel.setVisible(false);
-        errorLabel.setManaged(false);
-
+        // ── Action buttons ────────────────────────────────────────────────────
         HBox actionBox = new HBox(20);
         actionBox.setAlignment(Pos.CENTER_RIGHT);
         actionBox.setPadding(new Insets(10, 0, 0, 0));
@@ -161,34 +171,72 @@ public class AddEditClientDialog {
         saveBtn.setOnMousePressed(e -> { saveBtn.setScaleX(0.98); saveBtn.setScaleY(0.98); });
         saveBtn.setOnMouseReleased(e -> { saveBtn.setScaleX(1.0); saveBtn.setScaleY(1.0); });
 
+        // ── Capture original styles ───────────────────────────────────────────
+        final String origNameStyle    = nameField.getStyle();
+        final String origSurnameStyle = surnameField.getStyle();
+        final String origEmailStyle   = emailField.getStyle();
+        final String origPhoneStyle   = phoneField.getStyle();
+        final String origIncomeStyle  = incomeField.getStyle();
+        final String errorBorder      = "-fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8;";
+
+        // ── Save action ───────────────────────────────────────────────────────
         saveBtn.setOnAction(e -> {
-            errorLabel.setVisible(false);
-            errorLabel.setManaged(false);
+
+            // Clear all previous errors
+            clearFieldError(nameField,    origNameStyle,    nameError);
+            clearFieldError(surnameField, origSurnameStyle, surnameError);
+            clearFieldError(emailField,   origEmailStyle,   emailError);
+            clearFieldError(phoneField,   origPhoneStyle,   phoneError);
+            clearFieldError(incomeField,  origIncomeStyle,  incomeError);
+
+            boolean valid = true;
+
+            // First name — required
+            if (nameField.getText().trim().isEmpty()) {
+                showFieldError(nameField, errorBorder, nameError, I18n.t("First name is required"));
+                valid = false;
+            }
+
+            // Last name — required
+            if (surnameField.getText().trim().isEmpty()) {
+                showFieldError(surnameField, errorBorder, surnameError, I18n.t("Last name is required"));
+                valid = false;
+            }
+
+            // Email — optional, must be valid if provided
+            String emailText = emailField.getText().trim();
+            if (!emailText.isEmpty() && !EMAIL_PATTERN.matcher(emailText).matches()) {
+                showFieldError(emailField, errorBorder, emailError, I18n.t("Enter a valid email address"));
+                valid = false;
+            }
+
+            // Monthly income — optional, must be a non-negative number if provided
+            BigDecimal income = null;
+            String incomeText = incomeField.getText().trim();
+            if (!incomeText.isEmpty()) {
+                try {
+                    income = new BigDecimal(incomeText);
+                    if (income.compareTo(BigDecimal.ZERO) < 0) {
+                        showFieldError(incomeField, errorBorder, incomeError, I18n.t("Income cannot be negative"));
+                        valid = false;
+                    }
+                } catch (NumberFormatException ex) {
+                    showFieldError(incomeField, errorBorder, incomeError, I18n.t("Enter a valid number (e.g. 2500.00)"));
+                    valid = false;
+                }
+            }
+
+            if (!valid) {
+                ToastManager.showError(owner, I18n.t("Please fix the highlighted fields."));
+                return;
+            }
 
             Client client = isEditMode ? clientToEdit : new Client();
             client.setName(nameField.getText().trim());
             client.setSurname(surnameField.getText().trim());
-            client.setEmail(emailField.getText().trim().isEmpty() ? null : emailField.getText().trim());
+            client.setEmail(emailText.isEmpty() ? null : emailText);
             client.setPhone(phoneField.getText().trim().isEmpty() ? null : phoneField.getText().trim());
-
-            String incomeText = incomeField.getText().trim();
-            if (incomeText.isEmpty()) {
-                client.setMonthlyIncome(null);
-            } else {
-                try {
-                    client.setMonthlyIncome(new BigDecimal(incomeText));
-                } catch (NumberFormatException ex) {
-                    showInlineError(errorLabel, I18n.t("Monthly income must be a valid number."));
-                    return;
-                }
-            }
-
-            try {
-                ClientValidator.validate(client);
-            } catch (IllegalArgumentException ex) {
-                showInlineError(errorLabel, ex.getMessage());
-                return;
-            }
+            client.setMonthlyIncome(income);
 
             if (!isEditMode) {
                 client.setCompanyId(SessionManager.getInstance().getCurrentCompanyId());
@@ -199,8 +247,9 @@ public class AddEditClientDialog {
         });
 
         actionBox.getChildren().addAll(cancelBtn, saveBtn);
-        root.getChildren().addAll(header, form, errorLabel, actionBox);
+        root.getChildren().addAll(header, form, actionBox);
 
+        // ── Scene setup ───────────────────────────────────────────────────────
         Scene scene = new Scene(shadowWrapper);
         scene.setFill(null);
 
@@ -222,16 +271,34 @@ public class AddEditClientDialog {
         modal.show();
     }
 
-    private static void showInlineError(Label label, String message) {
-        label.setText(message);
-        label.setVisible(true);
-        label.setManaged(true);
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private static Label errorLabel() {
+        Label lbl = new Label();
+        lbl.setStyle("-fx-text-fill: " + Themes.TEXT_ERROR + "; -fx-font-size: 11px;");
+        lbl.setVisible(false);
+        lbl.setManaged(false);
+        return lbl;
     }
 
-    private static VBox createLabeledField(String labelText, Node field) {
+    private static void showFieldError(Node field, String errorBorder, Label errorLabel, String message) {
+        field.setStyle(field.getStyle() + errorBorder);
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
+        errorLabel.setManaged(true);
+    }
+
+    private static void clearFieldError(Node field, String origStyle, Label errorLabel) {
+        field.setStyle(origStyle);
+        errorLabel.setVisible(false);
+        errorLabel.setManaged(false);
+    }
+
+    /** Three-arg — field with error label below. */
+    private static VBox createLabeledField(String labelText, Node field, Label errorLabel) {
         Label label = new Label(labelText);
         label.setStyle("-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-size: 13px;");
-        VBox box = new VBox(5, label, field);
+        VBox box = new VBox(4, label, field, errorLabel);
         box.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(box, Priority.ALWAYS);
         return box;
