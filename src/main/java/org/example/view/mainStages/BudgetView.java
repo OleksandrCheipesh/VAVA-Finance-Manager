@@ -212,7 +212,7 @@ public class BudgetView extends BaseView {
     ScrollPane scrollPane = new ScrollPane(contentArea);
     scrollPane.setFitToWidth(true);
     scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-    scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+    scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
     scrollPane.setStyle("-fx-background: " + Themes.BG_DASHBOARD + "; -fx-background-color: " + Themes.BG_DASHBOARD + "; -fx-border-width: 0;");
     VBox.setVgrow(scrollPane, Priority.ALWAYS);
     mainContainer.getChildren().addAll(topBar, scrollPane);

@@ -137,7 +137,7 @@ public class ProjectsView extends BaseView {
         ScrollPane outerScroll = new ScrollPane(contentArea);
         outerScroll.setFitToWidth(true);
         outerScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        outerScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        outerScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         outerScroll.setStyle("-fx-background: " + Themes.BG_DASHBOARD + "; -fx-background-color: " + Themes.BG_DASHBOARD + "; -fx-border-width: 0;");
         VBox.setVgrow(outerScroll, Priority.ALWAYS);
 
