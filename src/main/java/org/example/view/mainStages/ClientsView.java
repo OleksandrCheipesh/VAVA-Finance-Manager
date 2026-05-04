@@ -218,7 +218,14 @@ public class ClientsView extends BaseView {
     private void buildTableColumns() {
         TableColumn<Client, String> idCol = new TableColumn<>("#");
         idCol.setCellValueFactory(cd -> new SimpleStringProperty(String.valueOf(cd.getValue().getId())));
-        idCol.setStyle("-fx-alignment: CENTER-RIGHT;");
+        idCol.setStyle("-fx-alignment: CENTER;");
+        idCol.setCellFactory(col -> new TableCell<>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item);
+                setStyle("-fx-alignment: CENTER; -fx-padding: 0;");
+            }
+        });
         idCol.prefWidthProperty().bind(table.widthProperty().multiply(0.06));
 
         TableColumn<Client, String> nameCol = new TableColumn<>(I18n.t("NAME"));
@@ -244,6 +251,16 @@ public class ClientsView extends BaseView {
             return new SimpleStringProperty(text);
         });
         incomeCol.setStyle("-fx-alignment: CENTER-RIGHT;");
+        incomeCol.setCellFactory(col -> {
+            TableCell<Client, String> cell = new TableCell<>() {
+                @Override protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty || item == null ? null : item);
+                }
+            };
+            cell.setAlignment(Pos.CENTER_RIGHT);
+            return cell;
+        });
         incomeCol.prefWidthProperty().bind(table.widthProperty().multiply(0.14));
 
         TableColumn<Client, String> sinceCol = new TableColumn<>(I18n.t("MEMBER SINCE"));
@@ -259,12 +276,11 @@ public class ClientsView extends BaseView {
         actionCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty) { setGraphic(null); return; }
+                if (empty) { setGraphic(null); setText(null); return; }
                 Label dots = new Label("⋮");
-                dots.setPadding(Insets.EMPTY);
-                dots.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 24px; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-color: transparent;");
+                dots.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 24px; -fx-font-weight: bold; -fx-cursor: hand;");
                 setGraphic(dots);
-                setAlignment(Pos.CENTER_LEFT);
+                setStyle("-fx-alignment: CENTER; -fx-padding: 0;");
             }
         });
         actionCol.prefWidthProperty().bind(table.widthProperty().multiply(0.09));
