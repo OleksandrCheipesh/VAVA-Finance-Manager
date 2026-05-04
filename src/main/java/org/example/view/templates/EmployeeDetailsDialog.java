@@ -7,9 +7,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.GaussianBlur;
@@ -24,7 +22,6 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import org.example.model.database.entity.Employee;
 
-import java.util.Optional;
 import java.util.function.Consumer;
 
 public class EmployeeDetailsDialog {
@@ -138,11 +135,13 @@ public class EmployeeDetailsDialog {
         HBox actionBox = new HBox(15);
         actionBox.setPadding(new Insets(10, 0, 0, 0));
 
-        StateButton editBtn = new StateButton(I18n.t("Edit Profile"), StateButton.ButtonType.PRIMARY);
+        Button editBtn = new Button(I18n.t("Edit Employee"));
         editBtn.setGraphic(IconFactory.getWhiteIcon("square-pen", 16));
+        editBtn.setContentDisplay(javafx.scene.control.ContentDisplay.LEFT);
+        editBtn.setGraphicTextGap(8);
         HBox.setHgrow(editBtn, Priority.ALWAYS);
         editBtn.setMaxWidth(Double.MAX_VALUE);
-        editBtn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-padding: 12; -fx-background-radius: 10; -fx-cursor: hand; -fx-icon-text-gap: 8px;");
+        editBtn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-padding: 12; -fx-background-radius: 10; -fx-cursor: hand;");
 
         Button delBtn = new Button();
         delBtn.setGraphic(IconFactory.getIcon("trash", 20));
@@ -154,15 +153,8 @@ public class EmployeeDetailsDialog {
         });
 
         delBtn.setOnAction(e -> {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle(I18n.t("Delete Employee"));
-            alert.setHeaderText(I18n.t("Remove") + " " + employee.getName() + "?");
-            alert.setContentText(I18n.t("Are you sure you want to delete this employee? This action cannot be undone."));
-            Optional<ButtonType> result = alert.showAndWait();
-            if (result.isPresent() && result.get() == ButtonType.OK) {
-                onDelete.accept(employee);
-                closeWithAnimation(modal, root);
-            }
+            onDelete.accept(employee);
+            closeWithAnimation(modal, root);
         });
 
         actionBox.getChildren().addAll(editBtn, delBtn);
