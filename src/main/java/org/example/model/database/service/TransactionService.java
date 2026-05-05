@@ -1,6 +1,7 @@
 package org.example.model.database.service;
 
 import org.example.model.database.ConnectionProvider;
+import org.example.model.database.DbTime;
 import org.example.model.database.entity.Transaction;
 
 import java.math.BigDecimal;
@@ -58,7 +59,7 @@ public class TransactionService {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
                         transaction.setId(resultSet.getInt("id"));
-                        transaction.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+                        transaction.setCreatedAt(DbTime.readOffsetDateTime(resultSet, "created_at"));
                     }
                 }
             }
@@ -298,7 +299,7 @@ public class TransactionService {
     public java.util.Optional<BigDecimal> getPrevMonthTotalByCompanyId(int companyId) throws SQLException {
         var logger = org.example.logging.AppLog.getLogger(TransactionService.class);
         String sql = "SELECT COALESCE(SUM(CASE WHEN type = 'SALE' THEN amount ELSE -amount END), 0), " +
-                     "COUNT(*) FROM transactions WHERE company_id = ? AND date < DATE_TRUNC('month', CURRENT_DATE)";
+                     "COUNT(*) FROM transactions WHERE company_id = ? AND date < date('now','start of month')";
         try (Connection connection = ConnectionProvider.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, companyId);
@@ -317,7 +318,7 @@ public class TransactionService {
     public BigDecimal getCurrentMonthTotalByCompanyId(int companyId) throws SQLException {
         var logger = org.example.logging.AppLog.getLogger(TransactionService.class);
         String sql = "SELECT COALESCE(SUM(CASE WHEN type = 'SALE' THEN amount ELSE -amount END), 0) " +
-                     "FROM transactions WHERE company_id = ? AND date >= DATE_TRUNC('month', CURRENT_DATE)";
+                     "FROM transactions WHERE company_id = ? AND date >= date('now','start of month')";
         try (Connection connection = ConnectionProvider.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, companyId);
@@ -343,8 +344,8 @@ public class TransactionService {
                 "WHERE t.account_id = ? " +
                 "AND t.type = 'PURCHASE' " +
                 "AND t.date >= CASE " +
-                "    WHEN a.cycle = 'WEEKLY'::account_cycle THEN DATE_TRUNC('week', CURRENT_DATE)::date " +
-                "    ELSE DATE_TRUNC('month', CURRENT_DATE)::date " +
+                "    WHEN a.cycle = 'WEEKLY' THEN date('now','weekday 1','-7 days') " +
+                "    ELSE date('now','start of month') " +
                 "END";
 
         try (Connection connection = ConnectionProvider.getConnection();
@@ -381,7 +382,7 @@ public class TransactionService {
         Date date = resultSet.getDate("date");
         transaction.setDate(date != null ? date.toLocalDate() : null);
 
-        transaction.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+        transaction.setCreatedAt(DbTime.readOffsetDateTime(resultSet, "created_at"));
         return transaction;
     }
 

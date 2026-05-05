@@ -1,6 +1,7 @@
 package org.example.model.database.service;
 
 import org.example.model.database.ConnectionProvider;
+import org.example.model.database.DbTime;
 import org.example.model.database.entity.Account;
 
 import java.sql.*;
@@ -13,7 +14,7 @@ public class AccountService {
     public Account addAccount(Account account) throws SQLException {
         var logger = org.example.logging.AppLog.getLogger(AccountService.class);
         String sql = "INSERT INTO accounts (company_id, account_name, currency, limit_amount, category, cycle) " +
-                     "VALUES (?, ?, ?, ?, ?::account_category, ?::account_cycle) RETURNING id, created_at";
+                     "VALUES (?, ?, ?, ?, ?, ?) RETURNING id, created_at";
         logger.info("Adding account: name={} companyId={} currency={}", account.getAccountName(), account.getCompanyId(), account.getCurrency());
         try {
             try (Connection connection = ConnectionProvider.getConnection();
@@ -34,7 +35,7 @@ public class AccountService {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
                         account.setId(resultSet.getInt("id"));
-                        account.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+                        account.setCreatedAt(DbTime.readOffsetDateTime(resultSet, "created_at"));
                     }
                 }
             }
@@ -110,7 +111,7 @@ public class AccountService {
         var logger = org.example.logging.AppLog.getLogger(AccountService.class);
         Account before = getAccountById(account.getId()).orElse(null);
         String sql = "UPDATE accounts SET company_id = ?, account_name = ?, " +
-                "currency = ?, limit_amount = ?, category = ?::account_category, cycle = ?::account_cycle WHERE id = ?";
+                "currency = ?, limit_amount = ?, category = ?, cycle = ? WHERE id = ?";
 
         try (Connection connection = ConnectionProvider.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -171,7 +172,7 @@ public class AccountService {
         account.setCompanyId(resultSet.getInt("company_id"));
         account.setAccountName(resultSet.getString("account_name"));
         account.setCurrency(resultSet.getString("currency"));
-        account.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+        account.setCreatedAt(DbTime.readOffsetDateTime(resultSet, "created_at"));
         int lim = resultSet.getInt("limit_amount");
         if (!resultSet.wasNull()) {
             account.setLimitAmount(lim);

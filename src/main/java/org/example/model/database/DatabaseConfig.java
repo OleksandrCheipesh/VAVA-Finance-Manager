@@ -25,8 +25,9 @@ public final class DatabaseConfig {
         }
 
         String url = require(props, "db.url");
-        String user = require(props, "db.user");
-        String password = require(props, "db.password");
+        boolean isSqlite = url.startsWith("jdbc:sqlite:");
+        String user = isSqlite ? props.getProperty("db.user", "") : require(props, "db.user");
+        String password = isSqlite ? props.getProperty("db.password", "") : require(props, "db.password");
         return new DatabaseConfig(url, user, password);
     }
 

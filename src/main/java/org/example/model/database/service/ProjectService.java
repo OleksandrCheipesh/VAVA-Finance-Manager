@@ -1,6 +1,7 @@
 package org.example.model.database.service;
 
 import org.example.model.database.ConnectionProvider;
+import org.example.model.database.DbTime;
 import org.example.model.database.entity.Project;
 import org.example.model.validation.ProjectValidator;
 
@@ -44,7 +45,7 @@ public class ProjectService {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
                         project.setId(resultSet.getInt("id"));
-                        project.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+                        project.setCreatedAt(DbTime.readOffsetDateTime(resultSet, "created_at"));
                     }
                 }
             }
@@ -248,7 +249,7 @@ public class ProjectService {
         project.setEndDate(endDate != null ? endDate.toLocalDate() : null);
 
         project.setActive(resultSet.getBoolean("is_active"));
-        project.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+        project.setCreatedAt(DbTime.readOffsetDateTime(resultSet, "created_at"));
         return project;
     }
 

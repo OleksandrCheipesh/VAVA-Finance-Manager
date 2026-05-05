@@ -1,6 +1,7 @@
 package org.example.model.database.service;
 
 import org.example.model.database.ConnectionProvider;
+import org.example.model.database.DbTime;
 import org.example.model.database.entity.Position;
 import org.example.model.database.entity.User;
 
@@ -26,7 +27,7 @@ public class UserService {
                 statement.setString(2, user.getSurname());
                 statement.setString(3, user.getEmail());
                 statement.setString(4, user.getPasswordHash());
-                statement.setObject(5, user.getPosition().name(), Types.OTHER);
+                statement.setString(5, user.getPosition().name());
 
                 if (user.getCompanyId() != null)
                     statement.setInt(6, user.getCompanyId());
@@ -36,7 +37,7 @@ public class UserService {
                 try (ResultSet resultSet = statement.executeQuery()) {
                     if (resultSet.next()) {
                         user.setId(resultSet.getInt("id"));
-                        user.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+                        user.setCreatedAt(DbTime.readOffsetDateTime(resultSet, "created_at"));
                     }
                 }
             }
@@ -143,7 +144,7 @@ public class UserService {
             preparedStatement.setString(2, user.getSurname());
             preparedStatement.setString(3, user.getEmail());
             preparedStatement.setString(4, user.getPasswordHash());
-            preparedStatement.setObject(5, user.getPosition().name(), Types.OTHER);
+            preparedStatement.setString(5, user.getPosition().name());
 
             if (user.getCompanyId() != null) {
                 preparedStatement.setInt(6, user.getCompanyId());
@@ -205,7 +206,7 @@ public class UserService {
 
         int companyId = resultSet.getInt("company_id");
         user.setCompanyId(resultSet.wasNull() ? null : companyId);
-        user.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+        user.setCreatedAt(DbTime.readOffsetDateTime(resultSet, "created_at"));
         user.setLanguage(resultSet.getString("language"));
         return user;
     }

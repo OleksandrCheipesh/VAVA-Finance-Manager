@@ -2,6 +2,7 @@ package org.example.model.database.service;
 
 import org.example.logging.AppLog;
 import org.example.model.database.ConnectionProvider;
+import org.example.model.database.DbTime;
 import org.example.model.database.entity.Company;
 
 import java.sql.*;
@@ -32,14 +33,14 @@ public class CompanyService {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
                         company.setId(resultSet.getInt("id"));
-                        company.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+                        company.setCreatedAt(DbTime.readOffsetDateTime(resultSet, "created_at"));
                     }
                 }
             }
 
             // create a default account for the new company to avoid null account_id issues
             String accSql = "INSERT INTO accounts (company_id, account_name, currency, limit_amount, category, cycle) " +
-                            "VALUES (?, ?, ?, ?, ?::account_category, ?::account_cycle) RETURNING id, created_at";
+                            "VALUES (?, ?, ?, ?, ?, ?) RETURNING id, created_at";
             try (PreparedStatement psAcc = connection.prepareStatement(accSql)) {
                 psAcc.setInt(1, company.getId());
                 String defaultAccountName = company.getName() + " - Default";
@@ -157,7 +158,7 @@ public class CompanyService {
         company.setIndustry(resultSet.getString("industry"));
         company.setCountry(resultSet.getString("country"));
         company.setCurrency(resultSet.getString("currency"));
-        company.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+        company.setCreatedAt(DbTime.readOffsetDateTime(resultSet, "created_at"));
         return company;
     }
 }

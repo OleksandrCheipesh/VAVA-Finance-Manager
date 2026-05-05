@@ -27,9 +27,9 @@ dependencies {
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    implementation("org.postgresql:postgresql:42.7.7")
+    implementation("org.xerial:sqlite-jdbc:3.46.1.0")
     implementation("org.flywaydb:flyway-core:10.17.0")
-    implementation("org.flywaydb:flyway-database-postgresql:10.17.0")
+    implementation("org.flywaydb:flyway-community-db-support:10.17.0")
     implementation("org.apache.poi:poi-ooxml:5.2.3")
     implementation("org.slf4j:slf4j-api:2.0.7")
     implementation("ch.qos.logback:logback-classic:1.4.11")
@@ -54,4 +54,3 @@ tasks.withType<JavaCompile> {
 tasks.named<JavaExec>("run") {
     jvmArgs = listOf("--enable-native-access=javafx.graphics")
 }
-

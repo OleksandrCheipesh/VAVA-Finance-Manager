@@ -23,7 +23,16 @@ public final class ConnectionProvider {
             throw new IllegalStateException("ConnectionProvider not initialized.");
         }
         try {
-            Connection conn = DriverManager.getConnection(config.url(), config.user(), config.password());
+            String user = config.user();
+            String password = config.password();
+            Connection conn = (user == null || user.isBlank())
+                    ? DriverManager.getConnection(config.url())
+                    : DriverManager.getConnection(config.url(), user, password == null ? "" : password);
+            if (config.url().startsWith("jdbc:sqlite:")) {
+                try (var stmt = conn.createStatement()) {
+                    stmt.execute("PRAGMA foreign_keys=ON");
+                }
+            }
             logger.debug("Obtained new database connection");
             return conn;
         } catch (SQLException e) {
@@ -32,4 +41,3 @@ public final class ConnectionProvider {
         }
     }
 }
-

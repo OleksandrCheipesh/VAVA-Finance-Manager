@@ -41,8 +41,10 @@ public class TransactionsModel {
                 transactionService.addTransaction(t);
                 imported++;
             } catch (Exception e) {
-                failed++;
-            }
+                    failed++;
+                    System.err.println("Failed to import transaction #" + i + ": " + e.getMessage());
+                    e.printStackTrace();
+                }
         }
         return new ImportResult(imported, failed);
     }

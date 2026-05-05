@@ -1,6 +1,7 @@
 package org.example.model.database.service;
 
 import org.example.model.database.ConnectionProvider;
+import org.example.model.database.DbTime;
 import org.example.model.database.entity.Client;
 
 import java.sql.*;
@@ -30,7 +31,7 @@ public class ClientService {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
                     client.setId(resultSet.getInt("id"));
-                    client.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+                    client.setCreatedAt(DbTime.readOffsetDateTime(resultSet, "created_at"));
                 }
             }
         }
@@ -121,7 +122,7 @@ public class ClientService {
         client.setEmail(resultSet.getString("email"));
         client.setPhone(resultSet.getString("phone"));
         client.setMonthlyIncome(resultSet.getBigDecimal("monthly_income"));
-        client.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+        client.setCreatedAt(DbTime.readOffsetDateTime(resultSet, "created_at"));
         return client;
     }
 }

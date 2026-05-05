@@ -1,7 +1,7 @@
 -- users
 -- unique email
-alter table users
-    add constraint uq_users_email unique (email);
+create unique index if not exists uq_users_email
+    on users (email);
 
 -- index on email
 create index if not exists idx_users_email
@@ -12,29 +12,23 @@ create index if not exists idx_users_company_id
     on users (company_id);
 
 
--- change position type to enum
-create type position_enum as enum ('Director', 'Analyst', 'Accountant');
-
+-- normalize position values
 update users
 set position = 'Director'
 where position is null
    or position not in ('Director', 'Analyst', 'Accountant');
 
-alter table users
-    alter column position type position_enum
-    using position::position_enum;
-
 
 -- companies
 -- unique company name
-alter table companies
-    add constraint uq_companies_name unique (name);
+create unique index if not exists uq_companies_name
+    on companies (name);
 
 
 -- accounts
 -- unique account name within a company
-alter table accounts
-    add constraint uq_accounts_company_name unique (company_id, account_name);
+create unique index if not exists uq_accounts_company_name
+    on accounts (company_id, account_name);
 
 -- index on company_id
 create index if not exists idx_accounts_company_id

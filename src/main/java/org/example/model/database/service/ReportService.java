@@ -2,6 +2,7 @@ package org.example.model.database.service;
 
 import org.example.logging.AppLog;
 import org.example.model.database.ConnectionProvider;
+import org.example.model.database.DbTime;
 import org.example.model.database.entity.Employee;
 import org.example.model.reports.ExpenseCategoryDTO;
 import org.example.model.reports.IncomeBreakdownDTO;
@@ -24,7 +25,7 @@ public class ReportService {
         LocalDate prevTo = dateTo.minusMonths(1);
 
         String sql = "WITH params AS (" +
-                " SELECT ?::int AS company_id, ?::date AS date_from, ?::date AS date_to, ?::date AS prev_from, ?::date AS prev_to, ?::int AS project_id, ?::text AS project_status) " +
+                " SELECT ? AS company_id, ? AS date_from, ? AS date_to, ? AS prev_from, ? AS prev_to, ? AS project_id, ? AS project_status) " +
                 " , t_filtered AS (" +
                 "   SELECT t.* FROM transactions t, params p WHERE t.company_id = p.company_id AND (t.date BETWEEN p.date_from AND p.date_to OR t.date BETWEEN p.prev_from AND p.prev_to) AND (p.project_id IS NULL OR t.project_id = p.project_id)" +
                 " )" +
@@ -65,9 +66,9 @@ public class ReportService {
     public List<MonthlySnapshotDTO> getMonthlySnapshots(int companyId, LocalDate dateFrom, LocalDate dateTo, Integer projectId, String projectStatus) throws SQLException {
         var logger = AppLog.getLogger(ReportService.class);
 
-        String sql = "WITH params AS (SELECT ?::int AS company_id, ?::date AS date_from, ?::date AS date_to, ?::int AS project_id, ?::text AS project_status), " +
+        String sql = "WITH params AS (SELECT ? AS company_id, ? AS date_from, ? AS date_to, ? AS project_id, ? AS project_status), " +
                 "t_filtered AS (SELECT t.* FROM transactions t, params p WHERE t.company_id = p.company_id AND t.date BETWEEN p.date_from AND p.date_to AND (p.project_id IS NULL OR t.project_id = p.project_id)) " +
-                "SELECT DATE_TRUNC('month', tf.date)::date AS period, " +
+                "SELECT date(tf.date, 'start of month') AS period, " +
                 "COALESCE(SUM(CASE WHEN tf.type = 'SALE' THEN tf.amount ELSE 0 END),0) AS income, " +
                 "COALESCE(SUM(CASE WHEN tf.type = 'PURCHASE' THEN tf.amount ELSE 0 END),0) AS expense " +
                 "FROM t_filtered tf CROSS JOIN params LEFT JOIN projects pr ON pr.id = tf.project_id " +
@@ -98,7 +99,7 @@ public class ReportService {
     public List<ExpenseCategoryDTO> getExpenseBreakdown(int companyId, LocalDate dateFrom, LocalDate dateTo, Integer projectId) throws SQLException {
         var logger = AppLog.getLogger(ReportService.class);
 
-        String sql = "WITH params AS (SELECT ?::int AS company_id, ?::date AS date_from, ?::date AS date_to, ?::int AS project_id), " +
+        String sql = "WITH params AS (SELECT ? AS company_id, ? AS date_from, ? AS date_to, ? AS project_id), " +
                 "t_filtered AS (SELECT t.* FROM transactions t, params p WHERE t.company_id = p.company_id AND t.type = 'PURCHASE' AND t.date BETWEEN p.date_from AND p.date_to AND (p.project_id IS NULL OR t.project_id = p.project_id)) " +
                 "SELECT COALESCE(NULLIF(TRIM(t_filtered.description), ''), 'Uncategorized') AS category, SUM(t_filtered.amount) AS amount, SUM(SUM(t_filtered.amount)) OVER () AS total " +
                 "FROM t_filtered GROUP BY category ORDER BY amount DESC";
@@ -132,7 +133,7 @@ public class ReportService {
     public List<IncomeBreakdownDTO> getIncomeBreakdown(int companyId, LocalDate dateFrom, LocalDate dateTo, Integer projectId, String projectStatus) throws SQLException {
         var logger = AppLog.getLogger(ReportService.class);
 
-        String sql = "WITH params AS (SELECT ?::int AS company_id, ?::date AS date_from, ?::date AS date_to, ?::int AS project_id, ?::text AS project_status), " +
+        String sql = "WITH params AS (SELECT ? AS company_id, ? AS date_from, ? AS date_to, ? AS project_id, ? AS project_status), " +
                 "t_filtered AS (SELECT t.* FROM transactions t, params p WHERE t.company_id = p.company_id AND t.type = 'SALE' AND t.date BETWEEN p.date_from AND p.date_to AND (p.project_id IS NULL OR t.project_id = p.project_id)) " +
                 "SELECT COALESCE(p.name, 'Unassigned') AS project_name, SUM(t_filtered.amount) AS amount, SUM(SUM(t_filtered.amount)) OVER () AS total " +
                 "FROM t_filtered CROSS JOIN params LEFT JOIN projects p ON p.id = t_filtered.project_id " +
@@ -172,7 +173,7 @@ public class ReportService {
 
         // Detect join table existence (employee_projects)
         boolean hasJoin = false;
-        String checkSql = "SELECT to_regclass('public.employee_projects')";
+        String checkSql = "SELECT name FROM sqlite_master WHERE type='table' AND name='employee_projects'";
         try (Connection connection = ConnectionProvider.getConnection();
              PreparedStatement checkPs = connection.prepareStatement(checkSql);
              ResultSet checkRs = checkPs.executeQuery()) {
@@ -248,7 +249,7 @@ public class ReportService {
         e.setAge(rs.wasNull() ? null : age);
         e.setSalary(rs.getBigDecimal("salary"));
         e.setPosition(rs.getString("position"));
-        e.setHiredAt(rs.getObject("hired_at", java.time.OffsetDateTime.class));
+        e.setHiredAt(DbTime.readOffsetDateTime(rs, "hired_at"));
         e.setStatus(rs.getString("status"));
         return e;
     }

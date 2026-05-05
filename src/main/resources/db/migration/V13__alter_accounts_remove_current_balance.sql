@@ -1,1 +1,1 @@
-ALTER TABLE accounts DROP COLUMN IF EXISTS current_balance;
+ALTER TABLE accounts DROP COLUMN current_balance;

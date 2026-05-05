@@ -1,6 +1,7 @@
 package org.example.model.database.service;
 
 import org.example.model.database.ConnectionProvider;
+import org.example.model.database.DbTime;
 import org.example.model.database.entity.Employee;
 import org.example.model.validation.EmployeeValidator;
 
@@ -41,12 +42,12 @@ public class EmployeeService {
 
                 preparedStatement.setString(7, employee.getPosition());
 
-                preparedStatement.setObject(8, employee.getStatus(), Types.OTHER);
+                preparedStatement.setString(8, employee.getStatus());
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
                         employee.setId(resultSet.getInt("id"));
-                        employee.setHiredAt(resultSet.getObject("hired_at", java.time.OffsetDateTime.class));
+                        employee.setHiredAt(DbTime.readOffsetDateTime(resultSet, "hired_at"));
                     }
                 }
             }
@@ -167,7 +168,7 @@ public class EmployeeService {
                 preparedStatement.setString(7, employee.getEmail());
             else
                 preparedStatement.setNull(7, Types.VARCHAR);
-            preparedStatement.setObject(8, employee.getStatus(), Types.OTHER);
+            preparedStatement.setString(8, employee.getStatus());
             preparedStatement.setInt(9, employee.getId());
             boolean updated = preparedStatement.executeUpdate() > 0;
             if (updated) {
@@ -228,7 +229,7 @@ public class EmployeeService {
         employee.setSalary(resultSet.getBigDecimal("salary"));
 
         employee.setPosition(resultSet.getString("position"));
-        employee.setHiredAt(resultSet.getObject("hired_at", java.time.OffsetDateTime.class));
+        employee.setHiredAt(DbTime.readOffsetDateTime(resultSet, "hired_at"));
         String status = resultSet.getString("status");
         if (status != null) {
             employee.setStatus(status);

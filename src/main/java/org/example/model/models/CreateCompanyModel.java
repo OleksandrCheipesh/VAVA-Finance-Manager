@@ -3,6 +3,7 @@ package org.example.model.models;
 import org.example.SessionManager;
 import org.example.logging.AppLog;
 import org.example.model.database.ConnectionProvider;
+import org.example.model.database.DbTime;
 import org.example.model.database.entity.Company;
 import org.example.model.database.entity.Position;
 import org.example.model.database.entity.User;
@@ -11,6 +12,7 @@ import java.sql.*;
 import java.util.Objects;
 
 public class CreateCompanyModel {
+    private static final String EMAIL_EXISTS_MESSAGE = "Email already registered. Please log in or use a different email.";
     private final SessionManager.PendingRegistration pendingRegistration;
     private final Company company = new Company();
 
@@ -82,7 +84,7 @@ public class CreateCompanyModel {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
                     company.setId(resultSet.getInt("id"));
-                    company.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+                    company.setCreatedAt(DbTime.readOffsetDateTime(resultSet, "created_at"));
                     return company;
                 }
             }
@@ -93,7 +95,7 @@ public class CreateCompanyModel {
 
     private void insertDefaultAccount(Connection connection, Company savedCompany) throws SQLException {
         String accSql = "INSERT INTO accounts (company_id, account_name, currency, limit_amount, category, cycle) " +
-                "VALUES (?, ?, ?, ?, ?::account_category, ?::account_cycle) RETURNING id, created_at";
+                "VALUES (?, ?, ?, ?, ?, ?) RETURNING id, created_at";
 
         try (PreparedStatement psAcc = connection.prepareStatement(accSql)) {
             psAcc.setInt(1, savedCompany.getId());
@@ -129,23 +131,47 @@ public class CreateCompanyModel {
                 companyId
         );
 
+        assertEmailAvailable(connection, user.getEmail());
+
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, user.getName());
             statement.setString(2, user.getSurname());
             statement.setString(3, user.getEmail());
             statement.setString(4, user.getPasswordHash());
-            statement.setObject(5, user.getPosition().name(), Types.OTHER);
+            statement.setString(5, user.getPosition().name());
             statement.setInt(6, companyId);
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     user.setId(resultSet.getInt("id"));
-                    user.setCreatedAt(resultSet.getObject("created_at", java.time.OffsetDateTime.class));
+                    user.setCreatedAt(DbTime.readOffsetDateTime(resultSet, "created_at"));
                     return user;
                 }
             }
+        } catch (SQLException e) {
+            if (isUniqueEmailViolation(e)) {
+                throw new IllegalStateException(EMAIL_EXISTS_MESSAGE, e);
+            }
+            throw e;
         }
 
         throw new SQLException("Failed to insert user for company id=" + companyId);
+    }
+
+    private void assertEmailAvailable(Connection connection, String email) throws SQLException {
+        String checkSql = "SELECT 1 FROM users WHERE email = ? LIMIT 1";
+        try (PreparedStatement ps = connection.prepareStatement(checkSql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    throw new IllegalStateException(EMAIL_EXISTS_MESSAGE);
+                }
+            }
+        }
+    }
+
+    private boolean isUniqueEmailViolation(SQLException e) {
+        String message = e.getMessage();
+        return message != null && message.contains("users.email");
     }
 }
