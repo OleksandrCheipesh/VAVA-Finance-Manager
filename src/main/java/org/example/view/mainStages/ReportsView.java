@@ -24,15 +24,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.scene.effect.GaussianBlur;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 public class ReportsView extends BaseView {
 
@@ -148,6 +139,20 @@ public class ReportsView extends BaseView {
 
         exportBtn.setOnAction(e -> exportCSV());
         filterBtn.setOnAction(e -> ReportModals.showTabFilters(stage, viewModel, activeTab));
+        exportXmlBtn.setOnAction(e -> {
+            FileChooser fc = new FileChooser();
+            fc.setTitle("Export Report as XML");
+            fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("XML Files", "*.xml"));
+            fc.setInitialFileName("report.xml");
+            File file = fc.showSaveDialog(stage);
+            if (file == null) return;
+            try {
+                viewModel.exportXML(file);
+                ToastManager.showSuccess(stage, "XML exported successfully");
+            } catch (Exception ex) {
+                ToastManager.showError(stage, "XML export failed: " + ex.getMessage());
+            }
+        });
         setActiveTab(activeTab);
     }
 
@@ -614,7 +619,7 @@ public class ReportsView extends BaseView {
         exportXmlBtn = new Button("Export XML");
         exportXmlBtn.setGraphic(IconFactory.getWhiteIcon("receipt", 14));
         exportXmlBtn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-insets: 0; -fx-padding: 8 16;");
-        exportXmlBtn.setOnAction(e -> exportXML());
+
 
         HBox.setMargin(exportBtn, new Insets(0, 0, 10, 0));
         HBox.setMargin(filterBtn, new Insets(0, 0, 10, 0));
@@ -741,107 +746,4 @@ public class ReportsView extends BaseView {
         btn.setOnMouseReleased(e -> { btn.setScaleX(1.0);  btn.setScaleY(1.0);  });
     }
 
-    private void exportXML() {
-        FileChooser fc = new FileChooser();
-        fc.setTitle("Export Report as XML");
-        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("XML Files", "*.xml"));
-        fc.setInitialFileName("report.xml");
-
-        File file = fc.showSaveDialog(stage);
-        if (file == null) return;
-
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            Document doc = factory.newDocumentBuilder().newDocument();
-
-            Element root = doc.createElement("report");
-            root.setAttribute("generatedAt", java.time.LocalDate.now().toString());
-
-
-            var from = viewModel.resolvedFrom();
-            var to = viewModel.resolvedTo();
-            if (from != null && to != null) {
-                root.setAttribute("period", from + " - " + to);
-            }
-
-            doc.appendChild(root);
-
-            var summaryData = viewModel.getSummary();
-            Element summary = doc.createElement("summary");
-
-            Element revenue = doc.createElement("totalRevenue");
-            revenue.setTextContent(summaryData.getTotalRevenue().toString());
-
-            Element costs = doc.createElement("totalCosts");
-            costs.setTextContent(summaryData.getTotalCosts().toString());
-
-            Element gross = doc.createElement("grossProfit");
-            gross.setTextContent(summaryData.getGrossProfit().toString());
-
-            Element net = doc.createElement("netProfit");
-            net.setTextContent(summaryData.getNetProfit().toString());
-
-            summary.appendChild(revenue);
-            summary.appendChild(costs);
-            summary.appendChild(gross);
-            summary.appendChild(net);
-
-            root.appendChild(summary);
-
-            Element monthly = doc.createElement("monthlySnapshots");
-
-            for (var m : viewModel.getMonthlySummaries()) {
-                Element month = doc.createElement("month");
-
-                month.setAttribute("period", m.getPeriod().toString());
-                month.setAttribute("income", m.getIncome().toString());
-                month.setAttribute("expense", m.getExpense().toString());
-                month.setAttribute("netProfit", m.getNetProfit().toString());
-
-                monthly.appendChild(month);
-            }
-
-            root.appendChild(monthly);
-
-            Element projects = doc.createElement("projects");
-
-            for (var p : viewModel.getProjectSummaries()) {
-                Element project = doc.createElement("project");
-
-                project.setAttribute("name", p.getProjectName());
-                project.setAttribute("totalIncome", p.getTotalIncome().toString());
-                project.setAttribute("totalExpense", p.getTotalExpense().toString());
-                project.setAttribute("netProfit", p.getNetProfit().toString());
-
-                projects.appendChild(project);
-            }
-
-            root.appendChild(projects);
-
-            Element expenses = doc.createElement("expenses");
-
-            for (var e : viewModel.getExpenseCategories()) {
-                Element category = doc.createElement("category");
-
-                category.setAttribute("name", e.getCategory());
-                category.setAttribute("amount", e.getAmount().toString());
-                category.setAttribute("percentage", String.valueOf(e.getPercentage()));
-
-                expenses.appendChild(category);
-            }
-
-            root.appendChild(expenses);
-
-
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-
-            transformer.transform(new DOMSource(doc), new StreamResult(file));
-
-            ToastManager.showSuccess(stage, "XML exported successfully");
-
-        } catch (Exception ex) {
-            ToastManager.showError(stage, "XML export failed: " + ex.getMessage());
-        }
-    }
 }
