@@ -302,12 +302,14 @@ public class ReportsView extends BaseView {
         amtCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(CurrencyFormatter.format(d.getValue().getAmount())));
         amtCol.setCellFactory(col -> centerAlignCell());
         amtCol.setStyle("-fx-alignment: CENTER;");
+        amtCol.getStyleClass().add("center-align-col");
 
         TableColumn<IncomeBreakdownDTO, String> pctCol = new TableColumn<>("% OF TOTAL");
         pctCol.setPrefWidth(120); pctCol.setMaxWidth(120);
         pctCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(String.format("%.1f%%", d.getValue().getPercentage())));
         pctCol.setCellFactory(col -> centerAlignCell());
         pctCol.setStyle("-fx-alignment: CENTER;");
+        pctCol.getStyleClass().add("center-align-col");
 
         TableColumn<IncomeBreakdownDTO, IncomeBreakdownDTO> barCol = new TableColumn<>("");
         barCol.setPrefWidth(160); barCol.setMaxWidth(160);
@@ -344,12 +346,14 @@ public class ReportsView extends BaseView {
         amtCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(CurrencyFormatter.format(d.getValue().getAmount())));
         amtCol.setCellFactory(col -> centerAlignCell());
         amtCol.setStyle("-fx-alignment: CENTER;");
+        amtCol.getStyleClass().add("center-align-col");
 
         TableColumn<ExpenseCategoryDTO, String> pctCol = new TableColumn<>("% OF TOTAL");
         pctCol.setPrefWidth(120); pctCol.setMaxWidth(120);
         pctCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(String.format("%.1f%%", d.getValue().getPercentage())));
         pctCol.setCellFactory(col -> centerAlignCell());
         pctCol.setStyle("-fx-alignment: CENTER;");
+        pctCol.getStyleClass().add("center-align-col");
 
         TableColumn<ExpenseCategoryDTO, ExpenseCategoryDTO> barCol = new TableColumn<>("");
         barCol.setPrefWidth(160); barCol.setMaxWidth(160);
@@ -396,6 +400,7 @@ public class ReportsView extends BaseView {
                 d.getValue().getSalary() != null ? CurrencyFormatter.format(d.getValue().getSalary()) : "—"));
         salaryCol.setCellFactory(col -> centerAlignCell());
         salaryCol.setStyle("-fx-alignment: CENTER;");
+        salaryCol.getStyleClass().add("center-align-col");
 
         TableColumn<Employee, String> statusCol = new TableColumn<>("STATUS");
         statusCol.setPrefWidth(110);
@@ -467,21 +472,25 @@ public class ReportsView extends BaseView {
         incCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(CurrencyFormatter.format(d.getValue().getIncome())));
         incCol.setCellFactory(col -> centerAlignCell());
         incCol.setStyle("-fx-alignment: CENTER;");
+        incCol.getStyleClass().add("center-align-col");
 
         TableColumn<MonthlySnapshotDTO, String> expCol = new TableColumn<>("EXPENSES");
         expCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(CurrencyFormatter.format(d.getValue().getExpense())));
         expCol.setCellFactory(col -> centerAlignCell());
         expCol.setStyle("-fx-alignment: CENTER;");
+        expCol.getStyleClass().add("center-align-col");
 
         TableColumn<MonthlySnapshotDTO, BigDecimal> netCol = new TableColumn<>("NET PROFIT");
         netCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(d.getValue().getNetProfit()));
         netCol.setCellFactory(col -> centerAlignDecimalCell(true));
         netCol.setStyle("-fx-alignment: CENTER;");
+        netCol.getStyleClass().add("center-align-col");
 
         TableColumn<MonthlySnapshotDTO, MonthlySnapshotDTO> momCol = new TableColumn<>("MOM CHANGE");
         momCol.setPrefWidth(120);
         momCol.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(d.getValue()));
         momCol.setStyle("-fx-alignment: CENTER;");
+        momCol.getStyleClass().add("center-align-col");
         momCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(MonthlySnapshotDTO item, boolean empty) {
                 super.updateItem(item, empty);

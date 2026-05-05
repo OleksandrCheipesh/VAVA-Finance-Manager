@@ -46,6 +46,13 @@
     -fx-alignment: center-left;
 }
 
+/* Centered header alignment via custom style class */
+.center-align-col.column-header,
+.center-align-col.column-header .label {
+    -fx-alignment: center;
+    -fx-padding: 0;
+}
+
 /* Text in tables */
 .table-view .table-cell {
     -fx-border-width: 0;
