@@ -54,6 +54,19 @@ public class BudgetView extends BaseView {
     };
   }
 
+  private static String iconForCategory(AccountCategory category) {
+    if (category == AccountCategory.CASH) return "banknote";
+    if (category == AccountCategory.CREDIT_LINE) return "credit-card";
+    return "landmark";
+  }
+
+  private static String progressLabelForCategory(AccountCategory category) {
+    if (category == AccountCategory.CREDIT_LINE) return I18n.t("Credit Used").toUpperCase(Locale.ROOT);
+    if (category == AccountCategory.INVESTMENT) return I18n.t("Target Progress").toUpperCase(Locale.ROOT);
+    if (category == AccountCategory.SAVINGS) return I18n.t("Goal Progress").toUpperCase(Locale.ROOT);
+    return I18n.t("Limit Progress").toUpperCase(Locale.ROOT);
+  }
+
   @Override
   protected void setContent() {
     root = new BorderPane();
@@ -360,12 +373,7 @@ public class BudgetView extends BaseView {
     iconBox.setPrefSize(42, 42);
     iconBox.setStyle("-fx-background-color: " + Themes.PRIMARY + "22; -fx-background-radius: 10;");
 
-    String iconName = switch (account.getCategory()) {
-      case CASH -> "banknote";
-      case CREDIT_LINE -> "credit-card";
-      default -> "landmark"; // BANK_ACCOUNT and anything else
-    };
-    iconBox.getChildren().add(IconFactory.getIcon(iconName, 22));
+    iconBox.getChildren().add(IconFactory.getIcon(iconForCategory(account.getCategory()), 22));
 
     Region spacer = new Region();
     HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -387,16 +395,14 @@ public class BudgetView extends BaseView {
 
     AccountCategory category = account.getCategory();
     boolean isSavingsOrInvestment = category == AccountCategory.SAVINGS || category == AccountCategory.INVESTMENT;
+    boolean isOther = category == null || category == AccountCategory.OTHER;
     boolean isCreditLine = category == AccountCategory.CREDIT_LINE;
     boolean hasUsableLimit = account.getLimitAmount() != null && account.getLimitAmount() > 0;
 
     BigDecimal rawBalance = account.getCurrentBalance() != null ? account.getCurrentBalance() : BigDecimal.ZERO;
-    BigDecimal displayBalance = rawBalance;
 
-    double balance = displayBalance.doubleValue();
-    String balanceText = isCreditLine
-            ? CurrencyFormatter.symbol() + String.format(Locale.US, "%,.2f", Math.abs(balance))
-            : CurrencyFormatter.symbol() + String.format(Locale.US, "%,.2f", balance);
+    double balance = rawBalance.doubleValue();
+    String balanceText = CurrencyFormatter.symbol() + String.format(Locale.US, "%,.2f", balance);
 
     String balanceColor = balance < 0 ? Themes.TEXT_ERROR : Themes.DARK_GREEN;
 
@@ -405,7 +411,7 @@ public class BudgetView extends BaseView {
 
     VBox progressSection = null;
 
-    if ((isSavingsOrInvestment || isCreditLine) && hasUsableLimit) {
+    if ((isSavingsOrInvestment || isCreditLine || isOther) && hasUsableLimit) {
       double utilization;
       String progressLabelText;
 
@@ -414,12 +420,11 @@ public class BudgetView extends BaseView {
                 .divide(BigDecimal.valueOf(account.getLimitAmount()), 4, java.math.RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100.0))
                 .doubleValue();
-        progressLabelText = "CREDIT USED";
       } else {
-        utilization = Math.min((rawBalance.doubleValue() / account.getLimitAmount()) * 100.0, 100.0);
-        progressLabelText = "GOAL PROGRESS";
+        utilization = (rawBalance.doubleValue() / account.getLimitAmount()) * 100.0;
       }
-      utilization = Math.min(utilization, 100.0);
+      progressLabelText = progressLabelForCategory(category);
+      utilization = Math.max(0.0, Math.min(utilization, 100.0));
 
       progressSection = new VBox(8);
       HBox progressText = new HBox();
@@ -462,7 +467,6 @@ public class BudgetView extends BaseView {
       BudgetDetailDialog.show(
               stage,
               account,
-              viewModel,
               () -> AddBudgetDialog.show(stage, account, updatedAccount -> {
                 viewModel.updateAccount(updatedAccount);
                 refreshDashboardState(widthBinding);

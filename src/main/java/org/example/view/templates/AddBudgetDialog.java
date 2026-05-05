@@ -113,7 +113,8 @@ public class AddBudgetDialog {
         nameField.setMinHeight(FIELD_HEIGHT);
         nameField.setPrefHeight(FIELD_HEIGHT);
         nameField.setMaxHeight(FIELD_HEIGHT);
-        VBox nameBox = createLabeledField(I18n.t("ACCOUNT NAME"), nameField);
+        Label nameError = errorLabel();
+        VBox nameBox = createLabeledField(I18n.t("ACCOUNT NAME"), nameField, nameError);
 
         ComboBox<String> catCombo = UIFactory.inputComboBox(I18n.t("Select Category"));
         for (AccountCategory cat : AccountCategory.values()) {
@@ -123,7 +124,8 @@ public class AddBudgetDialog {
         catCombo.setMinHeight(FIELD_HEIGHT);
         catCombo.setPrefHeight(FIELD_HEIGHT);
         catCombo.setMaxHeight(FIELD_HEIGHT);
-        VBox catBox = createLabeledField(I18n.t("CATEGORY"), catCombo);
+        Label categoryError = errorLabel();
+        VBox catBox = createLabeledField(I18n.t("CATEGORY"), catCombo, categoryError);
 
         TextField limitField = UIFactory.inputField("0.00 (optional)");
         limitField.setMaxWidth(Double.MAX_VALUE);
@@ -133,7 +135,8 @@ public class AddBudgetDialog {
 
         Label limitLabel = new Label(I18n.t("Limit Amount"));
         limitLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-size: 13px;");
-        VBox limitBox = new VBox(5, limitLabel, limitField);
+        Label limitError = errorLabel();
+        VBox limitBox = new VBox(4, limitLabel, limitField, limitError);
         limitBox.setMaxWidth(Double.MAX_VALUE);
 
         GridPane row1Grid = new GridPane();
@@ -155,8 +158,10 @@ public class AddBudgetDialog {
             } else {
                 GridPane.setColumnSpan(catBox, 1);
             }
-            if (selectedCategory == AccountCategory.SAVINGS || selectedCategory == AccountCategory.INVESTMENT) {
+            if (selectedCategory == AccountCategory.SAVINGS) {
                 limitLabel.setText(I18n.t("Savings Goal"));
+            } else if (selectedCategory == AccountCategory.INVESTMENT) {
+                limitLabel.setText(I18n.t("Investment Target"));
             } else if (selectedCategory == AccountCategory.CREDIT_LINE) {
                 limitLabel.setText(I18n.t("Credit Limit"));
             } else {
@@ -171,7 +176,8 @@ public class AddBudgetDialog {
         balanceField.setMinHeight(FIELD_HEIGHT);
         balanceField.setPrefHeight(FIELD_HEIGHT);
         balanceField.setMaxHeight(FIELD_HEIGHT);
-        VBox balanceBox = createLabeledField(I18n.t("INITIAL BALANCE"), balanceField);
+        Label balanceError = errorLabel();
+        VBox balanceBox = createLabeledField(I18n.t("INITIAL BALANCE"), balanceField, balanceError);
         balanceBox.setVisible(!isEditMode);
         balanceBox.setManaged(!isEditMode);
 
@@ -275,17 +281,28 @@ public class AddBudgetDialog {
         saveBtn.setOnMouseReleased(e -> { saveBtn.setScaleX(1.0); saveBtn.setScaleY(1.0); });
         HBox.setHgrow(saveBtn, Priority.ALWAYS);
 
+        final String origNameStyle = nameField.getStyle();
+        final String origCategoryStyle = catCombo.getStyle();
+        final String origBalanceStyle = balanceField.getStyle();
+        final String origLimitStyle = limitField.getStyle();
         String errorBorder = "-fx-border-color: " + Themes.TEXT_ERROR + "; -fx-border-width: 1.5; -fx-border-radius: 8; -fx-background-radius: 8;";
 
         saveBtn.setOnAction(e -> {
-            nameField.setStyle(nameField.getStyle().replace(errorBorder, ""));
-            balanceField.setStyle(balanceField.getStyle().replace(errorBorder, ""));
-            limitField.setStyle(limitField.getStyle().replace(errorBorder, ""));
+            clearFieldError(nameField, origNameStyle, nameError);
+            clearFieldError(catCombo, origCategoryStyle, categoryError);
+            clearFieldError(balanceField, origBalanceStyle, balanceError);
+            clearFieldError(limitField, origLimitStyle, limitError);
 
             boolean isValid = true;
 
             if (nameField.getText().trim().isEmpty()) {
-                nameField.setStyle(nameField.getStyle() + errorBorder);
+                showFieldError(nameField, errorBorder, nameError, I18n.t("Account name is required"));
+                isValid = false;
+            }
+
+            AccountCategory selectedCategory = parseCategoryLabel(catCombo.getValue());
+            if (selectedCategory == null) {
+                showFieldError(catCombo, errorBorder, categoryError, I18n.t("Category is required"));
                 isValid = false;
             }
 
@@ -293,9 +310,12 @@ public class AddBudgetDialog {
             if (!balanceField.getText().trim().isEmpty()) {
                 try {
                     balanceParsed = new BigDecimal(balanceField.getText().replace(",", "").trim());
-                    if (balanceParsed.compareTo(BigDecimal.ZERO) < 0) throw new NumberFormatException();
+                    if (balanceParsed.compareTo(BigDecimal.ZERO) < 0) {
+                        showFieldError(balanceField, errorBorder, balanceError, I18n.t("Initial balance must be zero or greater"));
+                        isValid = false;
+                    }
                 } catch (NumberFormatException ex) {
-                    balanceField.setStyle(balanceField.getStyle() + errorBorder);
+                    showFieldError(balanceField, errorBorder, balanceError, I18n.t("Enter a valid number (e.g. 1500.00)"));
                     isValid = false;
                 }
             }
@@ -304,16 +324,19 @@ public class AddBudgetDialog {
             if (limitBox.isManaged() && !limitField.getText().trim().isEmpty()) {
                 try {
                     double raw = Double.parseDouble(limitField.getText().replace(",", "").trim());
-                    if (raw < 0) throw new NumberFormatException();
+                    if (raw < 0) {
+                        showFieldError(limitField, errorBorder, limitError, I18n.t("Limit must be zero or greater"));
+                        isValid = false;
+                    }
                     limitParsed = (int) raw;
                 } catch (NumberFormatException ex) {
-                    limitField.setStyle(limitField.getStyle() + errorBorder);
+                    showFieldError(limitField, errorBorder, limitError, I18n.t("Enter a valid number (e.g. 1500.00)"));
                     isValid = false;
                 }
             }
 
             if (!isValid) {
-                ToastManager.showError(owner, I18n.t("Please fill in all required fields correctly."));
+                ToastManager.showError(owner, I18n.t("Please fix the highlighted fields."));
                 return;
             }
 
@@ -323,30 +346,37 @@ public class AddBudgetDialog {
             final Integer finalLimit = limitParsed;
 
             new Thread(() -> {
-                try { Thread.sleep(800); } catch (InterruptedException ex) {}
+                try { Thread.sleep(800); } catch (InterruptedException ex) { Thread.currentThread().interrupt(); }
                 javafx.application.Platform.runLater(() -> {
-                    Account account = new Account();
-                    if (isEditMode) {
-                        account.setId(accountToEdit.getId());
-                        account.setCompanyId(accountToEdit.getCompanyId());
-                    }
-                    account.setAccountName(nameField.getText().trim());
-                    account.setCurrentBalance(isEditMode ? accountToEdit.getCurrentBalance() : finalBalance);
-                    account.setCurrency(SessionManager.getInstance().getCurrency());
-                    account.setLimitAmount(finalLimit);
-
-                    String selectedCatLabel = catCombo.getValue();
-                    AccountCategory cat = AccountCategory.OTHER;
-                    if (selectedCatLabel != null) {
-                        for (AccountCategory c : AccountCategory.values()) {
-                            if (formatCategory(c).equals(selectedCatLabel)) { cat = c; break; }
+                    try {
+                        Account account = new Account();
+                        if (isEditMode) {
+                            account.setId(accountToEdit.getId());
+                            account.setCompanyId(accountToEdit.getCompanyId());
                         }
-                    }
-                    account.setCategory(cat);
-                    account.setCycle(selectedFreq.equals("WEEKLY") ? AccountCycle.WEEKLY : AccountCycle.MONTHLY);
+                        account.setAccountName(nameField.getText().trim());
+                        account.setCurrentBalance(isEditMode ? accountToEdit.getCurrentBalance() : finalBalance);
+                        account.setCurrency(SessionManager.getInstance().getCurrency());
+                        account.setLimitAmount(finalLimit);
 
-                    onSuccess.accept(account);
-                    closeWithAnimation(modal, shadowWrapper);
+                        String selectedCatLabel = catCombo.getValue();
+                        AccountCategory cat = AccountCategory.OTHER;
+                        if (selectedCatLabel != null) {
+                            for (AccountCategory c : AccountCategory.values()) {
+                                if (formatCategory(c).equals(selectedCatLabel)) { cat = c; break; }
+                            }
+                        }
+                        account.setCategory(cat);
+                        account.setCycle(selectedFreq.equals("WEEKLY") ? AccountCycle.WEEKLY : AccountCycle.MONTHLY);
+
+                        onSuccess.accept(account);
+                        closeWithAnimation(modal, shadowWrapper);
+                    } catch (Exception ex) {
+                        saveBtn.setLoading(false);
+                        ToastManager.showError(owner, I18n.t("Something went wrong. Please try again."));
+                        var logger = org.example.logging.AppLog.getLogger(AddBudgetDialog.class);
+                        logger.error("Unexpected error saving account: {}", ex.getMessage(), ex);
+                    }
                 });
             }).start();
         });
@@ -385,6 +415,36 @@ public class AddBudgetDialog {
         VBox box = new VBox(5, label, field);
         box.setMaxWidth(Double.MAX_VALUE);
         return box;
+    }
+
+    private static VBox createLabeledField(String labelText, Node field, Label errorLabel) {
+        Label label = new Label(labelText);
+        label.setStyle("-fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_DARK + "; -fx-font-size: 13px;");
+        VBox box = new VBox(4, label, field, errorLabel);
+        box.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(box, Priority.ALWAYS);
+        return box;
+    }
+
+    private static Label errorLabel() {
+        Label lbl = new Label();
+        lbl.setStyle("-fx-text-fill: " + Themes.TEXT_ERROR + "; -fx-font-size: 11px;");
+        lbl.setVisible(false);
+        lbl.setManaged(false);
+        return lbl;
+    }
+
+    private static void showFieldError(Node field, String errorBorder, Label errorLabel, String message) {
+        field.setStyle(field.getStyle() + errorBorder);
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
+        errorLabel.setManaged(true);
+    }
+
+    private static void clearFieldError(Node field, String origStyle, Label errorLabel) {
+        field.setStyle(origStyle);
+        errorLabel.setVisible(false);
+        errorLabel.setManaged(false);
     }
 
     private static AccountCategory parseCategoryLabel(String selectedLabel) {

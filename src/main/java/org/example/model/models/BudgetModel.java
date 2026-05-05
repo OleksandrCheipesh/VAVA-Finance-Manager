@@ -76,19 +76,15 @@ public class BudgetModel {
 
     public BigDecimal getTotalAssets(int companyId) throws SQLException {
         return getAccountsByCompanyId(companyId).stream()
-                .filter(a -> a.getCategory() == AccountCategory.BANK_ACCOUNT
-                        || a.getCategory() == AccountCategory.CASH
-                        || a.getCategory() == AccountCategory.SAVINGS
-                        || a.getCategory() == AccountCategory.INVESTMENT)
-                .map(a -> a.getCurrentBalance() != null ? a.getCurrentBalance() : BigDecimal.ZERO)
+                .filter(this::isAssetAccount)
+                .map(this::balanceOf)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public BigDecimal getTotalLiabilities(int companyId) throws SQLException {
         return getAccountsByCompanyId(companyId).stream()
-                .filter(a -> a.getCategory() == AccountCategory.CREDIT_LINE)
-                .filter(a -> a.getCurrentBalance() != null && a.getCurrentBalance().compareTo(BigDecimal.ZERO) < 0)
-                .map(a -> a.getCurrentBalance() != null ? a.getCurrentBalance() : BigDecimal.ZERO)
+                .filter(this::isLiabilityAccount)
+                .map(this::balanceOf)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
@@ -109,5 +105,27 @@ public class BudgetModel {
 
         BigDecimal balance = account.getCurrentBalance() != null ? account.getCurrentBalance() : BigDecimal.ZERO;
         return limit.add(balance);
+    }
+
+    private BigDecimal balanceOf(Account account) {
+        return account.getCurrentBalance() != null ? account.getCurrentBalance() : BigDecimal.ZERO;
+    }
+
+    private boolean isAssetAccount(Account account) {
+        AccountCategory category = account.getCategory();
+        return category == AccountCategory.BANK_ACCOUNT
+                || category == AccountCategory.CASH
+                || category == AccountCategory.SAVINGS
+                || category == AccountCategory.INVESTMENT
+                || ((category == null || category == AccountCategory.OTHER)
+                    && balanceOf(account).compareTo(BigDecimal.ZERO) >= 0);
+    }
+
+    private boolean isLiabilityAccount(Account account) {
+        AccountCategory category = account.getCategory();
+        return (category == AccountCategory.CREDIT_LINE
+                || category == null
+                || category == AccountCategory.OTHER)
+                && balanceOf(account).compareTo(BigDecimal.ZERO) < 0;
     }
 }
