@@ -69,7 +69,14 @@ Exit psql with `\q`.
 
 ### 3. Configure the connection
 
-Open `src/main/resources/application.properties` and set your values:
+`application.properties` is excluded from the repository for security reasons.
+Copy the template and fill in your values:
+
+```bash
+cp src/main/resources/application.properties.template src/main/resources/application.properties
+```
+
+Then open `src/main/resources/application.properties` and set your values:
 
 ```properties
 db.url=jdbc:postgresql://localhost:5432/finance_manager
