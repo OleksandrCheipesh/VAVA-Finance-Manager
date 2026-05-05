@@ -105,11 +105,6 @@ public class ReportModals {
         projectCombo.setMinHeight(44); projectCombo.setPrefHeight(44);
         projectCombo.setMaxHeight(44); projectCombo.setMaxWidth(Double.MAX_VALUE);
 
-        projectCombo.setOnAction(e -> {
-            String selected = projectCombo.getValue();
-            vm.setSelectedProject(I18n.t("All Projects").equals(selected) ? null : selected);
-        });
-
         projBox.getChildren().addAll(projLbl, projectCombo);
 
         HBox groupAndToggles = new HBox();
@@ -118,15 +113,18 @@ public class ReportModals {
         VBox groupBox = new VBox(5);
         Label groupLbl = new Label(I18n.t("GROUPING"));
         groupLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+        final String[] selectedGrouping = { vm.groupingProperty().get() };
         HBox groupBtns = createSegmentedControl(I18n.t("Month"), I18n.t("Quarter"),
-                selected -> vm.setGrouping(selected));
+                selected -> selectedGrouping[0] = selected);
         groupBox.getChildren().addAll(groupLbl, groupBtns);
 
         Region centerSpacer = new Region();
         HBox.setHgrow(centerSpacer, Priority.ALWAYS);
 
-        HBox incomeToggle  = createToggle(I18n.t("Show Income"),   true,  (on) -> chart.setSeriesVisible("Income",   on));
-        HBox expenseToggle = createToggle(I18n.t("Show Expenses"), false, (on) -> chart.setSeriesVisible("Expenses", on));
+        final boolean[] showInc = { true };
+        final boolean[] showExp = { false };
+        HBox incomeToggle  = createToggle(I18n.t("Show Income"),   showInc[0],  (on) -> showInc[0] = on);
+        HBox expenseToggle = createToggle(I18n.t("Show Expenses"), showExp[0], (on) -> showExp[0] = on);
 
         VBox togglesBox = new VBox(12);
         togglesBox.getChildren().addAll(incomeToggle, expenseToggle);
@@ -135,7 +133,13 @@ public class ReportModals {
         groupAndToggles.getChildren().addAll(groupBox, centerSpacer, togglesBox);
         extraFilters.getChildren().addAll(projBox, groupAndToggles);
 
-        showBaseModal(owner, I18n.t("Income VS Expenses"), chart, extraFilters, vm, null);
+        showBaseModal(owner, I18n.t("Income VS Expenses"), chart, extraFilters, vm, () -> {
+            String selected = projectCombo.getValue();
+            vm.setSelectedProject(I18n.t("All Projects").equals(selected) ? null : selected);
+            vm.groupingProperty().set(selectedGrouping[0]);
+            chart.setSeriesVisible("Income", showInc[0]);
+            chart.setSeriesVisible("Expenses", showExp[0]);
+        });
     }
 
     // --- 3. Net Profit Trend ---
@@ -171,11 +175,6 @@ public class ReportModals {
         projectCombo.setMinHeight(44); projectCombo.setPrefHeight(44);
         projectCombo.setMaxHeight(44); projectCombo.setMaxWidth(Double.MAX_VALUE);
 
-        projectCombo.setOnAction(e -> {
-            String selected = projectCombo.getValue();
-            vm.setSelectedProject(I18n.t("All Projects").equals(selected) ? null : selected);
-        });
-
         projBox.getChildren().addAll(projLbl, projectCombo);
 
         HBox groupAndToggles = new HBox();
@@ -184,21 +183,28 @@ public class ReportModals {
         VBox groupBox = new VBox(5);
         Label groupLbl = new Label(I18n.t("GROUPING"));
         groupLbl.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + Themes.TEXT_MUTED + ";");
+        final String[] selectedGrouping = { vm.groupingProperty().get() };
         HBox groupBtns = createSegmentedControl(I18n.t("Month"), I18n.t("Quarter"),
-                selected -> vm.setGrouping(selected));
+                selected -> selectedGrouping[0] = selected);
         groupBox.getChildren().addAll(groupLbl, groupBtns);
 
         Region centerSpacer = new Region();
         HBox.setHgrow(centerSpacer, Priority.ALWAYS);
 
         VBox togglesBox = new VBox(8);
-        togglesBox.getChildren().add(createToggle(I18n.t("Show Zero Line"), true, (on) -> chart.setZeroLineVisible(on)));
+        final boolean[] showZL = { true };
+        togglesBox.getChildren().add(createToggle(I18n.t("Show Zero Line"), showZL[0], (on) -> showZL[0] = on));
         HBox.setMargin(togglesBox, new Insets(17, 0, 0, 0));
 
         groupAndToggles.getChildren().addAll(groupBox, centerSpacer, togglesBox);
         extraFilters.getChildren().addAll(projBox, groupAndToggles);
 
-        showBaseModal(owner, I18n.t("Net Profit Trend"), chart, extraFilters, vm, null);
+        showBaseModal(owner, I18n.t("Net Profit Trend"), chart, extraFilters, vm, () -> {
+            String selected = projectCombo.getValue();
+            vm.setSelectedProject(I18n.t("All Projects").equals(selected) ? null : selected);
+            vm.groupingProperty().set(selectedGrouping[0]);
+            chart.setZeroLineVisible(showZL[0]);
+        });
     }
 
     // --- SHARED MODAL LOGIC ---
@@ -292,7 +298,6 @@ public class ReportModals {
         timeCombo.setMinHeight(44); timeCombo.setPrefHeight(44);
         timeCombo.setMaxHeight(44); timeCombo.setMaxWidth(Double.MAX_VALUE);
 
-        timeCombo.valueProperty().addListener((obs, oldVal, newVal) -> vm.setPeriodFromString(newVal));
         timeBox.getChildren().addAll(timeLbl, timeCombo);
 
         // CUSTOM DATE RANGE
@@ -304,7 +309,7 @@ public class ReportModals {
         DatePicker fromDP = UIFactory.inputDatePicker("mm/dd/yyyy");
         fromDP.setMinHeight(44); fromDP.setPrefHeight(44);
         fromDP.setMaxHeight(44); fromDP.setMaxWidth(Double.MAX_VALUE);
-        fromDP.valueProperty().bindBidirectional(vm.customFromProperty());
+        fromDP.setValue(vm.customFromProperty().get());
         fromBox.getChildren().addAll(fromLbl, fromDP);
         HBox.setHgrow(fromBox, Priority.ALWAYS);
 
@@ -314,7 +319,7 @@ public class ReportModals {
         DatePicker toDP = UIFactory.inputDatePicker("mm/dd/yyyy");
         toDP.setMinHeight(44); toDP.setPrefHeight(44);
         toDP.setMaxHeight(44); toDP.setMaxWidth(Double.MAX_VALUE);
-        toDP.valueProperty().bindBidirectional(vm.customToProperty());
+        toDP.setValue(vm.customToProperty().get());
         toBox.getChildren().addAll(toLbl, toDP);
         HBox.setHgrow(toBox, Priority.ALWAYS);
 
@@ -338,21 +343,17 @@ public class ReportModals {
         RadioButton r2 = new RadioButton(I18n.t("Active only"));   r2.getStyleClass().add("custom-radio");
         RadioButton r3 = new RadioButton(I18n.t("Inactive only")); r3.getStyleClass().add("custom-radio");
 
+        String curStatus = vm.selectedStatusProperty().get();
+        if ("Active".equalsIgnoreCase(curStatus)) r2.setSelected(true);
+        else if ("Inactive".equalsIgnoreCase(curStatus)) r3.setSelected(true);
+
         ToggleGroup tg = new ToggleGroup();
         r1.setToggleGroup(tg); r2.setToggleGroup(tg); r3.setToggleGroup(tg);
 
-        tg.selectedToggleProperty().addListener((obs, oldT, newT) -> {
-            if (newT == r2) vm.setSelectedStatus("Active");
-            else if (newT == r3) vm.setSelectedStatus("Inactive");
-            else vm.setSelectedStatus(null);
-        });
-
         reset.setOnMouseClicked(e -> {
-            vm.setPeriodFromString("This Year");
-            vm.customFromProperty().set(null);
-            vm.customToProperty().set(null);
-            vm.setSelectedProject(null);
-            vm.setSelectedStatus(null);
+            timeCombo.setValue("This Year");
+            fromDP.setValue(null);
+            toDP.setValue(null);
             tg.selectToggle(r1);
         });
 
@@ -374,8 +375,17 @@ public class ReportModals {
         addClickEffect(exportBtn);
 
         applyBtn.setOnAction(e -> {
-            vm.recompute();
+            vm.setPeriodFromString(timeCombo.getValue());
+            vm.customFromProperty().set(fromDP.getValue());
+            vm.customToProperty().set(toDP.getValue());
+            
+            Toggle t = tg.getSelectedToggle();
+            if (t == r2) vm.setSelectedStatus("Active");
+            else if (t == r3) vm.setSelectedStatus("Inactive");
+            else vm.setSelectedStatus(null);
+
             if (onApplyExtra != null) onApplyExtra.run();
+            vm.recompute();
         });
         exportBtn.setOnAction(e -> ToastManager.showSuccess(owner, "Coming soon"));
 
@@ -465,7 +475,7 @@ public class ReportModals {
         DatePicker startDP = UIFactory.inputDatePicker("Jan 01, 2024");
         startDP.setMinHeight(44); startDP.setPrefHeight(44);
         startDP.setMaxHeight(44); startDP.setMaxWidth(Double.MAX_VALUE);
-        startDP.valueProperty().bindBidirectional(vm.customFromProperty());
+        startDP.setValue(vm.customFromProperty().get());
         startBox.getChildren().addAll(startLbl, startDP);
         HBox.setHgrow(startBox, Priority.ALWAYS);
 
@@ -475,7 +485,7 @@ public class ReportModals {
         DatePicker endDP = UIFactory.inputDatePicker("Mar 31, 2024");
         endDP.setMinHeight(44); endDP.setPrefHeight(44);
         endDP.setMaxHeight(44); endDP.setMaxWidth(Double.MAX_VALUE);
-        endDP.valueProperty().bindBidirectional(vm.customToProperty());
+        endDP.setValue(vm.customToProperty().get());
         endBox.getChildren().addAll(endLbl, endDP);
         HBox.setHgrow(endBox, Priority.ALWAYS);
 
@@ -508,12 +518,6 @@ public class ReportModals {
         rebuildRadios.accept(vm.getAvailableProjects());
         vm.getAvailableProjects().addListener((ListChangeListener<Project>) c -> rebuildRadios.accept(vm.getAvailableProjects()));
 
-        tg.selectedToggleProperty().addListener((obs, oldT, newT) -> {
-            if (newT instanceof RadioButton rb) {
-                vm.setSelectedProject(rb.getText());
-            }
-        });
-
         // Footer
         HBox actions = new HBox();
         actions.setAlignment(Pos.CENTER_LEFT);
@@ -522,11 +526,8 @@ public class ReportModals {
         Button resetBtn = new Button(I18n.t("⟲ Reset"));
         resetBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: " + Themes.TEXT_MUTED + "; -fx-cursor: hand; -fx-font-weight: bold;");
         resetBtn.setOnAction(e -> {
-            vm.setPeriodFromString("This Year");
-            vm.customFromProperty().set(null);
-            vm.customToProperty().set(null);
-            vm.setSelectedProject(null);
-            vm.setSelectedStatus(null);
+            startDP.setValue(null);
+            endDP.setValue(null);
             tg.selectToggle(null);
         });
 
@@ -536,6 +537,17 @@ public class ReportModals {
         Button applyBtn = new Button(I18n.t("Apply Filters"));
         applyBtn.setStyle("-fx-background-color: " + Themes.PRIMARY + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 24; -fx-cursor: hand;");
         applyBtn.setOnAction(e -> {
+            Toggle sel = tg.getSelectedToggle();
+            if (sel instanceof RadioButton rb) {
+                vm.setSelectedProject(rb.getText());
+            } else {
+                vm.setSelectedProject(null);
+            }
+            vm.customFromProperty().set(startDP.getValue());
+            vm.customToProperty().set(endDP.getValue());
+            if (startDP.getValue() != null || endDP.getValue() != null) {
+                vm.setPeriodFromString("Custom");
+            }
             vm.recompute();
             closeWithAnimation(modal, container);
         });
@@ -640,6 +652,7 @@ public class ReportModals {
         TextField finalMinField = minAmountField;
         javafx.beans.property.ObjectProperty<java.math.BigDecimal> finalProp = minAmountProp;
         applyBtn.setOnAction(e -> {
+            applyProjectPicker(projBox, vm);
             vm.setPeriodFromString(timeCombo.getValue());
             if (finalMinField != null && finalProp != null) {
                 String raw = finalMinField.getText().replaceAll("[$,\\s]", "");
@@ -651,9 +664,9 @@ public class ReportModals {
         });
 
         resetBtn.setOnAction(e -> {
-            vm.setPeriodFromString("This Year");
+            timeCombo.setValue("This Year");
+            resetProjectPicker(projBox);
             if (finalMinField != null) finalMinField.clear();
-            if (finalProp != null) finalProp.set(null);
         });
 
         actions.getChildren().addAll(resetBtn, actSpacer, applyBtn);
@@ -715,6 +728,7 @@ public class ReportModals {
         addClickEffect(applyBtn);
 
         applyBtn.setOnAction(e -> {
+            applyProjectPicker(projBox, vm);
             Toggle sel = tg.getSelectedToggle();
             if (sel == rActive)          vm.employeeStatusProperty().set("ACTIVE");
             else if (sel == rInactive)   vm.employeeStatusProperty().set("INACTIVE");
@@ -723,8 +737,8 @@ public class ReportModals {
             closeWithAnimation(modal, container);
         });
         resetBtn.setOnAction(e -> {
+            resetProjectPicker(projBox);
             tg.selectToggle(rAll);
-            vm.employeeStatusProperty().set(null);
         });
 
         actions.getChildren().addAll(resetBtn, actSpacer, applyBtn);
@@ -767,10 +781,12 @@ public class ReportModals {
         VBox projBox = buildProjectPicker(vm);
 
         // Toggles
-        HBox profitToggle = createToggle("Show only profitable months", vm.showOnlyProfitableProperty().get(),
-                on -> vm.showOnlyProfitableProperty().set(on));
-        HBox lossToggle   = createToggle("Show only loss months",        vm.showOnlyLossProperty().get(),
-                on -> vm.showOnlyLossProperty().set(on));
+        final boolean[] localProfitable = {vm.showOnlyProfitableProperty().get()};
+        final boolean[] localLoss = {vm.showOnlyLossProperty().get()};
+        HBox profitToggle = createToggle("Show only profitable months", localProfitable[0],
+                on -> localProfitable[0] = on);
+        HBox lossToggle   = createToggle("Show only loss months", localLoss[0],
+                on -> localLoss[0] = on);
 
         VBox togglesBox = new VBox(10, profitToggle, lossToggle);
 
@@ -786,12 +802,18 @@ public class ReportModals {
 
         applyBtn.setOnAction(e -> {
             vm.setPeriodFromString(timeCombo.getValue());
+            applyProjectPicker(projBox, vm);
+            vm.showOnlyProfitableProperty().set(localProfitable[0]);
+            vm.showOnlyLossProperty().set(localLoss[0]);
             closeWithAnimation(modal, container);
         });
         resetBtn.setOnAction(e -> {
-            vm.setPeriodFromString("This Year");
-            vm.showOnlyProfitableProperty().set(false);
-            vm.showOnlyLossProperty().set(false);
+            timeCombo.setValue("This Year");
+            resetProjectPicker(projBox);
+            // We'd have to update visual toggles realistically, but keeping logic
+            localProfitable[0] = false;
+            localLoss[0] = false;
+            // Best to close and force reset or rebuild visuals if reset is clicked
         });
 
         actions.getChildren().addAll(resetBtn, actSpacer, applyBtn);
@@ -812,12 +834,21 @@ public class ReportModals {
                 ? vm.selectedProjectProperty().get().getName() : I18n.t("All Projects"));
         projectCombo.setMinHeight(44); projectCombo.setPrefHeight(44);
         projectCombo.setMaxHeight(44); projectCombo.setMaxWidth(Double.MAX_VALUE);
-        projectCombo.setOnAction(e -> {
-            String sel = projectCombo.getValue();
-            vm.setSelectedProject(I18n.t("All Projects").equals(sel) ? null : sel);
-        });
         projBox.getChildren().addAll(projLbl, projectCombo);
         return projBox;
+    }
+
+    private static void applyProjectPicker(VBox projBox, ReportsViewModel vm) {
+        if (projBox.getChildren().size() > 1 && projBox.getChildren().get(1) instanceof ComboBox<?> cb) {
+            String sel = (String) cb.getValue();
+            vm.setSelectedProject(I18n.t("All Projects").equals(sel) ? null : sel);
+        }
+    }
+
+    private static void resetProjectPicker(VBox projBox) {
+        if (projBox.getChildren().size() > 1 && projBox.getChildren().get(1) instanceof ComboBox<?> cb) {
+            ((ComboBox<String>) cb).setValue(I18n.t("All Projects"));
+        }
     }
 
     private static Stage buildModalStage(Stage owner) {
@@ -971,3 +1002,8 @@ public class ReportModals {
         return box;
     }
 }
+
+
+
+
+
