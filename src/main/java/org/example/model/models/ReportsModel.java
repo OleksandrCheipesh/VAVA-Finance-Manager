@@ -8,11 +8,21 @@ import org.example.model.reports.ExpenseCategoryDTO;
 import org.example.model.reports.IncomeBreakdownDTO;
 import org.example.model.reports.MonthlySnapshotDTO;
 import org.example.model.reports.ProjectSummaryDTO;
+import org.example.model.reports.SummaryDTO;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.File;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
-import java.math.BigDecimal;
 
 public class ReportsModel {
     private final ReportService reportService = new ReportService();
@@ -45,5 +55,72 @@ public class ReportsModel {
 
     public List<Project> getProjects(int companyId) throws SQLException {
         return projectService.getProjectsByCompanyId(companyId);
+    }
+
+    public void exportXML(File file, LocalDate from, LocalDate to,
+                          SummaryDTO summary,
+                          List<MonthlySnapshotDTO> monthlySummaries,
+                          List<ProjectSummaryDTO> projectSummaries,
+                          List<ExpenseCategoryDTO> expenseCategories) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        Document doc = factory.newDocumentBuilder().newDocument();
+
+        Element root = doc.createElement("report");
+        root.setAttribute("generatedAt", java.time.LocalDate.now().toString());
+        if (from != null && to != null) {
+            root.setAttribute("period", from + " - " + to);
+        }
+        doc.appendChild(root);
+
+        Element summaryEl = doc.createElement("summary");
+        Element revenue = doc.createElement("totalRevenue");
+        revenue.setTextContent(summary.getTotalRevenue().toString());
+        Element costs = doc.createElement("totalCosts");
+        costs.setTextContent(summary.getTotalCosts().toString());
+        Element gross = doc.createElement("grossProfit");
+        gross.setTextContent(summary.getGrossProfit().toString());
+        Element net = doc.createElement("netProfit");
+        net.setTextContent(summary.getNetProfit().toString());
+        summaryEl.appendChild(revenue);
+        summaryEl.appendChild(costs);
+        summaryEl.appendChild(gross);
+        summaryEl.appendChild(net);
+        root.appendChild(summaryEl);
+
+        Element monthly = doc.createElement("monthlySnapshots");
+        for (MonthlySnapshotDTO m : monthlySummaries) {
+            Element month = doc.createElement("month");
+            month.setAttribute("period",    m.getPeriod().toString());
+            month.setAttribute("income",    m.getIncome().toString());
+            month.setAttribute("expense",   m.getExpense().toString());
+            month.setAttribute("netProfit", m.getNetProfit().toString());
+            monthly.appendChild(month);
+        }
+        root.appendChild(monthly);
+
+        Element projects = doc.createElement("projects");
+        for (ProjectSummaryDTO p : projectSummaries) {
+            Element project = doc.createElement("project");
+            project.setAttribute("name",         p.getProjectName());
+            project.setAttribute("totalIncome",  p.getTotalIncome().toString());
+            project.setAttribute("totalExpense", p.getTotalExpense().toString());
+            project.setAttribute("netProfit",    p.getNetProfit().toString());
+            projects.appendChild(project);
+        }
+        root.appendChild(projects);
+
+        Element expenses = doc.createElement("expenses");
+        for (ExpenseCategoryDTO e : expenseCategories) {
+            Element category = doc.createElement("category");
+            category.setAttribute("name",       e.getCategory());
+            category.setAttribute("amount",     e.getAmount().toString());
+            category.setAttribute("percentage", String.valueOf(e.getPercentage()));
+            expenses.appendChild(category);
+        }
+        root.appendChild(expenses);
+
+        Transformer transformer = TransformerFactory.newInstance().newTransformer();
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.transform(new DOMSource(doc), new StreamResult(file));
     }
 }

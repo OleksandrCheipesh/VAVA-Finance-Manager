@@ -310,6 +310,19 @@ public class ReportsViewModel {
             SessionManager.getInstance().getPosition() == Position.Analyst
     );
     public BooleanProperty hasAccessProperty() { return hasAccess; }
+
+    public void exportXML(java.io.File file) throws Exception {
+        model.exportXML(
+                file,
+                resolvedFrom(),
+                resolvedTo(),
+                getSummary(),
+                new ArrayList<>(monthlySummaries),
+                new ArrayList<>(projectSummaries),
+                new ArrayList<>(expenseCategories)
+        );
+    }
+
     public SummaryDTO getSummary() {
         BigDecimal totalRevenue = monthlySummaries.stream()
                 .map(MonthlySnapshotDTO::getIncome)
